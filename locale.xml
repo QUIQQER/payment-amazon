@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<locales>
+  <groups name="quiqqer/payment-amazon" datatype="php,js">
+    <locale name="package.title">
+      <de><![CDATA[Amazon Pay für den QUIQQER ERP stack]]></de>
+      <en><![CDATA[Amazon Pay for QUIQQER ERP stack]]></en>
+    </locale>
+  <locale name="package.description"><de><![CDATA[Bietet die Möglichkeit, Bestellungen mit Amazon Pay zu bezahlen]]></de><en><![CDATA[Offerd the option to pay orders via Amazon Pay]]></en></locale></groups>
+</locales>
