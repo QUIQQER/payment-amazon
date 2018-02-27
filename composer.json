@@ -17,7 +17,8 @@
     "url": "http://www.pcsg.de"
   },
   "require": {
-    "quiqqer/payments": ">=1.0|dev-master|dev-dev"
+    "quiqqer/payments": ">=1.0|dev-master|dev-dev",
+    "amzn/amazon-pay-sdk-php": "3.*"
   },
   "autoload": {
     "psr-4": {
