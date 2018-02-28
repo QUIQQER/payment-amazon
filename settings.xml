@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<quiqqer>
+    <settings>
+
+        <config>
+
+            <section name="api">
+                <conf name="merchant_id">
+                    <type><![CDATA[string]]></type>
+                </conf>
+                <conf name="access_key">
+                    <type><![CDATA[string]]></type>
+                </conf>
+                <conf name="secret_key">
+                    <type><![CDATA[string]]></type>
+                </conf>
+                <conf name="client_id">
+                    <type><![CDATA[string]]></type>
+                </conf>
+                <conf name="region">
+                    <type><![CDATA[string]]></type>
+                    <defaultvalue><![CDATA[de]]></defaultvalue>
+                </conf>
+                <conf name="sandbox">
+                    <type><![CDATA[boolean]]></type>
+                    <defaultvalue>1</defaultvalue>
+                </conf>
+            </section>
+
+        </config>
+
+        <window>
+            <title>
+                <locale group="quiqqer/payment-amazon" var="settings.menu.title"/>
+            </title>
+
+            <params>
+                <icon>fa fa-amazon</icon>
+            </params>
+
+            <categories>
+                <category name="api">
+                    <icon>fa fa-cogs</icon>
+                    <title>
+                        <locale group="quiqqer/payment-amazon" var="settings.category.api.title"/>
+                    </title>
+                    <settings title="api" name="api">
+                        <title>
+                            <locale group="quiqqer/payment-amazon" var="settings.api.title"/>
+                        </title>
+
+                        <input conf="api.merchant_id" type="text">
+                            <text>
+                                <locale group="quiqqer/payment-amazon" var="settings.api.merchant_id.title"/>
+                            </text>
+                        </input>
+
+                        <input conf="api.access_key" type="text">
+                            <text>
+                                <locale group="quiqqer/payment-amazon" var="settings.api.access_key.title"/>
+                            </text>
+                        </input>
+
+                        <input conf="api.secret_key" type="text">
+                            <text>
+                                <locale group="quiqqer/payment-amazon" var="settings.api.secret_key.title"/>
+                            </text>
+                        </input>
+
+                        <input conf="api.client_id" type="text">
+                            <text>
+                                <locale group="quiqqer/payment-amazon" var="settings.api.client_id.title"/>
+                            </text>
+                        </input>
+
+                        <select conf="api.region">
+                            <text>
+                                <locale group="quiqqer/payment-amazon" var="settings.api.region.title"/>
+                            </text>
+                            <description>
+                                <locale group="quiqqer/payment-amazon" var="settings.api.region.description"/>
+                            </description>
+                            <option value="de">
+                                <locale group="quiqqer/payment-amazon" var="settings.api.region.options.de"/>
+                            </option>
+                            <option value="us">
+                                <locale group="quiqqer/payment-amazon" var="settings.api.region.options.us"/>
+                            </option>
+                            <option value="jp">
+                                <locale group="quiqqer/payment-amazon" var="settings.api.region.options.jp"/>
+                            </option>
+                        </select>
+
+                        <input conf="api.sandbox" type="checkbox">
+                            <text>
+                                <locale group="quiqqer/payment-amazon" var="settings.api.sandbox.title"/>
+                            </text>
+                            <description>
+                                <locale group="quiqqer/payment-amazon" var="settings.api.sandbox.description"/>
+                            </description>
+                        </input>
+
+                    </settings>
+                </category>
+
+            </categories>
+        </window>
+
+    </settings>
+</quiqqer>

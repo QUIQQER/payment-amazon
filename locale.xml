@@ -1,9 +1,128 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <locales>
-  <groups name="quiqqer/payment-amazon" datatype="php,js">
-    <locale name="package.title">
-      <de><![CDATA[Amazon Pay für den QUIQQER ERP stack]]></de>
-      <en><![CDATA[Amazon Pay for QUIQQER ERP stack]]></en>
-    </locale>
-  <locale name="package.description"><de><![CDATA[Bietet die Möglichkeit, Bestellungen mit Amazon Pay zu bezahlen]]></de><en><![CDATA[Offerd the option to pay orders via Amazon Pay]]></en></locale></groups>
+    <groups name="quiqqer/payment-amazon" datatype="php,js">
+
+        <!-- Package -->
+        <locale name="package.title">
+            <de><![CDATA[Amazon Pay für den QUIQQER ERP stack]]></de>
+            <en><![CDATA[Amazon Pay for QUIQQER ERP stack]]></en>
+        </locale>
+        <locale name="package.description">
+            <de><![CDATA[Bietet die Möglichkeit, Bestellungen mit Amazon Pay zu bezahlen]]></de>
+            <en><![CDATA[Offerd the option to pay orders via Amazon Pay]]></en>
+        </locale>
+
+        <!-- Class: Payment -->
+        <locale name="payment.title">
+            <de><![CDATA[Amazon Pay]]></de>
+            <en><![CDATA[Amazon Pay]]></en>
+        </locale>
+        <locale name="payment.description">
+            <de><![CDATA[Komfortable Bezahlung mit ihrem Amazon-Konto.]]></de>
+            <en><![CDATA[Comfortable payment with your Amazon account.]]></en>
+        </locale>
+        <locale name="payment.step.title">
+            <de><![CDATA[Bezahlung mit Amazon]]></de>
+            <en><![CDATA[Payment with Amazon]]></en>
+        </locale>
+        <locale name="payment.error_msg.general_error">
+            <de><![CDATA[Beim Bezahlungsvorgang mit Amazon Pay ist ein Fehler aufgetreten. Die Zahlung konnte nicht durchgeführt werden. Ihre ausgewählte Zahlungsart wurde nicht belastet. Bitte wiederholen Sie den Vorgang oder wenden Sie sich an einen Administrator.]]></de>
+            <en><![CDATA[An error occurred while paying with Amazon Pay. The payment could not be processed. Your selected payment method has not been charged. Please try again or contact an administrator.]]></en>
+        </locale>
+        <locale name="payment.error_msg.InvalidPaymentMethod">
+            <de><![CDATA[Die Zahlung mit Amazon Pay konnte nicht durchgeführt werden, da die von Ihnen gewählte Zahlungsmethode von Amazon abgelehnt wurde. Bitte wiederholen Sie den Vorgang und wählen Sie eine andere Zahlungsmethode bei Amazon.]]></de>
+            <en><![CDATA[Payment with Amazon Pay could not be made because your chosen payment method was disapproved by Amazon. Please try again and choose another payment method on Amazon.]]></en>
+        </locale>
+        <locale name="payment.error_msg.AmazonRejected">
+            <de><![CDATA[Die Zahlung mit Amazon Pay konnte nicht durchgeführt werden, da die von Ihnen gewählte Zahlungsmethode von Amazon abgelehnt wurde. Bitte wiederholen Sie den Vorgang und wählen Sie eine andere Zahlungsmethode bei Amazon.]]></de>
+            <en><![CDATA[Payment with Amazon Pay could not be made because your chosen payment method was disapproved by Amazon. Please try again and choose another payment method on Amazon.]]></en>
+        </locale>
+        <locale name="payment.error_msg.TransactionTimedOut">
+            <de><![CDATA[Die Zahlung mit Amazon Pay konnte nicht durchgeführt werden, da der Zahlungsvorgang zu lange gebraucht hat. Bitte wiederholen Sie den Vorgang.]]></de>
+            <en><![CDATA[Payment with Amazon Pay could not be made because the payment process took too long. Please repeat the process.]]></en>
+        </locale>
+
+        <!-- Settings -->
+        <locale name="settings.menu.title">
+            <de><![CDATA[Amazon Pay]]></de>
+            <en><![CDATA[Amazon Pay]]></en>
+        </locale>
+        <locale name="settings.category.api.title">
+            <de><![CDATA[API-Einstellungen]]></de>
+            <en><![CDATA[API settings]]></en>
+        </locale>
+        <locale name="settings.api.title">
+            <de><![CDATA[API-Einstellungen]]></de>
+            <en><![CDATA[API settings]]></en>
+        </locale>
+        <locale name="settings.api.merchant_id.title">
+            <de><![CDATA[Merchant ID (Verkäufer ID)]]></de>
+            <en><![CDATA[Merchant ID (Seller ID)]]></en>
+        </locale>
+        <locale name="settings.api.access_key.title">
+            <de><![CDATA[Access Key]]></de>
+            <en><![CDATA[Access Key]]></en>
+        </locale>
+        <locale name="settings.api.secret_key.title">
+            <de><![CDATA[Secret Key]]></de>
+            <en><![CDATA[Secret Key]]></en>
+        </locale>
+        <locale name="settings.api.client_id.title">
+            <de><![CDATA[Client ID]]></de>
+            <en><![CDATA[Client ID]]></en>
+        </locale>
+        <locale name="settings.api.region.title">
+            <de><![CDATA[Amazon-Region]]></de>
+            <en><![CDATA[Amazon region]]></en>
+        </locale>
+        <locale name="settings.api.region.description">
+            <de><![CDATA[Legen Sie hier die Region fest, in der sich Ihr Amazon Verkäufer-Konto befindet.]]></de>
+            <en><![CDATA[Select the region of your Amazon Merchant/Seller account.]]></en>
+        </locale>
+        <locale name="settings.api.region.options.de">
+            <de><![CDATA[Europäische Union]]></de>
+            <en><![CDATA[European Union]]></en>
+        </locale>
+        <locale name="settings.api.region.options.us">
+            <de><![CDATA[USA]]></de>
+            <en><![CDATA[USA]]></en>
+        </locale>
+        <locale name="settings.api.region.options.jp">
+            <de><![CDATA[Japan]]></de>
+            <en><![CDATA[Japan]]></en>
+        </locale>
+        <locale name="settings.api.sandbox.title">
+            <de><![CDATA[Sanbox-Modus]]></de>
+            <en><![CDATA[Sandbox mode]]></en>
+        </locale>
+        <locale name="settings.api.sandbox.description">
+            <de><![CDATA[Sandbox-Modus aktivieren (Zahlungen werden nicht tatsächlich durchgeführt sondern nur über eine Testumgebung; nur aktivieren, wenn der Zahlungsprozess mit Amazon Pay getestet werden soll!)]]></de>
+            <en><![CDATA[Enable sandbox mode (payments are not actually made but only through a test environment, only enable to test the payment process with Amazon Pay!)]]></en>
+        </locale>
+
+    </groups>
+
+    <groups name="quiqqer/payment-amazon" datatype="php">
+
+        <!-- PaymentDisplay -->
+        <locale name="PaymentDisplay.no_javascript">
+            <de><![CDATA[In Ihrem Browser ist JavaScript deaktiviert. Um Zahlungen mit Amazon Pay durchzuführen, aktivieren Sie bitte JavaScript.]]></de>
+            <en><![CDATA[JavaScript is deactivated in your browser. To make payments using Amazon Pay, please enable JavaScript.]]></en>
+        </locale>
+
+    </groups>
+
+    <groups name="quiqqer/payment-amazon" datatype="js">
+
+        <!-- Control: PaymentDisplay -->
+        <locale name="controls.PaymentDisplay.processing_error">
+            <de><![CDATA[Beim Bezahlungsvorgang mit Amazon Pay ist ein Fehler aufgetreten. Die Zahlung konnte nicht durchgeführt werden. Ihre ausgewählte Zahlungsart wurde nicht belastet. Bitte wiederholen Sie den Vorgang order wenden Sie sich an einen Administrator.]]></de>
+            <en><![CDATA[An error occurred while paying with Amazon Pay. The payment could not be processed. Your selected payment method has not been charged. Please try again or contact an administrator.]]></en>
+        </locale>
+        <locale name="controls.PaymentDisplay.btn_pay.text">
+            <de><![CDATA[Jetzt bezahlen]]></de>
+            <en><![CDATA[Pay now]]></en>
+        </locale>
+
+    </groups>
 </locales>
