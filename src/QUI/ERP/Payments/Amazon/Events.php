@@ -39,7 +39,12 @@ class Events
         $orderIdentifier = false;
 
         if (!empty($ipnData['AuthorizationDetails']['AuthorizationReferenceId'])) {
-            $orderIdentifier = $ipnData['AuthorizationDetails']['AuthorizationReferenceId'];
+            // do not work with asynchronous Authorize requests
+            return;
+        }
+
+        if (!empty($ipnData['CaptureDetails']['CaptureReferenceId'])) {
+            $orderIdentifier = $ipnData['CaptureDetails']['CaptureReferenceId'];
         }
 
         if (!$orderIdentifier) {
@@ -53,9 +58,10 @@ class Events
 
         // parse Order ID from AuthorizationReferenceId
         $orderIdentifier = explode('_', $orderIdentifier);
+        $Orders          = OrderHandler::getInstance();
 
         try {
-            $Order = OrderHandler::getInstance()->get($orderIdentifier[1]);
+            $Order = $Orders->getOrderById($orderIdentifier[1]);
         } catch (\Exception $Exception) {
             QUI\System\Log::addError(
                 'Amazon Pay :: Could not load Order from IPN request. Order ID: ' . $orderIdentifier[1]
@@ -66,6 +72,8 @@ class Events
 
         $Gateway->setOrder($Order);
         $Gateway->enableGatewayPayment();
+
+        \QUI\System\Log::writeRecursive("EXECUTE GATEWAY PAYMENT!");
 
         // now the Gateway can call executeGatewayPayment() of the
         // payment method that is assigned to the Order
