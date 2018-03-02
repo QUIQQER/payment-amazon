@@ -26,7 +26,7 @@
             <en><![CDATA[Payment with Amazon]]></en>
         </locale>
         <locale name="payment.error_msg.general_error">
-            <de><![CDATA[Beim Bezahlungsvorgang mit Amazon Pay ist ein Fehler aufgetreten. Die Zahlung konnte nicht durchgeführt werden. Ihre ausgewählte Zahlungsart wurde nicht belastet. Bitte wiederholen Sie den Vorgang oder wenden Sie sich an einen Administrator.]]></de>
+            <de><![CDATA[Beim Bezahlungsvorgang mit Amazon Pay ist ein Fehler aufgetreten. Die Zahlung konnte nicht durchgeführt werden. Ihre ausgewählte Zahlungsweise wurde nicht belastet. Bitte wiederholen Sie den Vorgang oder wenden Sie sich an einen Administrator.]]></de>
             <en><![CDATA[An error occurred while paying with Amazon Pay. The payment could not be processed. Your selected payment method has not been charged. Please try again or contact an administrator.]]></en>
         </locale>
         <locale name="payment.error_msg.InvalidPaymentMethod">
@@ -40,6 +40,14 @@
         <locale name="payment.error_msg.TransactionTimedOut">
             <de><![CDATA[Die Zahlung mit Amazon Pay konnte nicht durchgeführt werden, da der Zahlungsvorgang zu lange gebraucht hat. Bitte wiederholen Sie den Vorgang.]]></de>
             <en><![CDATA[Payment with Amazon Pay could not be made because the payment process took too long. Please repeat the process.]]></en>
+        </locale>
+        <locale name="payment.error_msg.MaxCapturesProcessed">
+            <de><![CDATA[Die Zahlung mit Amazon Pay konnte nicht durchgeführt werden, da der Zahlungsvorgang bereits abgeschlossen ist.]]></de>
+            <en><![CDATA[Payment with Amazon Pay could not be made because the payment process is already completed.]]></en>
+        </locale>
+        <locale name="exception.Payment.capture.not_authorized">
+            <de><![CDATA[Der Zahlungsfluss von Bestellung #[orderHash] kann nicht initialisiert werden, da er noch nicht durch Amazon autorisiert ist.]]></de>
+            <en><![CDATA[The payment capture of order # [orderHash] can not be initialized because it is not yet authorized by Amazon.]]></en>
         </locale>
 
         <!-- Settings -->
@@ -99,6 +107,34 @@
             <de><![CDATA[Sandbox-Modus aktivieren (Zahlungen werden nicht tatsächlich durchgeführt sondern nur über eine Testumgebung; nur aktivieren, wenn der Zahlungsprozess mit Amazon Pay getestet werden soll!)]]></de>
             <en><![CDATA[Enable sandbox mode (payments are not actually made but only through a test environment, only enable to test the payment process with Amazon Pay!)]]></en>
         </locale>
+        <locale name="settings.category.payment.title">
+            <de><![CDATA[Zahlungsprozess]]></de>
+            <en><![CDATA[Payment process]]></en>
+        </locale>
+        <locale name="settings.payment.title">
+            <de><![CDATA[Zahlungsprozess]]></de>
+            <en><![CDATA[Payment process]]></en>
+        </locale>
+        <locale name="settings.payment.article_type.title">
+            <de><![CDATA[Zeitpunkt der Zahlungsdurchführung]]></de>
+            <en><![CDATA[Time of payment execution]]></en>
+        </locale>
+        <locale name="settings.payment.article_type.description" html="true">
+            <de><![CDATA[Diese Option bestimmt, zu welchem Zeitpunkt Amazon angewiesen wird, die Geldbewegung vom Kunden zu Amazon zu veranlassen. Sobald dies abgeschlossen ist, kann Amazon den Betrag der Bestellung auf ihr Amazon-Verkäuferkonto übertragen. Bei <b>physischen Gütern</b> sollte dies erst zum Zeitpunkt des <b>Versands der Ware</b> geschehen. Bei <b>digitalen Gütern</b>, die umgehend geliefert werden (wie z.B. durch Download), kann der Zeitpunkt auch <b>unmittelbar</b> bei Autorisierung der Zahlung durch Amazon erfolgen.<br/><br/>Bei der Option <b>Automatisch ermitteln</b> wird versucht, dieses Verhalten anhand des Typs der Ware automatisch zu ermitteln. Bei <b>gemischten Bestellungen</b> oder wenn der Warentyp <b>nicht ermittelt werden kann</b> wird die Zahlung sofort veranlasst.]]></de>
+            <en><![CDATA[This option determines when Amazon is instructed to initiate money movement from the customer to Amazon. Once completed, Amazon is able to transfer the order amount to your Amazon Seller Account. For <b>physical goods</b> this should be done at the time of <b>shipment of the goods</b>. For <b>digital goods</b> that are delivered instantly (e.g. via download), the time may also be <b>immediate</b> upon Amazon's authorization of payment.<br/><br/>The <b>Detect automatically</b> option attempts to automatically detect this behavior based on the type of products in the order.For <b>mixed orders</b> or if the product type <b>can not be determined</b> the payment will be initiated immediately.]]></en>
+        </locale>
+        <locale name="settings.payment.article_type.options.mixed">
+            <de><![CDATA[Automatisch ermitteln]]></de>
+            <en><![CDATA[Detect automatically]]></en>
+        </locale>
+        <locale name="settings.payment.article_type.options.physical">
+            <de><![CDATA[Zahlung bei erfolgreichem Versand durchführen]]></de>
+            <en><![CDATA[Execute payment on successful shipping]]></en>
+        </locale>
+        <locale name="settings.payment.article_type.options.digital">
+            <de><![CDATA[Zahlung sofort durchführen]]></de>
+            <en><![CDATA[Execute payment instantly]]></en>
+        </locale>
 
     </groups>
 
@@ -109,6 +145,10 @@
             <de><![CDATA[In Ihrem Browser ist JavaScript deaktiviert. Um Zahlungen mit Amazon Pay durchzuführen, aktivieren Sie bitte JavaScript.]]></de>
             <en><![CDATA[JavaScript is deactivated in your browser. To make payments using Amazon Pay, please enable JavaScript.]]></en>
         </locale>
+        <locale name="PaymentDisplay.header.title">
+            <de><![CDATA[Bezahlung mit Amazon]]></de>
+            <en><![CDATA[Payment with Amazon]]></en>
+        </locale>
 
     </groups>
 
@@ -116,12 +156,28 @@
 
         <!-- Control: PaymentDisplay -->
         <locale name="controls.PaymentDisplay.processing_error">
-            <de><![CDATA[Beim Bezahlungsvorgang mit Amazon Pay ist ein Fehler aufgetreten. Die Zahlung konnte nicht durchgeführt werden. Ihre ausgewählte Zahlungsart wurde nicht belastet. Bitte wiederholen Sie den Vorgang order wenden Sie sich an einen Administrator.]]></de>
-            <en><![CDATA[An error occurred while paying with Amazon Pay. The payment could not be processed. Your selected payment method has not been charged. Please try again or contact an administrator.]]></en>
+            <de><![CDATA[Beim Bezahlungsvorgang mit Amazon Pay ist ein Fehler aufgetreten. Die Zahlung konnte nicht durchgeführt werden. Ihre ausgewählte Zahlungsweise wurde nicht belastet. Bitte wiederholen Sie den Vorgang order wenden Sie sich an den Händler.]]></de>
+            <en><![CDATA[An error occurred while paying with Amazon Pay. The payment could not be processed. Your selected payment method has not been charged. Please try again or contact the merchant.]]></en>
         </locale>
         <locale name="controls.PaymentDisplay.btn_pay.text">
             <de><![CDATA[Jetzt bezahlen]]></de>
             <en><![CDATA[Pay now]]></en>
+        </locale>
+        <locale name="controls.PaymentDisplay.login_error">
+            <de><![CDATA[Bei der Authentifizierung mit Amazon ist ein Fehler aufgetreten. Bitte versuchen Sie erneut, sich mit Ihrem Amazon-Konto anzumelden oder wählen Sie eine andere Zahlungsweise.]]></de>
+            <en><![CDATA[There was an error authenticating with Amazon. Please try again to sign in with your Amazon account or choose another form of payment.]]></en>
+        </locale>
+        <locale name="controls.PaymentDisplay.configuration_error">
+            <de><![CDATA[Die Zahlung mit Amazon Pay kann zur Zeit leider nicht durchgeführt werden. Bitte wählen Sie eine andere Zahlungsweise.]]></de>
+            <en><![CDATA[Unfortunately, Amazon Pay can not be used at the moment. Please choose a different method of payment.]]></en>
+        </locale>
+        <locale name="controls.PaymentDisplay.info">
+            <de><![CDATA[Bitte klicken Sie auf die "amazon pay"-Schaltfläche und loggen sich mit Ihrem Amazon-Konto ein, um mit dem Zahlungsprozess fortzufahren.]]></de>
+            <en><![CDATA[Please click the "amazon pay" button and sign in with your Amazon account to continue with the payment process.]]></en>
+        </locale>
+        <locale name="controls.PaymentDisplay.wallet_info">
+            <de><![CDATA[Bitte wählen Sie die Zahlungsweise aus, über die Amazon den Betrag der Bestellung einzieht.]]></de>
+            <en><![CDATA[Please select the method of payment through which Amazon collects the order amount.]]></en>
         </locale>
 
     </groups>

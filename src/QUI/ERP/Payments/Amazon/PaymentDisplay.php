@@ -62,6 +62,19 @@ class PaymentDisplay extends QUI\Control
 
         $this->setJavaScriptControlOption('orderhash', $Order->getHash());
 
+        // Check if an Amazon Pay authorization already exists
+        $orderReferenceId = $Order->getPaymentDataEntry(Payment::ATTR_AMAZON_ORDER_REFERENCE_ID);
+
+        if ($orderReferenceId && $Payment instanceof Payment) {
+            /** @var Payment $Payment */
+            try {
+                $Payment->authorizePayment($orderReferenceId, $Order);
+                $this->setJavaScriptControlOption('authorization', true);
+            } catch (AmazonPayException $Exception) {
+                // nothing, Authorization does not exist
+            }
+        }
+
         return $Engine->fetch(dirname(__FILE__) . '/PaymentDisplay.html');
     }
 }

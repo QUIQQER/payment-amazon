@@ -27,6 +27,13 @@
                 </conf>
             </section>
 
+            <section name="payment">
+                <conf name="article_type">
+                    <type><![CDATA[string]]></type>
+                    <defaultvalue><![CDATA[mixed]]></defaultvalue>
+                </conf>
+            </section>
+
         </config>
 
         <window>
@@ -99,6 +106,37 @@
                                 <locale group="quiqqer/payment-amazon" var="settings.api.sandbox.description"/>
                             </description>
                         </input>
+
+                    </settings>
+                </category>
+
+                <category name="payment">
+                    <icon>fa fa-credit-card</icon>
+                    <title>
+                        <locale group="quiqqer/payment-amazon" var="settings.category.payment.title"/>
+                    </title>
+                    <settings title="payment" name="payment">
+                        <title>
+                            <locale group="quiqqer/payment-amazon" var="settings.payment.title"/>
+                        </title>
+
+                        <select conf="payment.article_type">
+                            <text>
+                                <locale group="quiqqer/payment-amazon" var="settings.payment.article_type.title"/>
+                            </text>
+                            <description>
+                                <locale group="quiqqer/payment-amazon" var="settings.payment.article_type.description"/>
+                            </description>
+                            <option value="mixed">
+                                <locale group="quiqqer/payment-amazon" var="settings.payment.article_type.options.mixed"/>
+                            </option>
+                            <option value="physical">
+                                <locale group="quiqqer/payment-amazon" var="settings.payment.article_type.options.physical"/>
+                            </option>
+                            <option value="digital">
+                                <locale group="quiqqer/payment-amazon" var="settings.payment.article_type.options.digital"/>
+                            </option>
+                        </select>
 
                     </settings>
                 </category>

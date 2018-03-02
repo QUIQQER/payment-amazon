@@ -43,4 +43,22 @@ class Provider extends AbstractPaymentProvider
 
         return $Conf->get('api', $setting);
     }
+
+    /**
+     * Get Payment setting
+     *
+     * @param string $setting - Setting name
+     * @return string|number|false
+     */
+    public static function getPaymentSetting($setting)
+    {
+        try {
+            $Conf = QUI::getPackage('quiqqer/payment-amazon')->getConfig();
+        } catch (\Exception $Exception) {
+            QUI\System\Log::writeException($Exception);
+            return false;
+        }
+
+        return $Conf->get('payment', $setting);
+    }
 }
