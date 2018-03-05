@@ -31,15 +31,23 @@
         </locale>
         <locale name="payment.error_msg.InvalidPaymentMethod">
             <de><![CDATA[Die Zahlung mit Amazon Pay konnte nicht durchgeführt werden, da die von Ihnen gewählte Zahlungsmethode von Amazon abgelehnt wurde. Bitte wiederholen Sie den Vorgang und wählen Sie eine andere Zahlungsmethode bei Amazon.]]></de>
-            <en><![CDATA[Payment with Amazon Pay could not be made because your chosen payment method was disapproved by Amazon. Please try again and choose another payment method on Amazon.]]></en>
+            <en><![CDATA[Payment with Amazon Pay could not be made because your chosen payment method was disapproved by Amazon. Please try again or choose another payment method on Amazon.]]></en>
+        </locale>
+        <locale name="payment.error_msg.PaymentMethodNotAllowed">
+            <de><![CDATA[Die Zahlung mit Amazon Pay konnte nicht durchgeführt werden, da die von Ihnen gewählte Zahlungsmethode von Amazon abgelehnt wurde. Bitte wiederholen Sie den Vorgang und wählen Sie eine andere Zahlungsmethode bei Amazon.]]></de>
+            <en><![CDATA[Payment with Amazon Pay could not be made because your chosen payment method was disapproved by Amazon. Please try again or choose another payment method on Amazon.]]></en>
         </locale>
         <locale name="payment.error_msg.AmazonRejected">
-            <de><![CDATA[Die Zahlung mit Amazon Pay konnte nicht durchgeführt werden, da die von Ihnen gewählte Zahlungsmethode von Amazon abgelehnt wurde. Bitte wiederholen Sie den Vorgang und wählen Sie eine andere Zahlungsmethode bei Amazon.]]></de>
-            <en><![CDATA[Payment with Amazon Pay could not be made because your chosen payment method was disapproved by Amazon. Please try again and choose another payment method on Amazon.]]></en>
+            <de><![CDATA[Die Zahlung mit Amazon Pay konnte nicht durchgeführt werden, da der Zahlungsvorgang von Amazon abgelehnt wurde. Bitte wiederholen Sie den Vorgang und wählen Sie eine andere Zahlungsmethode bei Amazon.]]></de>
+            <en><![CDATA[Payment with Amazon Pay could not be made because the payment process was declined by Amazon. Please try again or choose another payment method on Amazon.]]></en>
+        </locale>
+        <locale name="payment.error_msg.ProcessingFailure">
+            <de><![CDATA[Die Zahlung mit Amazon Pay konnte nicht durchgeführt werden, da der Zahlungsvorgang von Amazon abgelehnt wurde. Bitte wiederholen Sie den Vorgang und wählen Sie eine andere Zahlungsmethode bei Amazon.]]></de>
+            <en><![CDATA[Payment with Amazon Pay could not be made because the payment process was declined by Amazon. Please try again or choose another payment method on Amazon.]]></en>
         </locale>
         <locale name="payment.error_msg.TransactionTimedOut">
-            <de><![CDATA[Die Zahlung mit Amazon Pay konnte nicht durchgeführt werden, da der Zahlungsvorgang zu lange gebraucht hat. Bitte wiederholen Sie den Vorgang.]]></de>
-            <en><![CDATA[Payment with Amazon Pay could not be made because the payment process took too long. Please repeat the process.]]></en>
+            <de><![CDATA[Die Zahlung mit Amazon Pay konnte nicht durchgeführt werden, da die Autorisierung des Zahlungsvorgangs zu lange gebraucht hat. Bitte wiederholen Sie den Vorgang oder wählen Sie eine andere Zahlungsweise.]]></de>
+            <en><![CDATA[Payment with Amazon Pay could not be made because the authorization of the payment process took too long. Please repeat the process or choose a different payment method.]]></en>
         </locale>
         <locale name="payment.error_msg.MaxCapturesProcessed">
             <de><![CDATA[Die Zahlung mit Amazon Pay konnte nicht durchgeführt werden, da der Zahlungsvorgang bereits abgeschlossen ist.]]></de>
@@ -48,6 +56,10 @@
         <locale name="exception.Payment.capture.not_authorized">
             <de><![CDATA[Der Zahlungsfluss von Bestellung #[orderHash] kann nicht initialisiert werden, da er noch nicht durch Amazon autorisiert ist.]]></de>
             <en><![CDATA[The payment capture of order # [orderHash] can not be initialized because it is not yet authorized by Amazon.]]></en>
+        </locale>
+        <locale name="payment.error_msg.fatal_error">
+            <de><![CDATA[Beim Bezahlungsvorgang mit Amazon Pay ist ein Fehler aufgetreten. Die Zahlung konnte nicht durchgeführt werden. Ihre ausgewählte Zahlungsweise wurde nicht belastet. Bitte wählen Sie eine andere Zahlungsweise.]]></de>
+            <en><![CDATA[An error occurred while paying with Amazon Pay. The payment could not be processed. Your selected payment method has not been charged. Please choose a different payment method.]]></en>
         </locale>
 
         <!-- Settings -->
@@ -178,6 +190,10 @@
         <locale name="controls.PaymentDisplay.wallet_info">
             <de><![CDATA[Bitte wählen Sie die Zahlungsweise aus, über die Amazon den Betrag der Bestellung einzieht.]]></de>
             <en><![CDATA[Please select the method of payment through which Amazon collects the order amount.]]></en>
+        </locale>
+        <locale name="controls.PaymentDisplay.authorize_payment">
+            <de><![CDATA[Autorisiere Zahlung bei Amazon]]></de>
+            <en><![CDATA[Authorize payment with Amazon]]></en>
         </locale>
 
     </groups>
