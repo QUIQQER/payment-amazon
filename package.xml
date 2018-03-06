@@ -21,5 +21,9 @@
         </preview>
         -->
 
+        <provider>
+            <payment src="\QUI\ERP\Payments\Amazon\Provider"/>
+        </provider>
+
     </package>
 </quiqqer>

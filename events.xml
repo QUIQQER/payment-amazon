@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<events>
+    <event on="onPaymentsGatewayReadRequest" fire="\QUI\ERP\Payments\Amazon\Events::onPaymentsGatewayReadRequest"/>
+    <event on="onQuiqqerOrderSuccessful" fire="\QUI\ERP\Payments\Amazon\Events::onQuiqqerOrderSuccessful"/>
+</events>
