@@ -61,6 +61,10 @@
             <de><![CDATA[Bezahlung der Bestellung #[oderId]]]></de>
             <en><![CDATA[Payment of order #[orderId]]]></en>
         </locale>
+        <locale name="controls.PaymentDisplay.configuration_error">
+            <de><![CDATA[Die Zahlung mit Amazon Pay kann zur Zeit leider nicht durchgeführt werden. Bitte wählen Sie eine andere Zahlungsweise.]]></de>
+            <en><![CDATA[Unfortunately, Amazon Pay can not be used at the moment. Please choose a different method of payment.]]></en>
+        </locale>
 
         <!-- Settings -->
         <locale name="settings.menu.title">
@@ -222,10 +226,6 @@
         <locale name="controls.PaymentDisplay.login_error">
             <de><![CDATA[Bei der Authentifizierung mit Amazon ist ein Fehler aufgetreten. Bitte versuchen Sie erneut, sich mit Ihrem Amazon-Konto anzumelden oder wählen Sie eine andere Zahlungsweise.]]></de>
             <en><![CDATA[There was an error authenticating with Amazon. Please try again to sign in with your Amazon account or choose another form of payment.]]></en>
-        </locale>
-        <locale name="controls.PaymentDisplay.configuration_error">
-            <de><![CDATA[Die Zahlung mit Amazon Pay kann zur Zeit leider nicht durchgeführt werden. Bitte wählen Sie eine andere Zahlungsweise.]]></de>
-            <en><![CDATA[Unfortunately, Amazon Pay can not be used at the moment. Please choose a different method of payment.]]></en>
         </locale>
         <locale name="controls.PaymentDisplay.info">
             <de><![CDATA[Bitte klicken Sie auf die "amazon pay"-Schaltfläche und loggen sich mit Ihrem Amazon-Konto ein, um mit dem Zahlungsprozess fortzufahren.]]></de>

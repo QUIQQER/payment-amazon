@@ -62,6 +62,10 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
             var self = this;
             var Elm  = this.getElm();
 
+            if (!Elm.getElement('.quiqqer-payment-amazon-content')) {
+                return;
+            }
+
             this.$MsgElm     = Elm.getElement('.quiqqer-payment-amazon-message');
             this.$AuthBtnElm = Elm.getElement('#quiqqer-payment-amazon-btn');
             this.$WalletElm  = Elm.getElement('#quiqqer-payment-amazon-wallet');

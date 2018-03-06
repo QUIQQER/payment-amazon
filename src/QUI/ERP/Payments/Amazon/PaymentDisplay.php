@@ -50,7 +50,8 @@ class PaymentDisplay extends QUI\Control
         $Engine->assign(array(
             'btn_size'      => Provider::getWidgetsSetting('btn_size'),
             'btn_color'     => Provider::getWidgetsSetting('btn_color'),
-            'display_price' => $PriceCalculation->getSum()->formatted()
+            'display_price' => $PriceCalculation->getSum()->formatted(),
+            'apiSetUp'      => $this->isApiSetUp()
         ));
 
         $this->setJavaScriptControlOption('orderhash', $Order->getHash());
@@ -59,5 +60,32 @@ class PaymentDisplay extends QUI\Control
         $this->setJavaScriptControlOption('successful', $Order->isSuccessful());
 
         return $Engine->fetch(dirname(__FILE__) . '/PaymentDisplay.html');
+    }
+
+    /**
+     * Check if the Amazon Pay API settings are correct
+     *
+     * @return bool
+     * @throws QUI\Exception
+     */
+    protected function isApiSetUp()
+    {
+        $Conf        = QUI::getPackage('quiqqer/payment-amazon')->getConfig();
+        $apiSettings = $Conf->getSection('api');
+
+        foreach ($apiSettings as $k => $v) {
+            if (empty($v)) {
+                QUI\System\Log::addError(
+                    'Your Amazon Pay API credentials seem to be (partially) missing.'
+                    . ' Amazon Pay CAN NOT be used at the moment. Please enter all your'
+                    . ' API credentials. See https://dev.quiqqer.com/quiqqer/payment-amazon/wikis/api-configuration'
+                    . ' for further instructions.'
+                );
+
+                return false;
+            }
+        }
+
+        return true;
     }
 }
