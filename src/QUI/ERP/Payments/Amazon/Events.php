@@ -48,7 +48,7 @@ class Events
         }
 
         if (!$orderIdentifier) {
-            QUI\System\Log::addError(
+            QUI\System\Log::addDebug(
                 'Amazon Pay :: Could not parse AuthorizationReferenceId or CaptureReferenceId from IPN request.'
                 . ' IPN request data: ' . $IpnHandler->toJson()
             );
@@ -64,7 +64,7 @@ class Events
             $Order = $Orders->getOrderById($orderIdentifier[1]);
         } catch (\Exception $Exception) {
             QUI\System\Log::addError(
-                'Amazon Pay :: Could not load Order from IPN request. Order ID: ' . $orderIdentifier[1]
+                'Amazon Pay :: Could not load Order from IPN request. Parsed Order ID: ' . $orderIdentifier[1]
             );
 
             return;
@@ -72,8 +72,6 @@ class Events
 
         $Gateway->setOrder($Order);
         $Gateway->enableGatewayPayment();
-
-        \QUI\System\Log::writeRecursive("EXECUTE GATEWAY PAYMENT!");
 
         // now the Gateway can call executeGatewayPayment() of the
         // payment method that is assigned to the Order
@@ -116,9 +114,9 @@ class Events
             $Payment = new Payment();
             $Payment->capturePayment($Order);
         } catch (AmazonPayException $Exception) {
-            \QUI\System\Log::writeRecursive($Exception->getMessage());
+            // nothing, capturePayment() marks Order as problematic
         } catch (\Exception $Exception) {
-            \QUI\System\Log::writeRecursive($Exception->getMessage());
+            QUI\System\Log::writeException($Exception);
         }
     }
 }

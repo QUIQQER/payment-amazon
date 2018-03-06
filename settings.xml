@@ -34,6 +34,17 @@
                 </conf>
             </section>
 
+            <section name="widgets">
+                <conf name="btn_color">
+                    <type><![CDATA[string]]></type>
+                    <defaultvalue><![CDATA[Gold]]></defaultvalue>
+                </conf>
+                <conf name="btn_size">
+                    <type><![CDATA[string]]></type>
+                    <defaultvalue><![CDATA[x-large]]></defaultvalue>
+                </conf>
+            </section>
+
         </config>
 
         <window>
@@ -135,6 +146,46 @@
                             </option>
                             <option value="digital">
                                 <locale group="quiqqer/payment-amazon" var="settings.payment.article_type.options.digital"/>
+                            </option>
+                        </select>
+
+                    </settings>
+
+                    <settings title="widgets" name="widgets">
+                        <title>
+                            <locale group="quiqqer/payment-amazon" var="settings.widgets.title"/>
+                        </title>
+
+                        <select conf="widgets.btn_color">
+                            <text>
+                                <locale group="quiqqer/payment-amazon" var="settings.widgets.btn_color.title"/>
+                            </text>
+                            <option value="Gold">
+                                <locale group="quiqqer/payment-amazon" var="settings.widgets.btn_color.options.Gold"/>
+                            </option>
+                            <option value="LightGray">
+                                <locale group="quiqqer/payment-amazon" var="settings.widgets.btn_color.options.LightGray"/>
+                            </option>
+                            <option value="DarkGray">
+                                <locale group="quiqqer/payment-amazon" var="settings.widgets.btn_color.options.DarkGray"/>
+                            </option>
+                        </select>
+
+                        <select conf="widgets.btn_size">
+                            <text>
+                                <locale group="quiqqer/payment-amazon" var="settings.widgets.btn_size.title"/>
+                            </text>
+                            <option value="small">
+                                <locale group="quiqqer/payment-amazon" var="settings.widgets.btn_size.options.small"/>
+                            </option>
+                            <option value="medium">
+                                <locale group="quiqqer/payment-amazon" var="settings.widgets.btn_size.options.medium"/>
+                            </option>
+                            <option value="large">
+                                <locale group="quiqqer/payment-amazon" var="settings.widgets.btn_size.options.large"/>
+                            </option>
+                            <option value="x-large">
+                                <locale group="quiqqer/payment-amazon" var="settings.widgets.btn_size.options.x_large"/>
                             </option>
                         </select>
 

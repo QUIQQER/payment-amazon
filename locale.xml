@@ -57,9 +57,9 @@
             <de><![CDATA[Der Zahlungsfluss von Bestellung #[orderHash] kann nicht initialisiert werden, da er noch nicht durch Amazon autorisiert ist.]]></de>
             <en><![CDATA[The payment capture of order # [orderHash] can not be initialized because it is not yet authorized by Amazon.]]></en>
         </locale>
-        <locale name="payment.error_msg.fatal_error">
-            <de><![CDATA[Beim Bezahlungsvorgang mit Amazon Pay ist ein Fehler aufgetreten. Die Zahlung konnte nicht durchgeführt werden. Ihre ausgewählte Zahlungsweise wurde nicht belastet. Bitte wählen Sie eine andere Zahlungsweise.]]></de>
-            <en><![CDATA[An error occurred while paying with Amazon Pay. The payment could not be processed. Your selected payment method has not been charged. Please choose a different payment method.]]></en>
+        <locale name="payment.capture.seller_capture_note">
+            <de><![CDATA[Bezahlung der Bestellung #[oderId]]]></de>
+            <en><![CDATA[Payment of order #[orderId]]]></en>
         </locale>
 
         <!-- Settings -->
@@ -147,6 +147,46 @@
             <de><![CDATA[Zahlung sofort durchführen]]></de>
             <en><![CDATA[Execute payment instantly]]></en>
         </locale>
+        <locale name="settings.widgets.title">
+            <de><![CDATA[Darstellung]]></de>
+            <en><![CDATA[Darstellung]]></en>
+        </locale>
+        <locale name="settings.widgets.btn_color.title">
+            <de><![CDATA[Farbe des "amazon pay"-Buttons]]></de>
+            <en><![CDATA[Color of "amazon pay" button]]></en>
+        </locale>
+        <locale name="settings.widgets.btn_color.options.Gold">
+            <de><![CDATA[Gold (Standard)]]></de>
+            <en><![CDATA[Gold (default)]]></en>
+        </locale>
+        <locale name="settings.widgets.btn_color.options.LightGray">
+            <de><![CDATA[Hellgrau]]></de>
+            <en><![CDATA[Light gray]]></en>
+        </locale>
+        <locale name="settings.widgets.btn_color.options.DarkGray">
+            <de><![CDATA[Dunkelgrau]]></de>
+            <en><![CDATA[Dark gray]]></en>
+        </locale>
+        <locale name="settings.widgets.btn_size.title">
+            <de><![CDATA[Größe des "amazon pay"-Buttons]]></de>
+            <en><![CDATA[Size of the "amazon pay" button]]></en>
+        </locale>
+        <locale name="settings.widgets.btn_size.options.small">
+            <de><![CDATA[Klein]]></de>
+            <en><![CDATA[Small]]></en>
+        </locale>
+        <locale name="settings.widgets.btn_size.options.medium">
+            <de><![CDATA[Mittel]]></de>
+            <en><![CDATA[Medium]]></en>
+        </locale>
+        <locale name="settings.widgets.btn_size.options.large">
+            <de><![CDATA[Groß]]></de>
+            <en><![CDATA[Large]]></en>
+        </locale>
+        <locale name="settings.widgets.btn_size.options.x_large">
+            <de><![CDATA[Extra groß (Standard)]]></de>
+            <en><![CDATA[Extra large (default)]]></en>
+        </locale>
 
     </groups>
 
@@ -171,9 +211,13 @@
             <de><![CDATA[Beim Bezahlungsvorgang mit Amazon Pay ist ein Fehler aufgetreten. Die Zahlung konnte nicht durchgeführt werden. Ihre ausgewählte Zahlungsweise wurde nicht belastet. Bitte wiederholen Sie den Vorgang order wenden Sie sich an den Händler.]]></de>
             <en><![CDATA[An error occurred while paying with Amazon Pay. The payment could not be processed. Your selected payment method has not been charged. Please try again or contact the merchant.]]></en>
         </locale>
-        <locale name="controls.PaymentDisplay.btn_pay.text">
-            <de><![CDATA[Jetzt bezahlen]]></de>
-            <en><![CDATA[Pay now]]></en>
+        <locale name="controls.PaymentDisplay.btn_pay.text" html="true">
+            <de><![CDATA[Jetzt <b>[display_price]</b> bezahlen]]></de>
+            <en><![CDATA[Pay <b>[display_price]</b> now]]></en>
+        </locale>
+        <locale name="controls.PaymentDisplay.btn_pay.title" html="true">
+            <de><![CDATA[Hier klicken, um ihre Bestellung im Wert von [display_price] mit ihrem Amazon-Konto zu bezahlen]]></de>
+            <en><![CDATA[Click here to pay your order with a value of [display_price with your Amazon account]]></en>
         </locale>
         <locale name="controls.PaymentDisplay.login_error">
             <de><![CDATA[Bei der Authentifizierung mit Amazon ist ein Fehler aufgetreten. Bitte versuchen Sie erneut, sich mit Ihrem Amazon-Konto anzumelden oder wählen Sie eine andere Zahlungsweise.]]></de>
@@ -194,6 +238,14 @@
         <locale name="controls.PaymentDisplay.authorize_payment">
             <de><![CDATA[Autorisiere Zahlung bei Amazon]]></de>
             <en><![CDATA[Authorize payment with Amazon]]></en>
+        </locale>
+        <locale name="controls.PaymentDisplay.btn_reselect_payment.text">
+            <de><![CDATA[Zahlungsweise ändern]]></de>
+            <en><![CDATA[Change payment method]]></en>
+        </locale>
+        <locale name="controls.PaymentDisplay.fatal_error">
+            <de><![CDATA[Beim Bezahlungsvorgang mit Amazon Pay ist ein Fehler aufgetreten. Die Zahlung konnte nicht durchgeführt werden. Ihre ausgewählte Zahlungsweise wurde nicht belastet. Bitte wählen Sie eine andere Zahlungsweise.]]></de>
+            <en><![CDATA[An error occurred while paying with Amazon Pay. The payment could not be processed. Your selected payment method has not been charged. Please choose a different payment method.]]></en>
         </locale>
 
     </groups>

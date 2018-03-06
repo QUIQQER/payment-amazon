@@ -33,17 +33,16 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
         ],
 
         options: {
-            sandbox      : true,
-            sellerid     : '',
-            clientid     : '',
-            orderhash    : '',
-            authorization: false
+            sandbox   : true,
+            sellerid  : '',
+            clientid  : '',
+            orderhash : '',
+            successful: false
         },
 
         initialize: function (options) {
             this.parent(options);
 
-            this.$accessToken      = false;
             this.$orderReferenceId = false;
             this.$AuthBtnElm       = null;
             this.$WalletElm        = null;
@@ -76,7 +75,7 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
             ).then(function (OrderProcess) {
                 self.$OrderProcess = OrderProcess;
 
-                if (self.getAttribute('authorization')) {
+                if (self.getAttribute('successful')) {
                     console.log("payment is authorized -> next()");
 
                     OrderProcess.next();
@@ -141,8 +140,8 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                 this.getAttribute('sellerid'),
                 {
                     type : 'PwA',
-                    color: 'Gold',
-                    size : 'x-large',
+                    color: this.$AuthBtnElm.get('data-color'),
+                    size : this.$AuthBtnElm.get('data-size'),
 
                     authorization: function () {
                         amazon.Login.authorize({
@@ -160,7 +159,7 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                             self.$accessToken = Response.access_token;
 
                             self.$AuthBtnElm.addClass('quiqqer-payment-amazon__hidden');
-                            self.$showAmazonWallet();
+                            self.$showAmazonWallet(true);
                         });
                     },
 
@@ -257,14 +256,24 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
             }
 
             if (!this.$PayBtn) {
+                var PayBtnElm = this.getElm().getElement('#quiqqer-payment-amazon-btn-pay');
+
                 this.$PayBtn = new QUIButton({
                     disabled: true,
-                    text    : QUILocale.get(pkg, 'controls.PaymentDisplay.btn_pay.text'),
+                    text    : QUILocale.get(pkg, 'controls.PaymentDisplay.btn_pay.text', {
+                        display_price: PayBtnElm.get('data-price')
+                    }),
+                    alt     : QUILocale.get(pkg, 'controls.PaymentDisplay.btn_pay.title', {
+                        display_price: PayBtnElm.get('data-price')
+                    }),
+                    title   : QUILocale.get(pkg, 'controls.PaymentDisplay.btn_pay.title', {
+                        display_price: PayBtnElm.get('data-price')
+                    }),
                     texticon: 'fa fa-amazon',
                     events  : {
                         onClick: this.$onPayBtnClick
                     }
-                }).inject(this.getElm().getElement('#quiqqer-payment-amazon-btn-pay'));
+                }).inject(PayBtnElm);
             }
 
             // rendet wallet widget
@@ -329,6 +338,16 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                 self.$showErrorMsg(
                     QUILocale.get(pkg, 'controls.PaymentDisplay.fatal_error')
                 );
+
+                new QUIButton({
+                    text    : QUILocale.get(pkg, 'controls.PaymentDisplay.btn_reselect_payment.text'),
+                    texticon: 'fa fa-credit-card',
+                    events  : {
+                        onClick: function () {
+                            window.location.reload();
+                        }
+                    }
+                }).inject(self.getElm().getElement('#quiqqer-payment-amazon-btn-pay'))
             });
         },
 

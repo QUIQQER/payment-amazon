@@ -37,43 +37,26 @@ class PaymentDisplay extends QUI\Control
      * Here you can integrate the payment form, or forwarding functionality to the gateway
      *
      * @return string
+     * @throws QUI\Exception
      */
     public function getBody()
     {
         $Engine = QUI::getTemplateManager()->getEngine();
 
         /* @var $Order QUI\ERP\Order\OrderInProcess */
-        $Order = $this->getAttribute('Order');
-
-        /* @var $Payment QUI\ERP\Accounting\Payments\Api\AbstractPayment */
-        $Payment = $this->getAttribute('Payment');
-
-        $Gateway = QUI\ERP\Accounting\Payments\Gateway\Gateway::getInstance();
-        $Gateway->setOrder($Order);
+        $Order            = $this->getAttribute('Order');
+        $PriceCalculation = $Order->getPriceCalculation();
 
         $Engine->assign(array(
-            'Order'      => $Order,
-            'Payment'    => $Payment,
-            'gatewayUrl' => $Gateway->getGatewayUrl(),
-            'cancelUrl'  => $Gateway->getCancelUrl(),
-            'successUrl' => $Gateway->getSuccessUrl(),
-            'orderUrl'   => $Gateway->getOrderUrl()
+            'btn_size'      => Provider::getWidgetsSetting('btn_size'),
+            'btn_color'     => Provider::getWidgetsSetting('btn_color'),
+            'display_price' => $PriceCalculation->getSum()->formatted()
         ));
 
         $this->setJavaScriptControlOption('orderhash', $Order->getHash());
 
-        // Check if an Amazon Pay authorization already exists
-        $orderReferenceId = $Order->getPaymentDataEntry(Payment::ATTR_AMAZON_ORDER_REFERENCE_ID);
-
-        if ($orderReferenceId && $Payment instanceof Payment) {
-            /** @var Payment $Payment */
-            try {
-                $Payment->authorizePayment($orderReferenceId, $Order);
-                $this->setJavaScriptControlOption('authorization', true);
-            } catch (AmazonPayException $Exception) {
-                // nothing, Authorization does not exist
-            }
-        }
+        // Check if an Amazon Pay authorization already exists (i.e. Order is successful / can be processed)
+        $this->setJavaScriptControlOption('successful', $Order->isSuccessful());
 
         return $Engine->fetch(dirname(__FILE__) . '/PaymentDisplay.html');
     }
