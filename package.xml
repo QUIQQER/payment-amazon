@@ -21,6 +21,20 @@
         </preview>
         -->
 
+        <support>
+            <email><![CDATA[support@pcsg.de]]></email>
+            <forum><![CDATA[https://community.quiqqer.com]]></forum>
+            <source><![CDATA[https://dev.quiqqer.com/quiqqer/payment-amazon]]></source>
+            <issues><![CDATA[https://dev.quiqqer.com/quiqqer/payment-amazon/issues]]></issues>
+            <wiki><![CDATA[https://dev.quiqqer.com/quiqqer/payment-amazon/wikis/home]]></wiki>
+        </support>
+
+        <copyright>
+            <name><![CDATA[PCSG - Computer & Internet Service OHG]]></name>
+            <license><![CDATA[PCSG QL-1.0]]></license>
+            <license><![CDATA[GPL-3.0+]]></license>
+        </copyright>
+
         <provider>
             <payment src="\QUI\ERP\Payments\Amazon\Provider"/>
         </provider>
