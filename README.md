@@ -1,40 +1,40 @@
-payment-amazon
+![QUIQQER Payment with Amazon Pay](bin/images/Readme.jpg)
+
+QUIQQER Payment with Amazon Pay
 ========
 
-Amazon Pay - Payment method for QUIQQER ERP stack
+The QUIQQER Payment with Amazon Pay module offers your customers the option to pay orders with an Amazon account.
 
-Paketname:
+**IMPORTANT:** Requires an Amazon Seller account
+  * EU: https://sellercentral-europe.amazon.com/
+  * US: https://sellercentral.amazon.com/
 
-    quiqqer/payment-amazon
-
-
-Features (Funktionen)
+Features
 --------
 
+* Offer your customers the option to pay with an Amazon account
+* Customizable Amazon Pay button 
 
 Installation
 ------------
 
-Der Paketname ist: quiqqer/payment-amazon
+Package name: quiqqer/payment-amazon
 
+Follow the instructions here to configure this module:
+https://dev.quiqqer.com/quiqqer/payment-amazon/wikis/api-configuration
 
-Mitwirken
+Collaboration
 ----------
 
-- Issue Tracker: 
-- Source Code: 
-
+- Issue Tracker: https://dev.quiqqer.com/quiqqer/payment-amazon/issues
+- Source Code: https://dev.quiqqer.com/quiqqer/payment-amazon
 
 Support
 -------
 
-Falls Sie einen Fehler gefunden haben oder Verbesserungen wünschen,
-senden Sie bitte eine E-Mail an support@pcsg.de.
+If you found any flaws, have any wishes or suggestions you can send an email to support@pcsg.de to inform us about your concerns. 
+We will try to respond to your request and forward it to the responsible developer.
 
-
-Lizenz
+License
 -------
-
-
-Entwickler
---------
+PCSG QL-1.0, GPL-3.0+
