@@ -1,10 +1,12 @@
-.quiqqer-order-ordering-step {
-    height:1000px !important;
-}
-
 .quiqqer-payment-amazon-content {
     float: left;
+    min-height: 450px;
     width: 100%;
+}
+
+#quiqqer-payment-amazon-btn {
+    margin-top: 35px;
+    text-align: center;
 }
 
 #quiqqer-payment-amazon-btn img {
@@ -12,8 +14,8 @@
 }
 
 #quiqqer-payment-amazon-wallet {
+    margin: 35px auto 0 auto;
     min-width: 300px;
-    width: 100%;
     max-width: 600px;
     min-height: 228px;
     height: 240px;
@@ -21,7 +23,8 @@
 }
 
 #quiqqer-payment-amazon-btn-pay {
-    margin: 20px 0 0 0;
+    margin: 50px 0 0 0;
+    text-align: right;
 }
 
 .quiqqer-payment-amazon__hidden {
