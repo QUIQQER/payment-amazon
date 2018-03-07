@@ -20,7 +20,7 @@ class PaymentDisplay extends QUI\Control
      *
      * @param array $attributes
      */
-    public function __construct(array $attributes = array())
+    public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
 
@@ -47,11 +47,12 @@ class PaymentDisplay extends QUI\Control
         $Order            = $this->getAttribute('Order');
         $PriceCalculation = $Order->getPriceCalculation();
 
-        $Engine->assign(array(
+        $Engine->assign([
             'btn_size'      => Provider::getWidgetsSetting('btn_size'),
             'btn_color'     => Provider::getWidgetsSetting('btn_color'),
-            'display_price' => $PriceCalculation->getSum()->formatted()
-        ));
+            'display_price' => $PriceCalculation->getSum()->formatted(),
+            'apiSetUp'      => Provider::isApiSetUp()
+        ]);
 
         $this->setJavaScriptControlOption('orderhash', $Order->getHash());
 

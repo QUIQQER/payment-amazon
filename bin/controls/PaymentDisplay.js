@@ -62,6 +62,10 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
             var self = this;
             var Elm  = this.getElm();
 
+            if (!Elm.getElement('.quiqqer-payment-amazon-content')) {
+                return;
+            }
+
             this.$MsgElm     = Elm.getElement('.quiqqer-payment-amazon-message');
             this.$AuthBtnElm = Elm.getElement('#quiqqer-payment-amazon-btn');
             this.$WalletElm  = Elm.getElement('#quiqqer-payment-amazon-wallet');
@@ -76,8 +80,6 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                 self.$OrderProcess = OrderProcess;
 
                 if (self.getAttribute('successful')) {
-                    console.log("payment is authorized -> next()");
-
                     OrderProcess.next();
                     return;
                 }
@@ -93,7 +95,7 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
             var widgetUrl = "https://static-eu.payments-amazon.com/OffAmazonPayments/eur/sandbox/lpa/js/Widgets.js";
 
             if (!this.getAttributes('sandbox')) {
-                widgetUrl = ''; // @todo LIVE widget url
+                widgetUrl = 'https://static-eu.payments-amazon.com/OffAmazonPayments/eur/lpa/js/Widgets.js';
             }
 
             if (typeof amazon !== 'undefined') {
@@ -259,18 +261,19 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                 var PayBtnElm = this.getElm().getElement('#quiqqer-payment-amazon-btn-pay');
 
                 this.$PayBtn = new QUIButton({
-                    disabled: true,
-                    text    : QUILocale.get(pkg, 'controls.PaymentDisplay.btn_pay.text', {
+                    'class'  : 'btn-primary',
+                    disabled : true,
+                    text     : QUILocale.get(pkg, 'controls.PaymentDisplay.btn_pay.text', {
                         display_price: PayBtnElm.get('data-price')
                     }),
-                    alt     : QUILocale.get(pkg, 'controls.PaymentDisplay.btn_pay.title', {
+                    alt      : QUILocale.get(pkg, 'controls.PaymentDisplay.btn_pay.title', {
                         display_price: PayBtnElm.get('data-price')
                     }),
-                    title   : QUILocale.get(pkg, 'controls.PaymentDisplay.btn_pay.title', {
+                    title    : QUILocale.get(pkg, 'controls.PaymentDisplay.btn_pay.title', {
                         display_price: PayBtnElm.get('data-price')
                     }),
-                    texticon: 'fa fa-amazon',
-                    events  : {
+                    textimage: 'fa fa-amazon',
+                    events   : {
                         onClick: this.$onPayBtnClick
                     }
                 }).inject(PayBtnElm);
@@ -312,7 +315,7 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                 self.$showAmazonWallet(false);
 
                 Btn.enable();
-                Btn.setAttribute('texticon', 'fa fa-amazon');
+                Btn.setAttribute('textimage', 'fa fa-amazon');
             }, function (error) {
                 self.$OrderProcess.Loader.hide();
                 self.$showErrorMsg(error.getMessage());
@@ -326,7 +329,7 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                     self.$showAmazonWallet(false);
 
                     Btn.enable();
-                    Btn.setAttribute('texticon', 'fa fa-amazon');
+                    Btn.setAttribute('textimage', 'fa fa-amazon');
 
                     return;
                 }

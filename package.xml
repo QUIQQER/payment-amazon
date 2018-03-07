@@ -8,18 +8,27 @@
            <locale group='quiqqer/payment-amazon' var='package.description'/>
         </description>
 
-        <!-- Hauptbild -->
-        <image src='URL_OPT_DIR/quiqqer/payment-amazon/bin/quiqqer_logo.png'/>
+        <image src='URL_OPT_DIR/quiqqer/payment-amazon/bin/images/quiqqer_logo.png'/>
 
-         <!-- More preview images
         <preview>
-            <image src="URL_OPT_DIR/quiqqer/quiqqer/bin/preview/1.png"/>
-            <image src="URL_OPT_DIR/quiqqer/quiqqer/bin/preview/2.png"/>
-            <image src="URL_OPT_DIR/quiqqer/quiqqer/bin/preview/3.png"/>
-            <image src="URL_OPT_DIR/quiqqer/quiqqer/bin/preview/4.png"/>
-            <image src="URL_OPT_DIR/quiqqer/quiqqer/bin/preview/5.png"/>
+            <image src="URL_OPT_DIR/quiqqer/payment-amazon/bin/images/preview/Frontend_Button.png"/>
+            <image src="URL_OPT_DIR/quiqqer/payment-amazon/bin/images/preview/Frontend_Wallet.png"/>
+            <image src="URL_OPT_DIR/quiqqer/payment-amazon/bin/images/preview/Backend_Settings.png"/>
         </preview>
-        -->
+
+        <support>
+            <email><![CDATA[support@pcsg.de]]></email>
+            <forum><![CDATA[https://community.quiqqer.com]]></forum>
+            <source><![CDATA[https://dev.quiqqer.com/quiqqer/payment-amazon]]></source>
+            <issues><![CDATA[https://dev.quiqqer.com/quiqqer/payment-amazon/issues]]></issues>
+            <wiki><![CDATA[https://dev.quiqqer.com/quiqqer/payment-amazon/wikis/home]]></wiki>
+        </support>
+
+        <copyright>
+            <name><![CDATA[PCSG - Computer & Internet Service OHG]]></name>
+            <license><![CDATA[PCSG QL-1.0]]></license>
+            <license><![CDATA[GPL-3.0+]]></license>
+        </copyright>
 
         <provider>
             <payment src="\QUI\ERP\Payments\Amazon\Provider"/>
