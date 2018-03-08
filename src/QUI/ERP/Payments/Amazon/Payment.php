@@ -68,6 +68,17 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
     }
 
     /**
+     * Return the payment icon (the URL path)
+     * Can be overwritten
+     *
+     * @return string
+     */
+    public function getIcon()
+    {
+        return URL_OPT_DIR.'quiqqer/payment-amazon/bin/images/Payment.jpg';
+    }
+
+    /**
      * Is the payment process successful?
      * This method returns the payment success type
      *
