@@ -6,6 +6,7 @@ use QUI;
 use QUI\ERP\Accounting\Payments\Gateway\Gateway;
 use AmazonPay\IpnHandler;
 use QUI\ERP\Order\Handler as OrderHandler;
+use QUI\ERP\Payments\Amazon\Payment as AmazonPayment;
 
 /**
  * Class Events
@@ -84,9 +85,15 @@ class Events
      *
      * @param QUI\ERP\Order\AbstractOrder $Order
      * @return void
+     *
+     * @throws QUI\ERP\Accounting\Payments\Exception
      */
     public static function onQuiqqerOrderSuccessful(QUI\ERP\Order\AbstractOrder $Order)
     {
+        if (!($Order->getPayment()->getPaymentType() instanceof AmazonPayment)) {
+            return;
+        }
+
         // determine if payment has to be captured now or later
         $articleType = Provider::getPaymentSetting('article_type');
         $capture     = false;
