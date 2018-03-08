@@ -90,7 +90,13 @@ class Events
      */
     public static function onQuiqqerOrderSuccessful(QUI\ERP\Order\AbstractOrder $Order)
     {
-        if (!($Order->getPayment()->getPaymentType() instanceof AmazonPayment)) {
+        $OrderPayment = $Order->getPayment();
+
+        if (is_null($OrderPayment)) {
+            return;
+        }
+
+        if (!($OrderPayment->getPaymentType() instanceof AmazonPayment)) {
             return;
         }
 
