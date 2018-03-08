@@ -1,14 +1,14 @@
 <quiqqer>
     <package>
         <title>
-            <locale group='quiqqer/payment-amazon' var='package.title'/>
+            <locale group="quiqqer/payment-amazon" var="package.title"/>
         </title>
 
         <description>
-           <locale group='quiqqer/payment-amazon' var='package.description'/>
+            <locale group="quiqqer/payment-amazon" var="package.description"/>
         </description>
 
-        <image src='URL_OPT_DIR/quiqqer/payment-amazon/bin/images/quiqqer_logo.png'/>
+        <image src="URL_OPT_DIR/quiqqer/payment-amazon/bin/images/Logo.jpg"/>
 
         <preview>
             <image src="URL_OPT_DIR/quiqqer/payment-amazon/bin/images/preview/Frontend_Button.png"/>
