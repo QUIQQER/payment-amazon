@@ -235,6 +235,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
      *
      * @throws AmazonPayException
      * @throws QUI\ERP\Exception
+     * @throws QUI\Exception
      */
     public function authorizePayment($orderReferenceId, AbstractOrder $Order)
     {
@@ -413,6 +414,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
                 break;
 
             default:
+                // @todo Order ggf. pending
                 $reason = $status['ReasonCode'];
 
                 $Order->addHistory(
@@ -429,8 +431,10 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
      *
      * @param AbstractOrder $Order
      * @return void
+     *
      * @throws AmazonPayException
      * @throws QUI\ERP\Exception
+     * @throws QUI\Exception
      */
     public function capturePayment(AbstractOrder $Order)
     {
@@ -523,6 +527,8 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
                 $Order->setPaymentData(self::ATTR_ORDER_CAPTURED, true);
                 $Order->update(QUI::getUsers()->getSystemUser());
                 break;
+
+                // @todo pending status
 
             default:
                 $reason = $status['ReasonCode'];

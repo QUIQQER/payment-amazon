@@ -1,7 +1,3 @@
-PCSG QL-1.0 for COMMERCIAL USE as in https://store.quiqqer.com/Licence/PCSG-QL-1-0
-
---- AND ---
-
 GNU GENERAL PUBLIC LICENSE
 Version 3, 29 June 2007
 
