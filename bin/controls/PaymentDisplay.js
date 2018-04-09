@@ -62,7 +62,14 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
             var self = this;
             var Elm  = this.getElm();
 
-            if (!Elm.getElement('.quiqqer-payment-amazon-content')) {
+            if (Elm.getElement('.message-error')) {
+                (function () {
+                    self.fireEvent('processingError', [self]);
+                }).delay(2000);
+                return;
+            }
+
+            if (Elm.getElement('.message-error')) {
                 return;
             }
 
@@ -155,6 +162,7 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                                     QUILocale.get(pkg, 'controls.PaymentDisplay.login_error')
                                 );
 
+                                self.fireEvent('processingError', [self]);
                                 return;
                             }
 
@@ -187,6 +195,8 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                                     QUILocale.get(pkg, 'controls.PaymentDisplay.login_error')
                                 );
                         }
+
+                        self.fireEvent('processingError', [self]);
                     }
                 }
             );
@@ -246,6 +256,8 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                                 QUILocale.get(pkg, 'controls.PaymentDisplay.wallet_error')
                             );
                     }
+
+                    self.fireEvent('processingError', [self]);
                 }
             };
 
@@ -331,6 +343,7 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                     Btn.enable();
                     Btn.setAttribute('textimage', 'fa fa-amazon');
 
+                    self.fireEvent('processingError', [self]);
                     return;
                 }
 
