@@ -123,6 +123,14 @@
             <de><![CDATA[Sandbox-Modus aktivieren (Zahlungen werden nicht tatsächlich durchgeführt sondern nur über eine Testumgebung; nur aktivieren, wenn der Zahlungsprozess mit Amazon Pay getestet werden soll!)]]></de>
             <en><![CDATA[Enable sandbox mode (payments are not actually made but only through a test environment, only enable to test the payment process with Amazon Pay!)]]></en>
         </locale>
+        <locale name="settings.api.use_ipn_handler.title">
+            <de><![CDATA[IPN-Handling]]></de>
+            <en><![CDATA[IPN Handling]]></en>
+        </locale>
+        <locale name="settings.api.use_ipn_handler.description" html="true">
+            <de><![CDATA[<b>Aktiviere asnychronen Empfang von Nachrichten seitens Amazon bzgl. des Status von Zahlungsoperationen</b> (notwendig, wenn Anweisung zur Zahlungsdurchführung später als 7 Tage nach Zahlungsautorisierung erfolgt; erfordert Einrichtung einer von außen erreichbaren <a href="https://pay.amazon.com/de/developer/documentation/lpwa/201952050" target="_blank">IPN-URL</a>)]]></de>
+            <en><![CDATA[<b>Enable asynchronous reception of Amazon messages regarding the status of payment capture requests</b> (necessary if payment capture requests are performed more than 7 days after payment authorization requests; requires an <a href="https://pay.amazon.com/de/developer/documentation/lpwa/201952050" target="_blank">IPN-URL</a> to be set up)]]></en>
+        </locale>
         <locale name="settings.category.payment.title">
             <de><![CDATA[Zahlungsprozess]]></de>
             <en><![CDATA[Payment process]]></en>

@@ -25,6 +25,10 @@
                     <type><![CDATA[boolean]]></type>
                     <defaultvalue>1</defaultvalue>
                 </conf>
+                <conf name="use_ipn_handler">
+                    <type><![CDATA[boolean]]></type>
+                    <defaultvalue>0</defaultvalue>
+                </conf>
             </section>
 
             <section name="payment">
@@ -108,6 +112,15 @@
                                 <locale group="quiqqer/payment-amazon" var="settings.api.region.options.jp"/>
                             </option>
                         </select>
+
+                        <input conf="api.use_ipn_handler" type="checkbox">
+                            <text>
+                                <locale group="quiqqer/payment-amazon" var="settings.api.use_ipn_handler.title"/>
+                            </text>
+                            <description>
+                                <locale group="quiqqer/payment-amazon" var="settings.api.use_ipn_handler.description"/>
+                            </description>
+                        </input>
 
                         <input conf="api.sandbox" type="checkbox">
                             <text>

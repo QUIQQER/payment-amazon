@@ -11,6 +11,7 @@ use AmazonPay\ResponseInterface;
 use QUI;
 use QUI\ERP\Order\AbstractOrder;
 use QUI\ERP\Order\Handler as OrderHandler;
+use QUI\ERP\Accounting\Payments\Gateway\Gateway;
 
 /**
  * Class Payment
@@ -526,9 +527,19 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
 
                 $Order->setPaymentData(self::ATTR_ORDER_CAPTURED, true);
                 $Order->update(QUI::getUsers()->getSystemUser());
+
+                $Gateway = Gateway::getInstance();
+                $Gateway->setOrder($Order);
+
+                $this->executeGatewayPayment($Gateway);
                 break;
 
+            case 'Pending':
                 // @todo pending status
+                if (Provider::isIpnHandlingActivated()) {
+                    // etc.
+                }
+                break;
 
             default:
                 $reason = $status['ReasonCode'];

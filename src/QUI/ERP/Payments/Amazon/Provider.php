@@ -81,6 +81,16 @@ class Provider extends AbstractPaymentProvider
     }
 
     /**
+     * Check if IPN handling is activated in the module settings
+     *
+     * @return bool
+     */
+    public static function isIpnHandlingActivated()
+    {
+        return boolval(self::getApiSetting('use_ipn_handler'));
+    }
+
+    /**
      * Check if the Amazon Pay API settings are correct
      *
      * @return bool
@@ -94,6 +104,7 @@ class Provider extends AbstractPaymentProvider
         foreach ($apiSettings as $k => $v) {
             switch ($k) {
                 case 'sandbox':
+                case 'use_ipn_handler':
                     continue 2;
                     break;
             }

@@ -26,6 +26,10 @@ class Events
      */
     public static function onPaymentsGatewayReadRequest(Gateway $Gateway)
     {
+        if (!Provider::isIpnHandlingActivated()) {
+            return;
+        }
+
         $headers = getallheaders();
         $body    = file_get_contents('php://input');
 
@@ -74,8 +78,7 @@ class Events
         $Gateway->setOrder($Order);
         $Gateway->enableGatewayPayment();
 
-        // now the Gateway can call executeGatewayPayment() of the
-        // payment method that is assigned to the Order
+        // now the Gateway can call \QUI\ERP\Payments\Amazon->executeGatewayPayment()
     }
 
     /**
