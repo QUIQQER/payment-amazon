@@ -217,6 +217,9 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
             }
 
             this.$WalletElm.set('html', '');
+            this.$WalletElm.removeClass('quiqqer-payment-amazon__hidden');
+
+            this.$OrderProcess.resize();
 
             var Options = {
                 sellerId       : this.getAttribute('sellerid'),
@@ -224,6 +227,7 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                     designMode: 'responsive'
                 },
                 onPaymentSelect: function () {
+                    self.$OrderProcess.resize();
                     self.$PayBtn.enable();
                 },
                 onError        : function (Error) {
