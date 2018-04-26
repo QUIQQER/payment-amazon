@@ -105,19 +105,18 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                 widgetUrl = 'https://static-eu.payments-amazon.com/OffAmazonPayments/eur/lpa/js/Widgets.js';
             }
 
-            if (typeof amazon !== 'undefined') {
-                this.$showAmazonPayBtn();
-                return;
-            }
-
             this.$OrderProcess.Loader.show();
 
-            if (typeof window.onAmazonPaymentsReady === 'undefined') {
-                window.onAmazonPaymentsReady = this.$showAmazonPayBtn;
-            }
+            window.onAmazonPaymentsReady = this.$showAmazonPayBtn;
+            window.onAmazonLoginReady    = this.$onAmazonLoginReady;
 
-            if (typeof window.onAmazonLoginReady === 'undefined') {
-                window.onAmazonLoginReady = this.$onAmazonLoginReady;
+            if (typeof amazon !== 'undefined') {
+                var ScriptElm = document.getElement('script[src="' + widgetUrl + '"]');
+
+                if (ScriptElm) {
+                    amazon = null;
+                    ScriptElm.destroy();
+                }
             }
 
             new Element('script', {
@@ -145,7 +144,7 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
             this.$AuthBtnElm.removeClass('quiqqer-payment-amazon__hidden');
 
             OffAmazonPayments.Button(
-                'quiqqer-payment-amazon-btn',
+                this.$AuthBtnElm.get('id'),
                 this.getAttribute('sellerid'),
                 {
                     type : 'PwA',
