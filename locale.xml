@@ -255,6 +255,10 @@
             <de><![CDATA[Beim Bezahlungsvorgang mit Amazon Pay ist ein Fehler aufgetreten. Die Zahlung konnte nicht durchgeführt werden. Ihre ausgewählte Zahlungsweise wurde nicht belastet. Bitte wählen Sie eine andere Zahlungsweise.]]></de>
             <en><![CDATA[An error occurred while paying with Amazon Pay. The payment could not be processed. Your selected payment method has not been charged. Please choose a different payment method.]]></en>
         </locale>
+        <locale name="controls.PaymentDisplay.wallet_error">
+            <de><![CDATA[Beim Bezahlungsvorgang mit Amazon Pay ist ein Fehler aufgetreten. Die Zahlung konnte nicht durchgeführt werden. Ihre ausgewählte Zahlungsweise wurde nicht belastet. Bitte wählen Sie eine andere Zahlungsweise.]]></de>
+            <en><![CDATA[An error occurred while paying with Amazon Pay. The payment could not be processed. Your selected payment method has not been charged. Please choose a different payment method.]]></en>
+        </locale>
 
     </groups>
 </locales>
