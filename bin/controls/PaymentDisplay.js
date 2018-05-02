@@ -138,8 +138,6 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
         $showAmazonPayBtn: function () {
             var self = this;
 
-            this.$OrderProcess.Loader.hide();
-
             // re-display if button was previously rendered and hidden
             this.$AuthBtnElm.removeClass('quiqqer-payment-amazon__hidden');
 
@@ -172,6 +170,14 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                         });
                     },
 
+                    onFinish: function() {
+                        console.log("Amazon onFinish");
+                    },
+
+                    onSuccess: function() {
+                        console.log("Amazon onSuccess");
+                    },
+
                     onError: function (Error) {
                         switch (Error.getErrorCode()) {
                             // handle errors on the shop side (most likely misconfiguration)
@@ -199,6 +205,25 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                     }
                 }
             );
+
+            this.$OrderProcess.Loader.show();
+
+            var waitForBtnElm = setInterval(function() {
+                var AmazonBtnImg = self.$AuthBtnElm.getElement('img');
+
+                if (!AmazonBtnImg) {
+                    return;
+                }
+
+                if (!AmazonBtnImg.complete) {
+                    return;
+                }
+
+                clearInterval(waitForBtnElm);
+
+                self.$OrderProcess.resize();
+                self.$OrderProcess.Loader.hide();
+            }, 200);
         },
 
         /**
@@ -217,8 +242,6 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
 
             this.$WalletElm.set('html', '');
             this.$WalletElm.removeClass('quiqqer-payment-amazon__hidden');
-
-            this.$OrderProcess.resize();
 
             var Options = {
                 sellerId       : this.getAttribute('sellerid'),
