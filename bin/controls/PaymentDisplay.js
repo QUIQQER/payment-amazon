@@ -101,7 +101,7 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
         $loadAmazonWidgets: function () {
             var widgetUrl = "https://static-eu.payments-amazon.com/OffAmazonPayments/eur/sandbox/lpa/js/Widgets.js";
 
-            if (!this.getAttributes('sandbox')) {
+            if (!this.getAttribute('sandbox')) {
                 widgetUrl = 'https://static-eu.payments-amazon.com/OffAmazonPayments/eur/lpa/js/Widgets.js';
             }
 
