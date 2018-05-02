@@ -283,6 +283,7 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                             );
                     }
 
+                    self.$PayBtn.destroy();
                     self.fireEvent('processingError', [self]);
                 }
             };
