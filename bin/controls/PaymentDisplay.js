@@ -78,6 +78,9 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
             this.$AuthBtnElm = Elm.getElement('#quiqqer-payment-amazon-btn');
             this.$WalletElm  = Elm.getElement('#quiqqer-payment-amazon-wallet');
 
+            // set random id for AuthBtn to enable re-rending of Amazon Btn Widget
+            this.$AuthBtnElm.set('id', this.$AuthBtnElm.get('id') + '-' + Math.floor((Math.random() * 1000000) + 1));
+
             this.$showMsg(
                 QUILocale.get(pkg, 'controls.PaymentDisplay.info')
             );
@@ -112,12 +115,8 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
             window.onAmazonLoginReady    = this.$onAmazonLoginReady;
 
             if (typeof amazon !== 'undefined') {
-                var ScriptElm = document.getElement('script[src="' + widgetUrl + '"]');
-
-                if (ScriptElm) {
-                    amazon = null;
-                    ScriptElm.destroy();
-                }
+                this.$showAmazonPayBtn();
+                return;
             }
 
             new Element('script', {
@@ -171,14 +170,6 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                         });
                     },
 
-                    onFinish: function() {
-                        console.log("Amazon onFinish");
-                    },
-
-                    onSuccess: function() {
-                        console.log("Amazon onSuccess");
-                    },
-
                     onError: function (Error) {
                         switch (Error.getErrorCode()) {
                             // handle errors on the shop side (most likely misconfiguration)
@@ -209,7 +200,7 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
 
             this.$OrderProcess.Loader.show();
 
-            var waitForBtnElm = setInterval(function() {
+            var waitForBtnElm = setInterval(function () {
                 var AmazonBtnImg = self.$AuthBtnElm.getElement('img');
 
                 if (!AmazonBtnImg) {
