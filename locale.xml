@@ -199,6 +199,14 @@
             <de><![CDATA[Extra groß (Standard)]]></de>
             <en><![CDATA[Extra large (default)]]></en>
         </locale>
+        <locale name="settings.payment.amazon_seller_note.title">
+            <de><![CDATA[Bestellungs-Beschreibung bei Amazon]]></de>
+            <en><![CDATA[Order description for Amazon]]></en>
+        </locale>
+        <locale name="settings.payment.amazon_seller_note.description">
+            <de><![CDATA[Hier legen Sie fest, welcher <b>zusätzliche Beschreibungstext</b> für eine Bestellung dem <b>Kunden bei Amazon</b> angezeigt wird. <b>Maximal 1024 Zeichen!</b>]]></de>
+            <en><![CDATA[Here you specify the <b>additional description text</b> for an order <b>for the customer</b> at Amazon. <b>Maximum of 1024 characters!</b>]]></en>
+        </locale>
 
     </groups>
 
@@ -212,6 +220,10 @@
         <locale name="PaymentDisplay.header.title">
             <de><![CDATA[Bezahlung mit Amazon]]></de>
             <en><![CDATA[Payment with Amazon]]></en>
+        </locale>
+        <locale name="Payment.order_custom_information">
+            <de><![CDATA[Transaktions-Nr.: [orderHash]]]></de>
+            <en><![CDATA[Transaction number: [orderHash]]]></en>
         </locale>
 
     </groups>

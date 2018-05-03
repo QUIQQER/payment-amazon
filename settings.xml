@@ -36,6 +36,9 @@
                     <type><![CDATA[string]]></type>
                     <defaultvalue><![CDATA[mixed]]></defaultvalue>
                 </conf>
+                <conf name="amazon_seller_note">
+                    <type><![CDATA[string]]></type>
+                </conf>
             </section>
 
             <section name="widgets">
@@ -143,6 +146,15 @@
                         <title>
                             <locale group="quiqqer/payment-amazon" var="settings.payment.title"/>
                         </title>
+
+                        <input conf="payment.amazon_seller_note" type="text" data-qui="controls/lang/InputMultiLang">
+                            <text>
+                                <locale group="quiqqer/payment-amazon" var="settings.payment.amazon_seller_note.title"/>
+                            </text>
+                            <description>
+                                <locale group="quiqqer/payment-amazon" var="settings.payment.amazon_seller_note.description"/>
+                            </description>
+                        </input>
 
                         <select conf="payment.article_type">
                             <text>

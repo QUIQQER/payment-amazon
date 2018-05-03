@@ -278,8 +278,17 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
                 'amount'                    => $PriceCalculation->getSum()->precision(2)->get(),
                 'currency_code'             => $Order->getCurrency()->getCode(),
                 'seller_order_id'           => $Order->getPrefixedId(),
-                'custom_information'        => 'Order Hash: '.$Order->getHash()
+                'seller_note'               => $this->getSellerNote($Order),
+                'custom_information'        => QUI::getLocale()->get(
+                    'quiqqer/payment-amazon',
+                    'Payment.order_custom_information',
+                    [
+                        'orderHash' => $Order->getHash()
+                    ]
+                )
             ]);
+
+            \QUI\System\Log::writeRecursive($this->getSellerNote($Order));
 
             $response              = $this->getResponseData($Response);
             $orderReferenceDetails = $response['SetOrderReferenceDetailsResult']['OrderReferenceDetails'];
@@ -689,6 +698,37 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
 
         $Order->setPaymentData(self::ATTR_CAPTURE_REFERENCE_IDS, $captureReferenceIds);
         $Order->update(QUI::getUsers()->getSystemUser());
+    }
+
+    /**
+     * Get order seller note
+     *
+     * The seller note is a custom message that is shown to the customer
+     * at their Amazon account for an oder
+     *
+     * @param AbstractOrder $Order
+     * @return string
+     * @throws QUI\Exception
+     */
+    protected function getSellerNote(AbstractOrder $Order)
+    {
+        $Conf        = QUI::getPackage('quiqqer/payment-amazon')->getConfig();
+        $description = $Conf->get('payment', 'amazon_seller_note');
+
+        if (empty($description)) {
+            $description = [];
+        } else {
+            $description = json_decode($description, true);
+        }
+
+        $lang            = $Order->getCustomer()->getLang();
+        $descriptionText = '';
+
+        if (!empty($description[$lang])) {
+            $descriptionText = $description[$lang];
+        }
+
+        return $descriptionText;
     }
 
     /**
