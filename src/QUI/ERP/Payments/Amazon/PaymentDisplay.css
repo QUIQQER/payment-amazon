@@ -3,12 +3,12 @@
     width: 100%;
 }
 
-#quiqqer-payment-amazon-btn {
+.quiqqer-payment-amazon-btn-elm {
     margin-top: 35px;
     text-align: center;
 }
 
-#quiqqer-payment-amazon-btn img {
+.quiqqer-payment-amazon-btn-elm img {
     max-width: 100% !important;
 }
 
