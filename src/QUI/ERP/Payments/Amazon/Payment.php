@@ -288,8 +288,6 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
                 )
             ]);
 
-            \QUI\System\Log::writeRecursive($this->getSellerNote($Order));
-
             $response              = $this->getResponseData($Response);
             $orderReferenceDetails = $response['SetOrderReferenceDetailsResult']['OrderReferenceDetails'];
 
@@ -336,6 +334,15 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
         $this->addAuthorizationReferenceIdToOrder($authorizationReferenceId, $Order);
         $Order->setPaymentData(self::ATTR_AMAZON_AUTHORIZATION_ID, $amazonAuthorizationId);
         $Order->setPaymentData(self::ATTR_AMAZON_ORDER_REFERENCE_ID, $orderReferenceId);
+        $Order->addHistory(
+            QUI::getLocale()->get(
+                'quiqqer/payment-amazon',
+                'history.order_reference_id',
+                [
+                    'orderReferenceId' => $orderReferenceId
+                ]
+            )
+        );
 
         $Order->update(QUI::getUsers()->getSystemUser());
 

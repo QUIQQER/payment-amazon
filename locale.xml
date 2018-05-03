@@ -226,6 +226,12 @@
             <en><![CDATA[Transaction number: [orderHash]]]></en>
         </locale>
 
+        <!-- Payment -->
+        <locale name="history.transaction_id">
+            <de><![CDATA[Amazon-Referenznummer: [orderReferenceId]]]></de>
+            <en><![CDATA[Amazon Reference ID: [orderReferenceId]]]></en>
+        </locale>
+
     </groups>
 
     <groups name="quiqqer/payment-amazon" datatype="js">
