@@ -9,11 +9,12 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
     'qui/controls/buttons/Button',
 
     'utils/Controls',
+    'package/quiqqer/payments/bin/Handler',
 
     'Ajax',
     'Locale'
 
-], function (QUIControl, QUIButton, QUIControlUtils, QUIAjax, QUILocale) {
+], function (QUIControl, QUIButton, QUIControlUtils, PaymentsHandler, QUIAjax, QUILocale) {
     "use strict";
 
     var pkg = 'quiqqer/payment-amazon';
@@ -263,8 +264,6 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                             self.$showErrorMsg(
                                 QUILocale.get(pkg, 'controls.PaymentDisplay.configuration_error')
                             );
-
-                            self.$logError(Error);
                             break;
 
                         case 'AddressNotModifiable':
@@ -285,6 +284,8 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
 
                     self.$PayBtn.destroy();
                     self.fireEvent('processingError', [self]);
+
+                    self.$logError(Error);
                 }
             };
 
@@ -443,14 +444,7 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
          * @return {Promise}
          */
         $logError: function (Error) {
-            return new Promise(function (resolve, reject) {
-                QUIAjax.post('package_quiqqer_payment-amazon_ajax_logFrontendError', resolve, {
-                    'package': pkg,
-                    errorCode: Error.getErrorCode(),
-                    errorMsg : Error.getErrorMessage(),
-                    onError  : reject
-                });
-            });
+            return Payments.logPaymentsError(Error.getErrorMessage(), Error.getErrorCode());
         }
     });
 });
