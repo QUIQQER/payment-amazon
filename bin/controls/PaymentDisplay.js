@@ -207,7 +207,7 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                     return;
                 }
 
-                if (!AmazonBtnImg.complete) {
+                if (!AmazonBtnImg.complete && !AmazonBtnImg.getSize().y) {
                     return;
                 }
 
