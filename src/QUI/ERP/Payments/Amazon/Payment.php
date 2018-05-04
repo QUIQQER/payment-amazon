@@ -512,13 +512,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
             'capture_amount'          => $sum,
             'currency_code'           => $Order->getCurrency()->getCode(),
             'capture_reference_id'    => $captureReferenceId,
-            'seller_capture_note'     => $this->getLocale()->get(
-                'quiqqer/payment-amazon',
-                'payment.capture.seller_capture_note',
-                [
-                    'orderId' => $Order->getId()
-                ]
-            )
+            'seller_capture_note'     => $this->getSellerNote($Order)
         ]);
 
         $response = $this->getResponseData($Response);
@@ -732,8 +726,11 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
         $descriptionText = '';
 
         if (!empty($description[$lang])) {
-            $descriptionText = $description[$lang];
+            $descriptionText = str_replace(['{orderId}'], [$this->Order->getPrefixedId()], $description[$lang]);
         }
+
+        // max length 255
+        $descriptionText = mb_substr($descriptionText, 0 , 255);
 
         return $descriptionText;
     }
