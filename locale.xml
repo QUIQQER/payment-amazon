@@ -58,7 +58,7 @@
             <en><![CDATA[The payment capture of order # [orderHash] can not be initialized because it is not yet authorized by Amazon.]]></en>
         </locale>
         <locale name="payment.capture.seller_capture_note">
-            <de><![CDATA[Bezahlung der Bestellung #[oderId]]]></de>
+            <de><![CDATA[Bezahlung der Bestellung #[orderId]]]></de>
             <en><![CDATA[Payment of order #[orderId]]]></en>
         </locale>
         <locale name="controls.PaymentDisplay.configuration_error">
@@ -204,8 +204,14 @@
             <en><![CDATA[Order description for Amazon]]></en>
         </locale>
         <locale name="settings.payment.amazon_seller_note.description">
-            <de><![CDATA[Hier legen Sie fest, welcher <b>zusätzliche Beschreibungstext</b> für eine Bestellung dem <b>Kunden bei Amazon</b> angezeigt wird. <b>Maximal 1024 Zeichen!</b>]]></de>
-            <en><![CDATA[Here you specify the <b>additional description text</b> for an order <b>for the customer</b> at Amazon. <b>Maximum of 1024 characters!</b>]]></en>
+            <de><![CDATA[Hier legen Sie fest, welcher <b>zusätzliche Beschreibungstext</b> für eine Bestellung dem <b>Kunden bei Amazon</b> angezeigt wird. <b>Maximal 255 Zeichen!</b><br><br>Verfügbare Platzhalter:
+<ul>
+<li><b>{orderId}</b> - Bestellnummer (mit Präfix)</li>
+</ul>]]></de>
+            <en><![CDATA[Here you specify the <b>additional description text</b> for an order <b>for the customer</b> at Amazon. <b>Maximum of 255 characters!</b><br><br>Available placeholders:
+<ul>
+<li><b>{orderId}</b> - Order number (with prefix)</li>
+</ul>]]></en>
         </locale>
 
     </groups>
