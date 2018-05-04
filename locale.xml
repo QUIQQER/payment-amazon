@@ -58,7 +58,7 @@
             <en><![CDATA[The payment capture of order # [orderHash] can not be initialized because it is not yet authorized by Amazon.]]></en>
         </locale>
         <locale name="payment.capture.seller_capture_note">
-            <de><![CDATA[Bezahlung der Bestellung #[oderId]]]></de>
+            <de><![CDATA[Bezahlung der Bestellung #[orderId]]]></de>
             <en><![CDATA[Payment of order #[orderId]]]></en>
         </locale>
         <locale name="controls.PaymentDisplay.configuration_error">
