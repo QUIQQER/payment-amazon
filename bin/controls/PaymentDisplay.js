@@ -435,7 +435,7 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
          * @return {Promise}
          */
         $logError: function (Error) {
-            return Payments.logPaymentsError(Error.getErrorMessage(), Error.getErrorCode());
+            return PaymentsHandler.logPaymentsError(Error.getErrorMessage(), Error.getErrorCode());
         }
     });
 });
