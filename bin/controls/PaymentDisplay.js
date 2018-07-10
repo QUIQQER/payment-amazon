@@ -129,6 +129,10 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
          * Execute if Amazon Login has loaded
          */
         $onAmazonLoginReady: function () {
+            if (typeof amazon === 'undefined') {
+                return;
+            }
+
             amazon.Login.setClientId(this.getAttribute('clientid'));
         },
 
