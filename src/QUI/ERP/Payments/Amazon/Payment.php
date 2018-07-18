@@ -726,7 +726,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
         $descriptionText = '';
 
         if (!empty($description[$lang])) {
-            $descriptionText = str_replace(['{orderId}'], [$this->Order->getPrefixedId()], $description[$lang]);
+            $descriptionText = str_replace(['{orderId}'], [$Order->getPrefixedId()], $description[$lang]);
         }
 
         // max length 255
