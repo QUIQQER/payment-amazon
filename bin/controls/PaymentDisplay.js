@@ -292,9 +292,9 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                 Options.amazonOrderReferenceId = this.$orderReferenceId;
             }
 
-            if (!this.$PayBtn) {
-                var PayBtnElm = this.getElm().getElement('#quiqqer-payment-amazon-btn-pay');
+            var PayBtnElm = this.getElm().getElement('#quiqqer-payment-amazon-btn-pay');
 
+            if (!this.$PayBtn) {
                 this.$PayBtn = new QUIButton({
                     'class'  : 'btn-primary',
                     disabled : true,
@@ -315,7 +315,8 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
             }
 
             // rendet wallet widget
-            new OffAmazonPayments.Widgets.Wallet(Options).bind('quiqqer-payment-amazon-wallet');
+            var WalletWidget = new OffAmazonPayments.Widgets.Wallet(Options).bind('quiqqer-payment-amazon-wallet');
+            WalletWidget.setPresentmentCurrency(PayBtnElm.get('data-currencycode'));
         },
 
         /**
