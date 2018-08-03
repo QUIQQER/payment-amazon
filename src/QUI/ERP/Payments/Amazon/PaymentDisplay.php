@@ -24,7 +24,7 @@ class PaymentDisplay extends QUI\Control
     {
         parent::__construct($attributes);
 
-        $this->addCSSFile(dirname(__FILE__) . '/PaymentDisplay.css');
+        $this->addCSSFile(dirname(__FILE__).'/PaymentDisplay.css');
 
         $this->setJavaScriptControl('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay');
         $this->setJavaScriptControlOption('sandbox', boolval(Provider::getApiSetting('sandbox')));
@@ -51,7 +51,8 @@ class PaymentDisplay extends QUI\Control
             'btn_size'      => Provider::getWidgetsSetting('btn_size'),
             'btn_color'     => Provider::getWidgetsSetting('btn_color'),
             'display_price' => $PriceCalculation->getSum()->formatted(),
-            'apiSetUp'      => Provider::isApiSetUp()
+            'apiSetUp'      => Provider::isApiSetUp(),
+            'currency_code' => $Order->getCurrency()->getCode()
         ]);
 
         $this->setJavaScriptControlOption('orderhash', $Order->getHash());
@@ -59,6 +60,6 @@ class PaymentDisplay extends QUI\Control
         // Check if an Amazon Pay authorization already exists (i.e. Order is successful / can be processed)
         $this->setJavaScriptControlOption('successful', $Order->isSuccessful());
 
-        return $Engine->fetch(dirname(__FILE__) . '/PaymentDisplay.html');
+        return $Engine->fetch(dirname(__FILE__).'/PaymentDisplay.html');
     }
 }
