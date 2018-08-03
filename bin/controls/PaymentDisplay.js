@@ -315,8 +315,9 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
             }
 
             // rendet wallet widget
-            var WalletWidget = new OffAmazonPayments.Widgets.Wallet(Options).bind('quiqqer-payment-amazon-wallet');
+            var WalletWidget = new OffAmazonPayments.Widgets.Wallet(Options);
             WalletWidget.setPresentmentCurrency(PayBtnElm.get('data-currencycode'));
+            WalletWidget.bind('quiqqer-payment-amazon-wallet');
         },
 
         /**
