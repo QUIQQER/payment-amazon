@@ -9,6 +9,7 @@ namespace QUI\ERP\Payments\Amazon;
 use AmazonPay\Client as AmazonPayClient;
 use AmazonPay\ResponseInterface;
 use QUI;
+use QUI\ERP\Accounting\Payments\Transactions\Transaction;
 use QUI\ERP\Order\AbstractOrder;
 use QUI\ERP\Order\Handler as OrderHandler;
 use QUI\ERP\Accounting\Payments\Gateway\Gateway;
@@ -194,9 +195,14 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
      * Execute a refund
      *
      * @param QUI\ERP\Accounting\Payments\Transactions\Transaction $Transaction
+     * @param $amount
+     * @param string $message
      */
-    public function refund(QUI\ERP\Accounting\Payments\Transactions\Transaction $Transaction)
-    {
+    public function refund(
+        Transaction $Transaction,
+        $amount,
+        $message = ''
+    ) {
         // @todo
     }
 
