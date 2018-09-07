@@ -195,13 +195,15 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
      * Execute a refund
      *
      * @param QUI\ERP\Accounting\Payments\Transactions\Transaction $Transaction
-     * @param $amount
+     * @param int|float $amount
      * @param string $message
+     * @param false|string $hash - if a new hash will be used
      */
     public function refund(
         Transaction $Transaction,
         $amount,
-        $message = ''
+        $message = '',
+        $hash = false
     ) {
         // @todo
     }
