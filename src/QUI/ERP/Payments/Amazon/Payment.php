@@ -13,6 +13,7 @@ use QUI\ERP\Accounting\Payments\Transactions\Transaction;
 use QUI\ERP\Order\AbstractOrder;
 use QUI\ERP\Order\Handler as OrderHandler;
 use QUI\ERP\Accounting\Payments\Gateway\Gateway;
+use QUI\ERP\Accounting\Payments\Transactions\Factory as TransactionFactory;
 
 /**
  * Class Payment
@@ -27,6 +28,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
     const ATTR_AMAZON_CAPTURE_ID           = 'amazon-AmazonCaptureId';
     const ATTR_AMAZON_ORDER_REFERENCE_ID   = 'amazon-OrderReferenceId';
     const ATTR_CAPTURE_REFERENCE_IDS       = 'amazon-CaptureReferenceIds';
+    const ATTR_ORDER_REFUND_DETAILS        = 'amazon-RefundDetails';
     const ATTR_ORDER_AUTHORIZED            = 'amazon-OrderAuthorized';
     const ATTR_ORDER_CAPTURED              = 'amazon-OrderCaptures';
     const ATTR_ORDER_REFERENCE_SET         = 'amazon-OrderReferenceSet';
@@ -38,6 +40,11 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
     const SETTING_ARTICLE_TYPE_MIXED    = 'mixed';
     const SETTING_ARTICLE_TYPE_PHYSICAL = 'physical';
     const SETTING_ARTICLE_TYPE_DIGITAL  = 'digital';
+
+    /**
+     * Error codes
+     */
+    const AMAZON_ERROR_REFUND_ORDER_NOT_CAPTURED = 'refund_order_not_captured';
 
     /**
      * Amazon Pay PHP SDK Client
@@ -198,6 +205,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
      * @param int|float $amount
      * @param string $message
      * @param false|string $hash - if a new hash will be used
+     * @throws QUI\ERP\Accounting\Payments\Transactions\RefundException
      */
     public function refund(
         Transaction $Transaction,
@@ -205,7 +213,58 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
         $message = '',
         $hash = false
     ) {
-        // @todo
+        if (!Provider::isIpnHandlingActivated()) {
+            throw new QUI\ERP\Accounting\Payments\Transactions\RefundException([
+                'quiqqer/payment-amazon',
+                'exception.Payment.refund.ipn_not_activated'
+            ]);
+        }
+
+        try {
+            $Order = OrderHandler::getInstance()->getOrderByGlobalProcessId(
+                $Transaction->getGlobalProcessId()
+            );
+
+            $this->refundPayment($Order, $amount, $message);
+        } catch (\Exception $Exception) {
+            QUI\System\Log::writeException($Exception);
+
+            throw new QUI\ERP\Accounting\Payments\Transactions\RefundException([
+                'quiqqer/payment-amazon',
+                'exception.Payment.refund_error'
+            ]);
+        }
+
+        try {
+            if ($hash === false) {
+                $hash = $Transaction->getHash();
+            }
+
+            // create a refund transaction
+            $RefundTransaction = TransactionFactory::createPaymentRefundTransaction(
+                $amount,
+                $Transaction->getCurrency(),
+                $hash,
+                $Transaction->getPayment()->getName(),
+                [
+                    'isRefund' => 1,
+                    'message'  => $message
+                ],
+                null,
+                false,
+                $Transaction->getGlobalProcessId()
+            );
+
+            // execute the
+            QUI::getEvents()->fireEvent('transactionSuccessfullyRefunded', [
+                $RefundTransaction,
+                $this,
+            ]);
+        } catch (QUI\Exception $Exception) {
+            QUI\System\Log::writeDebugException($Exception);
+            QUI\System\Log::writeException($Exception);
+        }
+
     }
 
     /**
@@ -576,6 +635,105 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
     }
 
     /**
+     * Refund partial or full payment of an Order
+     *
+     * @param AbstractOrder $Order
+     * @param float $amount - The amount to be refunden
+     * @param string $reason (optional) - The reason for the refund [default: none; max. 255 characters]
+     * @return void
+     *
+     * @throws AmazonPayException
+     * @throws QUI\ERP\Exception
+     * @throws QUI\Exception
+     */
+    public function refundPayment(AbstractOrder $Order, $amount, $reason = '')
+    {
+        $Order->addHistory('Amazon Pay :: Refund payment');
+
+        if (!$Order->getPaymentDataEntry(self::ATTR_ORDER_CAPTURED)) {
+            $Order->addHistory('Amazon Pay :: Order cannot be refunded because it is not yet captured / completed.');
+            $this->saveOrder($Order);
+
+            throw new AmazonPayException([
+                'quiqqer/payment-amazon',
+                'exception.Payment.refund_order_not_captured'
+            ]);
+        }
+
+        $AmazonPay           = $this->getAmazonPayClient();
+        $PriceCalculation    = $Order->getPriceCalculation();
+        $sum                 = $PriceCalculation->getSum()->precision(2)->get();
+        $amazonRefundDetails = $this->getNewRefundReferenceId($Order);
+
+        $Response = $AmazonPay->refund([
+            'amazon_capture_id'   => $Order->getPaymentDataEntry(self::ATTR_AMAZON_CAPTURE_ID),
+            'refund_reference_id' => $amazonRefundDetails,
+            'refund_amount'       => $sum,
+            'currency_code'       => $Order->getCurrency()->getCode(),
+            'seller_refund_note'  => mb_substr($reason, 0, 255)
+        ]);
+
+        $response = $this->getResponseData($Response);
+
+        $refundDetails  = $response['RefundResult']['RefundDetails'];
+        $amazonRefundId = $refundDetails['AmazonRefundId'];
+
+        $this->addAmazonRefundDetails($amazonRefundId, $Order);
+
+        // Check Capture
+        $Order->addHistory('Amazon Pay :: Checking Refund status');
+
+        $status = $refundDetails['RefundStatus'];
+        $state  = $status['State'];
+
+        switch ($state) {
+            case 'Pending':
+                $Order->addHistory('Amazon Pay :: Refund successfully started. Waiting for Amazon answer via IPN.');
+                break;
+
+            default:
+                $reason = $status['ReasonCode'];
+
+                $Order->addHistory(
+                    'Amazon Pay :: Refund operation failed with state "'.$state.'".'
+                    .' ReasonCode: "'.$reason.'"'
+                );
+
+                $this->saveOrder($Order);
+
+                $this->throwAmazonPayException($reason);
+                break;
+        }
+
+        $this->saveOrder($Order);
+    }
+
+    /**
+     * Finalize a refund process
+     *
+     * @param AbstractOrder $Order
+     * @return void
+     */
+    public function finalizeRefund(AbstractOrder $Order)
+    {
+        $Order->addHistory('Amazon Pay :: Refund answer received via IPN.');
+
+        $amazonRefundDetails = $Order->getPaymentDataEntry(self::ATTR_ORDER_REFUND_DETAILS);
+        $amazonRefundDetails = array_reverse($amazonRefundDetails);
+
+        foreach ($amazonRefundDetails as $amazonRefundId) {
+
+        }
+
+        $AmazonPay = $this->getAmazonPayClient();
+        $Response  = $AmazonPay->getRefundDetails([
+            'amazon_refund_id' => $orderReferenceId
+        ]);
+
+        $this->getResponseData($Response); // check response data
+    }
+
+    /**
      * Set the Amazon Pay OrderReference to status CLOSED
      *
      * @param AbstractOrder $Order
@@ -677,6 +835,44 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
     }
 
     /**
+     * Add an AmazonRefundId to current Order
+     *
+     * @param string $amazonRefundId
+     * @param string $refundReferenceId
+     * @param AbstractOrder $Order
+     * @return void
+     */
+    protected function addAmazonRefundDetails($amazonRefundId, $refundReferenceId, AbstractOrder $Order)
+    {
+        $amazonRefundDetails = $Order->getPaymentDataEntry(self::ATTR_ORDER_REFUND_DETAILS);
+
+        if (empty($amazonRefundDetails)) {
+            $amazonRefundDetails = [];
+        }
+
+        $amazonRefundDetails[] = [
+            'amazonRefundId'    => $amazonRefundId,
+            'refundReferenceId' => $refundReferenceId,
+            'completed'         => false
+        ];
+
+        $Order->setPaymentData(self::ATTR_ORDER_REFUND_DETAILS, $amazonRefundDetails);
+        $this->saveOrder($Order);
+    }
+
+    /**
+     * Generate a unique, random RefundReferenceId to identify
+     * captures for an order
+     *
+     * @param AbstractOrder $Order
+     * @return string
+     */
+    protected function getNewRefundReferenceId(AbstractOrder $Order)
+    {
+        return mb_substr('r_'.$Order->getId().'_'.uniqid(), 0, 32);
+    }
+
+    /**
      * Generate a unique, random CaptureReferenceId to identify
      * captures for an order
      *
@@ -706,7 +902,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
         $captureReferenceIds[] = $captureReferenceId;
 
         $Order->setPaymentData(self::ATTR_CAPTURE_REFERENCE_IDS, $captureReferenceIds);
-        $Order->update(QUI::getUsers()->getSystemUser());
+        $this->saveOrder($Order);
     }
 
     /**
@@ -738,7 +934,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
         }
 
         // max length 255
-        $descriptionText = mb_substr($descriptionText, 0 , 255);
+        $descriptionText = mb_substr($descriptionText, 0, 255);
 
         return $descriptionText;
     }
@@ -764,5 +960,16 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
         ]);
 
         return $this->AmazonPayClient;
+    }
+
+    /**
+     * Save Order with SystemUser
+     *
+     * @param AbstractOrder $Order
+     * @return void
+     */
+    protected function saveOrder(AbstractOrder $Order)
+    {
+        $Order->update(QUI::getUsers()->getSystemUser());
     }
 }

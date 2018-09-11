@@ -15,6 +15,9 @@ use QUI\ERP\Payments\Amazon\Payment as AmazonPayment;
  */
 class Events
 {
+    const ACTION_CAPTURE = 'capture';
+    const ACTION_REFUND  = 'refund';
+
     /**
      * quiqqer/payments: onPaymentsGatewayReadRequest
      *
@@ -48,20 +51,30 @@ class Events
             return;
         }
 
+        $action = false;
+
+        // Capture
         if (!empty($ipnData['CaptureDetails']['CaptureReferenceId'])) {
             $orderIdentifier = $ipnData['CaptureDetails']['CaptureReferenceId'];
+            $action          = self::ACTION_CAPTURE;
+        }
+
+        // Refund
+        if (!empty($ipnData['RefundDetails']['RefundReferenceId'])) {
+            $orderIdentifier = $ipnData['RefundDetails']['RefundReferenceId'];
+            $action          = self::ACTION_REFUND;
         }
 
         if (!$orderIdentifier) {
             QUI\System\Log::addDebug(
                 'Amazon Pay :: Could not parse AuthorizationReferenceId or CaptureReferenceId from IPN request.'
-                . ' IPN request data: ' . $IpnHandler->toJson()
+                .' IPN request data: '.$IpnHandler->toJson()
             );
 
             return;
         }
 
-        // parse Order ID from AuthorizationReferenceId
+        // parse Order ID from special reference ID
         $orderIdentifier = explode('_', $orderIdentifier);
         $Orders          = OrderHandler::getInstance();
 
@@ -69,16 +82,26 @@ class Events
             $Order = $Orders->getOrderById($orderIdentifier[1]);
         } catch (\Exception $Exception) {
             QUI\System\Log::addError(
-                'Amazon Pay :: Could not load Order from IPN request. Parsed Order ID: ' . $orderIdentifier[1]
+                'Amazon Pay :: Could not load Order from IPN request. Parsed Order ID: '.$orderIdentifier[1]
             );
 
             return;
         }
 
-        $Gateway->setOrder($Order);
-        $Gateway->enableGatewayPayment();
+        switch ($action) {
+            case self::ACTION_CAPTURE:
+                $Gateway->setOrder($Order);
+                $Gateway->enableGatewayPayment();
 
-        // now the Gateway can call \QUI\ERP\Payments\Amazon->executeGatewayPayment()
+                // now the Gateway can call \QUI\ERP\Payments\Amazon->executeGatewayPayment()
+                break;
+
+            case self::ACTION_REFUND:
+                /** @var Payment $Payment */
+                $Payment = $Order->getPayment();
+                $Payment->finalizeRefund($Order);
+                break;
+        }
     }
 
     /**
