@@ -43,27 +43,15 @@ class Events
             return;
         }
 
-        $ipnData         = $IpnHandler->toArray();
-        $orderIdentifier = false;
+        $ipnData = $IpnHandler->toArray();
 
-        if (!empty($ipnData['AuthorizationDetails']['AuthorizationReferenceId'])) {
-            // do not work with asynchronous Authorize requests
+        if (empty($ipnData['CaptureDetails']['CaptureReferenceId'])) {
+            // do not work with anything but capture requests
             return;
         }
 
-        $action = false;
-
         // Capture
-        if (!empty($ipnData['CaptureDetails']['CaptureReferenceId'])) {
-            $orderIdentifier = $ipnData['CaptureDetails']['CaptureReferenceId'];
-            $action          = self::ACTION_CAPTURE;
-        }
-
-        // Refund
-        if (!empty($ipnData['RefundDetails']['RefundReferenceId'])) {
-            $orderIdentifier = $ipnData['RefundDetails']['RefundReferenceId'];
-            $action          = self::ACTION_REFUND;
-        }
+        $orderIdentifier = $ipnData['CaptureDetails']['CaptureReferenceId'];
 
         if (!$orderIdentifier) {
             QUI\System\Log::addDebug(
@@ -88,20 +76,10 @@ class Events
             return;
         }
 
-        switch ($action) {
-            case self::ACTION_CAPTURE:
-                $Gateway->setOrder($Order);
-                $Gateway->enableGatewayPayment();
+        $Gateway->setOrder($Order);
+        $Gateway->enableGatewayPayment();
 
-                // now the Gateway can call \QUI\ERP\Payments\Amazon->executeGatewayPayment()
-                break;
-
-            case self::ACTION_REFUND:
-                /** @var Payment $Payment */
-                $Payment = $Order->getPayment();
-                $Payment->finalizeRefund($Order);
-                break;
-        }
+        // now the Gateway can call \QUI\ERP\Payments\Amazon->executeGatewayPayment()
     }
 
     /**
