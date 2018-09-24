@@ -8,6 +8,7 @@ use \Symfony\Component\HttpFoundation\Response;
 use AmazonPay\IpnHandler;
 use QUI\ERP\Accounting\Payments\Transactions\Handler as TransactionsHandler;
 use QUI\ERP\Order\Handler as OrderHandler;
+use QUI\ERP\Payments\Amazon\Payment as AmazonPayment;
 
 function badRequest()
 {
@@ -61,10 +62,13 @@ if (!empty($ipnData['CaptureDetails']['CaptureReferenceId'])) {
             throw $Exception;
         }
 
-        $Gateway = new QUI\ERP\Accounting\Payments\Gateway\Gateway();
+        // Only start capture if it has not already started synchronously
+        if (!$Order->getPaymentDataEntry(AmazonPayment::ATTR_AMAZON_CAPTURE_ID)) {
+            $Gateway = new QUI\ERP\Accounting\Payments\Gateway\Gateway();
 
-        $Gateway->setOrder($Order);
-        $Gateway->executeGatewayPayment();
+            $Gateway->setOrder($Order);
+            $Gateway->executeGatewayPayment();
+        }
     } catch (\Exception $Exception) {
         QUI\System\Log::writeException($Exception);
         badRequest();

@@ -233,7 +233,7 @@
         </locale>
 
         <!-- Payment -->
-        <locale name="history.transaction_id">
+        <locale name="history.order_reference_id">
             <de><![CDATA[Amazon-Referenznummer: [orderReferenceId]]]></de>
             <en><![CDATA[Amazon Reference ID: [orderReferenceId]]]></en>
         </locale>
@@ -242,8 +242,8 @@
             <en><![CDATA[A refund via Amazon Pay cannot be executed because IPN handling is not actiavated in the settings.]]></en>
         </locale>
         <locale name="exception.Payment.refund_error">
-            <de><![CDATA[Die Rückzahlung mit Amazon Pay konnte nicht erfolgreich durchgeführt werden. Bitte überprüfen Sie die Fehlerlogs.]]></de>
-            <en><![CDATA[The refund with Amazon Pay could not be successfully completed. Please check the error logs.]]></en>
+            <de><![CDATA[Die Rückzahlung mit Amazon Pay konnte nicht erfolgreich durchgeführt werden. Bitte überprüfen Sie die Transaktions-Logs.]]></de>
+            <en><![CDATA[The refund with Amazon Pay could not be successfully completed. Please check the transaction logs.]]></en>
         </locale>
         <locale name="exception.Payment.refund_order_not_captured">
             <de><![CDATA[Der Rückzahlungs-Vorgang bei Amazon konnte nicht durchgeführt werden, da die Bestellung auf Seite von Amazon noch nicht vollständig bezahlt wurde.]]></de>

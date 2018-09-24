@@ -246,9 +246,6 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
 
             $this->refundPayment($Transaction, $hash, $amount, $message);
         } catch (AmazonPayException $Exception) {
-
-//            \QUI\System\Log::writeRecursive($Exception);
-
             throw new QUI\ERP\Accounting\Payments\Transactions\RefundException([
                 'quiqqer/payment-amazon',
                 'exception.Payment.refund_error'
@@ -543,27 +540,29 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
             ]);
         }
 
-        try {
-            $this->authorizePayment($orderReferenceId, $Order);
-        } catch (AmazonPayException $Exception) {
-            $Order->addHistory(
-                'Amazon Pay :: Capture failed because the Order has no OPEN Authorization'
-            );
+        if (!$Order->getPaymentDataEntry(self::ATTR_AMAZON_AUTHORIZATION_ID)) {
+            try {
+                $this->authorizePayment($orderReferenceId, $Order);
+            } catch (AmazonPayException $Exception) {
+                $Order->addHistory(
+                    'Amazon Pay :: Capture failed because the Order has no OPEN Authorization'
+                );
 
-            throw new AmazonPayException([
-                'quiqqer/payment-amazon',
-                'exception.Payment.capture.not_authorized',
-                [
-                    'orderHash' => $Order->getHash()
-                ]
-            ]);
-        } catch (\Exception $Exception) {
-            $Order->addHistory(
-                'Amazon Pay :: Capture failed because of an error: '.$Exception->getMessage()
-            );
+                throw new AmazonPayException([
+                    'quiqqer/payment-amazon',
+                    'exception.Payment.capture.not_authorized',
+                    [
+                        'orderHash' => $Order->getHash()
+                    ]
+                ]);
+            } catch (\Exception $Exception) {
+                $Order->addHistory(
+                    'Amazon Pay :: Capture failed because of an error: '.$Exception->getMessage()
+                );
 
-            QUI\System\Log::writeException($Exception);
-            return;
+                QUI\System\Log::writeException($Exception);
+                return;
+            }
         }
 
         $PriceCalculation   = $Order->getPriceCalculation();
@@ -855,7 +854,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
         $Exception = new AmazonPayException($msg);
         $Exception->setAttributes($exceptionAttributes);
 
-        QUI\System\Log::writeDebugException($Exception);
+        QUI\System\Log::writeException($Exception, QUI\System\Log::LEVEL_DEBUG, $exceptionAttributes);
 
         throw $Exception;
     }

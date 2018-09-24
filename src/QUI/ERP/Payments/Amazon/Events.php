@@ -65,6 +65,8 @@ class Events
 
         try {
             $Payment = new Payment();
+
+            \QUI\System\Log::writeRecursive("CALLING CAPTURE FROM onQuiqqerOrderSuccessful");
             $Payment->capturePayment($Order);
         } catch (AmazonPayException $Exception) {
             // nothing, capturePayment() marks Order as problematic
