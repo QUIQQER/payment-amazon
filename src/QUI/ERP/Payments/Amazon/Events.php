@@ -15,71 +15,8 @@ use QUI\ERP\Payments\Amazon\Payment as AmazonPayment;
  */
 class Events
 {
-    /**
-     * quiqqer/payments: onPaymentsGatewayReadRequest
-     *
-     * Read request to the central payment gateway and check
-     * if it is an Amazon Pay request
-     *
-     * @param Gateway $Gateway
-     * @return void
-     */
-    public static function onPaymentsGatewayReadRequest(Gateway $Gateway)
-    {
-        if (!Provider::isIpnHandlingActivated()) {
-            return;
-        }
-
-        $headers = getallheaders();
-        $body    = file_get_contents('php://input');
-
-        try {
-            $IpnHandler = new IpnHandler($headers, $body);
-        } catch (\Exception $Exception) {
-            // request is not an Amazon IPN request and can be safely ignored
-            return;
-        }
-
-        $ipnData         = $IpnHandler->toArray();
-        $orderIdentifier = false;
-
-        if (!empty($ipnData['AuthorizationDetails']['AuthorizationReferenceId'])) {
-            // do not work with asynchronous Authorize requests
-            return;
-        }
-
-        if (!empty($ipnData['CaptureDetails']['CaptureReferenceId'])) {
-            $orderIdentifier = $ipnData['CaptureDetails']['CaptureReferenceId'];
-        }
-
-        if (!$orderIdentifier) {
-            QUI\System\Log::addDebug(
-                'Amazon Pay :: Could not parse AuthorizationReferenceId or CaptureReferenceId from IPN request.'
-                . ' IPN request data: ' . $IpnHandler->toJson()
-            );
-
-            return;
-        }
-
-        // parse Order ID from AuthorizationReferenceId
-        $orderIdentifier = explode('_', $orderIdentifier);
-        $Orders          = OrderHandler::getInstance();
-
-        try {
-            $Order = $Orders->getOrderById($orderIdentifier[1]);
-        } catch (\Exception $Exception) {
-            QUI\System\Log::addError(
-                'Amazon Pay :: Could not load Order from IPN request. Parsed Order ID: ' . $orderIdentifier[1]
-            );
-
-            return;
-        }
-
-        $Gateway->setOrder($Order);
-        $Gateway->enableGatewayPayment();
-
-        // now the Gateway can call \QUI\ERP\Payments\Amazon->executeGatewayPayment()
-    }
+    const ACTION_CAPTURE = 'capture';
+    const ACTION_REFUND  = 'refund';
 
     /**
      * quiqqer/order: onQuiqqerOrderSuccessful
@@ -128,6 +65,8 @@ class Events
 
         try {
             $Payment = new Payment();
+
+            \QUI\System\Log::writeRecursive("CALLING CAPTURE FROM onQuiqqerOrderSuccessful");
             $Payment->capturePayment($Order);
         } catch (AmazonPayException $Exception) {
             // nothing, capturePayment() marks Order as problematic

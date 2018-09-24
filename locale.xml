@@ -128,8 +128,8 @@
             <en><![CDATA[IPN Handling]]></en>
         </locale>
         <locale name="settings.api.use_ipn_handler.description" html="true">
-            <de><![CDATA[<b>Aktiviere asnychronen Empfang von Nachrichten seitens Amazon bzgl. des Status von Zahlungsoperationen</b> (notwendig, wenn Anweisung zur Zahlungsdurchführung später als 7 Tage nach Zahlungsautorisierung erfolgt; erfordert Einrichtung einer von außen erreichbaren <a href="https://pay.amazon.com/de/developer/documentation/lpwa/201952050" target="_blank">IPN-URL</a>)]]></de>
-            <en><![CDATA[<b>Enable asynchronous reception of Amazon messages regarding the status of payment capture requests</b> (necessary if payment capture requests are performed more than 7 days after payment authorization requests; requires an <a href="https://pay.amazon.com/de/developer/documentation/lpwa/201952050" target="_blank">IPN-URL</a> to be set up)]]></en>
+            <de><![CDATA[<b>Aktiviere asnychronen Empfang von Nachrichten seitens Amazon bzgl. des Status von Zahlungsoperationen</b> (notwendig für Durchführung von Rückzahlungen und/oder wenn Anweisung zur Zahlungsdurchführung später als 7 Tage nach Zahlungsautorisierung erfolgt; erfordert Einrichtung einer von außen erreichbaren <a href="https://pay.amazon.com/de/developer/documentation/lpwa/201952050" target="_blank">IPN-URL</a>)]]></de>
+            <en><![CDATA[<b>Enable asynchronous reception of Amazon messages regarding the status of payment capture requests</b> (necessary for executing refund and/or if payment capture requests are performed more than 7 days after payment authorization requests; requires an <a href="https://pay.amazon.com/de/developer/documentation/lpwa/201952050" target="_blank">IPN-URL</a> to be set up)]]></en>
         </locale>
         <locale name="settings.category.payment.title">
             <de><![CDATA[Zahlungsprozess]]></de>
@@ -233,9 +233,21 @@
         </locale>
 
         <!-- Payment -->
-        <locale name="history.transaction_id">
+        <locale name="history.order_reference_id">
             <de><![CDATA[Amazon-Referenznummer: [orderReferenceId]]]></de>
             <en><![CDATA[Amazon Reference ID: [orderReferenceId]]]></en>
+        </locale>
+        <locale name="exception.Payment.refund.ipn_not_activated">
+            <de><![CDATA[Die Rückzahlung über Amazon Pay kann nicht durchgeführt werden, da das IPN-Handling in den Einstellungen nicht aktiviert ist.]]></de>
+            <en><![CDATA[A refund via Amazon Pay cannot be executed because IPN handling is not actiavated in the settings.]]></en>
+        </locale>
+        <locale name="exception.Payment.refund_error">
+            <de><![CDATA[Die Rückzahlung mit Amazon Pay konnte nicht erfolgreich durchgeführt werden. Bitte überprüfen Sie die Transaktions-Logs.]]></de>
+            <en><![CDATA[The refund with Amazon Pay could not be successfully completed. Please check the transaction logs.]]></en>
+        </locale>
+        <locale name="exception.Payment.refund_order_not_captured">
+            <de><![CDATA[Der Rückzahlungs-Vorgang bei Amazon konnte nicht durchgeführt werden, da die Bestellung auf Seite von Amazon noch nicht vollständig bezahlt wurde.]]></de>
+            <en><![CDATA[The refund process with Amazon could not be completed because the order has not yet been fully paid/captured on the Amazon side.]]></en>
         </locale>
 
     </groups>
@@ -253,7 +265,7 @@
         </locale>
         <locale name="controls.PaymentDisplay.btn_pay.title" html="true">
             <de><![CDATA[Hier klicken, um ihre Bestellung im Wert von [display_price] mit ihrem Amazon-Konto zu bezahlen]]></de>
-            <en><![CDATA[Click here to pay your order with a value of [display_price with your Amazon account]]></en>
+            <en><![CDATA[Click here to pay your order with a value of [display_price] with your Amazon account]]></en>
         </locale>
         <locale name="controls.PaymentDisplay.login_error">
             <de><![CDATA[Bei der Authentifizierung mit Amazon ist ein Fehler aufgetreten. Bitte versuchen Sie erneut, sich mit Ihrem Amazon-Konto anzumelden oder wählen Sie eine andere Zahlungsweise.]]></de>
