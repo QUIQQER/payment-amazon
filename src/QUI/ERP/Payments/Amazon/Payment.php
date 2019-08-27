@@ -1,14 +1,11 @@
 <?php
 
-/**
- * This file contains QUI\ERP\Payments\Amazon\Payment
- */
-
 namespace QUI\ERP\Payments\Amazon;
 
 use AmazonPay\Client as AmazonPayClient;
 use AmazonPay\ResponseInterface;
 use QUI;
+use QUI\ERP\Accounting\Payments\Payments;
 use QUI\ERP\Accounting\Payments\Transactions\Transaction;
 use QUI\ERP\Order\AbstractOrder;
 use QUI\ERP\Order\Handler as OrderHandler;
@@ -86,7 +83,9 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
      */
     public function getIcon()
     {
-        return URL_OPT_DIR.'quiqqer/payment-amazon/bin/images/Payment.jpg';
+        return Payments::getInstance()->getHost().
+               URL_OPT_DIR.
+               'quiqqer/payment-amazon/bin/images/Payment.jpg';
     }
 
     /**
