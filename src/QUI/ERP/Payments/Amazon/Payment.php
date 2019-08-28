@@ -17,9 +17,7 @@ use QUI\ERP\Order\OrderProcess\OrderProcessMessage;
 /**
  * Class Payment
  */
-class Payment
-    extends QUI\ERP\Accounting\Payments\Api\AbstractPayment
-    implements QUI\ERP\Order\OrderProcess\OrderProcessMessageHandlerInterface
+class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements QUI\ERP\Order\OrderProcess\OrderProcessMessageHandlerInterface
 {
     /**
      * Amazon API Order attributes
