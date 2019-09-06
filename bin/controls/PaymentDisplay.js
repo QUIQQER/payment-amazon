@@ -343,7 +343,6 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
             }).then(function (success) {
                 if (success) {
                     self.$confirmationFlow.success();
-                    //self.$OrderProcess.next();
                     return;
                 }
 
@@ -357,65 +356,6 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
 
                 Btn.enable();
                 Btn.setAttribute('textimage', 'fa fa-amazon');
-
-
-                //self.$authorizePayment().then(function (success) {
-                //    if (success) {
-                //        self.$confirmationFlow.success();
-                //        //self.$OrderProcess.next();
-                //        return;
-                //    }
-                //
-                //    self.$OrderProcess.Loader.hide();
-                //
-                //    self.$showErrorMsg(
-                //        QUILocale.get(pkg, 'controls.PaymentDisplay.processing_error')
-                //    );
-                //
-                //    self.$showAmazonWallet(false);
-                //
-                //    Btn.enable();
-                //    Btn.setAttribute('textimage', 'fa fa-amazon');
-                //}, function (error) {
-                //    self.$OrderProcess.Loader.hide();
-                //    self.$showErrorMsg(error.getMessage());
-                //
-                //    if (error.getAttribute('orderCancelled')) {
-                //        self.$orderReferenceId = false;
-                //    }
-                //
-                //    // abort Amazon Pay initConfirmationFlow
-                //    self.$confirmationFlow.error();
-                //
-                //    if (error.getAttribute('reRenderWallet')) {
-                //        self.$WalletElm.removeClass('quiqqer-payment-amazon__hidden');
-                //        self.$showAmazonWallet(false);
-                //
-                //        Btn.enable();
-                //        Btn.setAttribute('textimage', 'fa fa-amazon');
-                //
-                //        self.fireEvent('processingError', [self]);
-                //        return;
-                //    }
-                //
-                //    // sign out
-                //    amazon.Login.logout();
-                //    Btn.destroy();
-                //
-                //    self.$showErrorMsg(
-                //        QUILocale.get(pkg, 'controls.PaymentDisplay.fatal_error')
-                //    );
-                //
-                //    new QUIButton({
-                //        text    : QUILocale.get(pkg, 'controls.PaymentDisplay.btn_reselect_payment.text'),
-                //        texticon: 'fa fa-credit-card',
-                //        events  : {
-                //            onClick: function () {
-                //                window.location.reload();
-                //            }
-                //        }
-                //    }).inject(self.getElm().getElement('#quiqqer-payment-amazon-btn-pay'))
-                //});
             }, function (error) {
                 self.$OrderProcess.Loader.hide();
                 self.$showErrorMsg(error.getMessage());
