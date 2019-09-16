@@ -50,6 +50,7 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
             this.$PayBtn           = null;
             this.$MsgElm           = null;
             this.$OrderProcess     = null;
+            this.$confirmationFlow = null;  // Reference to Amazon Pay Confirmation Flow
 
             this.addEvents({
                 onImport: this.$onImport
@@ -337,9 +338,11 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                 QUILocale.get(pkg, 'controls.PaymentDisplay.authorize_payment')
             );
 
-            self.$authorizePayment().then(function (success) {
+            self.$initConfirmationFlow().then(function () {
+                return self.$confirmOrder();
+            }).then(function (success) {
                 if (success) {
-                    self.$OrderProcess.next();
+                    self.$confirmationFlow.success();
                     return;
                 }
 
@@ -360,6 +363,9 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                 if (error.getAttribute('orderCancelled')) {
                     self.$orderReferenceId = false;
                 }
+
+                // abort Amazon Pay initConfirmationFlow
+                self.$confirmationFlow.error();
 
                 if (error.getAttribute('reRenderWallet')) {
                     self.$WalletElm.removeClass('quiqqer-payment-amazon__hidden');
@@ -388,7 +394,46 @@ define('package/quiqqer/payment-amazon/bin/controls/PaymentDisplay', [
                             window.location.reload();
                         }
                     }
-                }).inject(self.getElm().getElement('#quiqqer-payment-amazon-btn-pay'))
+                }).inject(self.getElm().getElement('#quiqqer-payment-amazon-btn-pay'));
+            });
+        },
+
+        /**
+         * Init SCA-compatible confirmation flow
+         *
+         * @return {Promise}
+         */
+        $initConfirmationFlow: function () {
+            var self = this;
+
+            return new Promise(function (resolve, reject) {
+                OffAmazonPayments.initConfirmationFlow(
+                    self.getAttribute('sellerid'),
+                    self.$orderReferenceId,
+                    function (confirmationFlow) {
+                        self.$confirmationFlow = confirmationFlow;
+                        resolve();
+                    },
+                    reject
+                );
+            });
+        },
+
+        /**
+         * Confirm order with Amazon Pay
+         *
+         * @return {Promise}
+         */
+        $confirmOrder: function () {
+            var self = this;
+
+            return new Promise(function (resolve, reject) {
+                QUIAjax.post('package_quiqqer_payment-amazon_ajax_confirmOrder', resolve, {
+                    'package'       : pkg,
+                    orderHash       : self.getAttribute('orderhash'),
+                    orderReferenceId: self.$orderReferenceId,
+                    onError         : reject
+                })
             });
         },
 

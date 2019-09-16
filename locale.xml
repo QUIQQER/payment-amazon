@@ -249,6 +249,14 @@
             <de><![CDATA[Der Rückzahlungs-Vorgang bei Amazon konnte nicht durchgeführt werden, da die Bestellung auf Seite von Amazon noch nicht vollständig bezahlt wurde.]]></de>
             <en><![CDATA[The refund process with Amazon could not be completed because the order has not yet been fully paid/captured on the Amazon side.]]></en>
         </locale>
+        <locale name="Payment.message.error.sca_failure">
+            <de><![CDATA[Mit dieser Zahlungsart ist ein Problem aufgetreten. Um Ihre Bestellung abzuschließen, wählen Sie bitte eine andere aus.]]></de>
+            <en><![CDATA[Something's wrong with your payment method. To place your order, try another.]]></en>
+        </locale>
+        <locale name="Payment.message.error.internal">
+            <de><![CDATA[Der Zahlungsvorgang mit Amazon war nicht erfolgreich. Ihr gewähltes Zahlungsmittel wurde nicht belastet. Bitte versuchen Sie es erneut oder wählen Sie eine andere Zahlungsmethode.]]></de>
+            <en><![CDATA[The payment process with Amazon was not successful. Your chosen payment method was not debited. Please try again or choose another payment method.]]></en>
+        </locale>
 
     </groups>
 
