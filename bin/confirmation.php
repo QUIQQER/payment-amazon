@@ -60,6 +60,8 @@ if ($_REQUEST['AuthenticationStatus'] === 'Success') {
         $AmazonPayment = $Order->getPayment()->getPaymentType();
         $AmazonPayment->authorizePayment($Order);
 
+        $Order->setSuccessfulStatus();
+
         // Go to finish step if authorization was successful
         $GoToStep = new OrderProcessStepFinish([
             'Order' => $Order
