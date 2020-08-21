@@ -58,7 +58,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      *
      * @var AmazonPayClient
      */
-    protected $AmazonPayClient = null;
+    protected static $AmazonPayClient = null;
 
     /**
      * Current Order that is being processed
@@ -148,7 +148,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      */
     public function executeGatewayPayment(QUI\ERP\Accounting\Payments\Gateway\Gateway $Gateway)
     {
-        $AmazonPay = $this->getAmazonPayClient();
+        $AmazonPay = self::getAmazonPayClient();
         $Order     = $Gateway->getOrder();
 
         $Order->addHistory('Amazon Pay :: Check if payment from Amazon was successful');
@@ -316,7 +316,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
             return;
         }
 
-        $AmazonPay = $this->getAmazonPayClient();
+        $AmazonPay = self::getAmazonPayClient();
 
         // Re-confirm Order after previously declined Authorization because of "InvalidPaymentMethod"
         if ($reConfirm) {
@@ -377,8 +377,8 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
 
             $AmazonPay->confirmOrderReference([
                 'amazon_order_reference_id' => $orderReferenceId,
-                'success_url'               => $this->getSuccessUrl($Order),
-                'failure_url'               => $this->getFailureUrl($Order)
+                'success_url'               => Utils::getSuccessUrl($Order),
+                'failure_url'               => Utils::getFailureUrl($Order)
             ]);
 
             $Order->setPaymentData(self::ATTR_ORDER_REFERENCE_SET, true);
@@ -407,7 +407,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
             return;
         }
 
-        $AmazonPay        = $this->getAmazonPayClient();
+        $AmazonPay        = self::getAmazonPayClient();
         $PriceCalculation = $Order->getPriceCalculation();
         $orderReferenceId = $Order->getPaymentDataEntry(self::ATTR_AMAZON_ORDER_REFERENCE_ID);
 
@@ -561,7 +561,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
             return;
         }
 
-        $AmazonPay        = $this->getAmazonPayClient();
+        $AmazonPay        = self::getAmazonPayClient();
         $orderReferenceId = $Order->getPaymentDataEntry(self::ATTR_AMAZON_ORDER_REFERENCE_ID);
 
         if (empty($orderReferenceId)) {
@@ -712,7 +712,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
 
         $RefundTransaction->pending();
 
-        $AmazonPay         = $this->getAmazonPayClient();
+        $AmazonPay         = self::getAmazonPayClient();
         $AmountValue       = new QUI\ERP\Accounting\CalculationValue($amount, $Transaction->getCurrency(), 2);
         $sum               = $AmountValue->get();
         $refundReferenceId = $this->generateRefundReferenceId($RefundTransaction);
@@ -830,7 +830,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      */
     protected function closeOrderReference(AbstractOrder $Order, $reason = null)
     {
-        $AmazonPay        = $this->getAmazonPayClient();
+        $AmazonPay        = self::getAmazonPayClient();
         $orderReferenceId = $Order->getPaymentDataEntry(self::ATTR_AMAZON_ORDER_REFERENCE_ID);
 
         $AmazonPay->closeOrderReference([
@@ -1058,14 +1058,15 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * Get Amazon Pay Client for current payment process
      *
      * @return AmazonPayClient
+     * @throws \Exception
      */
-    protected function getAmazonPayClient()
+    public static function getAmazonPayClient()
     {
-        if (!is_null($this->AmazonPayClient)) {
-            return $this->AmazonPayClient;
+        if (!is_null(self::$AmazonPayClient)) {
+            return self::$AmazonPayClient;
         }
 
-        $this->AmazonPayClient = new AmazonPayClient([
+        self::$AmazonPayClient = new AmazonPayClient([
             'merchant_id' => Provider::getApiSetting('merchant_id'),
             'access_key'  => Provider::getApiSetting('access_key'),
             'secret_key'  => Provider::getApiSetting('secret_key'),
@@ -1074,7 +1075,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
             'region'      => Provider::getApiSetting('region')
         ]);
 
-        return $this->AmazonPayClient;
+        return self::$AmazonPayClient;
     }
 
     /**
@@ -1098,33 +1099,6 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
     {
         $Process->addHistory('Amazon Pay :: '.$message);
     }
-
-    /**
-     * Get confirmation flow success url
-     *
-     * @param AbstractOrder $Order
-     * @return string
-     */
-    protected function getSuccessUrl(AbstractOrder $Order)
-    {
-        return Payments::getInstance()->getHost().
-               URL_OPT_DIR.
-               'quiqqer/payment-amazon/bin/confirmation.php?hash='.$Order->getHash();
-    }
-
-    /**
-     * Get confirmation flow error url
-     *
-     * @param AbstractOrder $Order
-     * @return string
-     */
-    protected function getFailureUrl(AbstractOrder $Order)
-    {
-        return Payments::getInstance()->getHost().
-               URL_OPT_DIR.
-               'quiqqer/payment-amazon/bin/confirmation.php?hash='.$Order->getHash().'&error=1';
-    }
-
 
     /**
      * @param int $id

@@ -21,6 +21,15 @@
             <de><![CDATA[Komfortable Bezahlung mit ihrem Amazon-Konto.]]></de>
             <en><![CDATA[Comfortable payment with your Amazon account.]]></en>
         </locale>
+        <locale name="payment.recurring.title">
+            <de><![CDATA[Amazon Pay - Wiederkehrende Zahlungen]]></de>
+            <en><![CDATA[Amazon Pay - Recurring payments]]></en>
+        </locale>
+        <locale name="payment.recurring.description">
+            <de><![CDATA[Komfortable Bezahlung mit ihrem Amazon-Konto.]]></de>
+            <en><![CDATA[Comfortable payment with your Amazon account.]]></en>
+        </locale>
+        
         <locale name="payment.step.title">
             <de><![CDATA[Bezahlung mit Amazon]]></de>
             <en><![CDATA[Payment with Amazon]]></en>
@@ -258,6 +267,34 @@
             <en><![CDATA[The payment process with Amazon was not successful. Your chosen payment method was not debited. Please try again or choose another payment method.]]></en>
         </locale>
 
+        <!-- BillingAgreements -->
+        <locale name="recurring.BillingAgreement.seller_note">
+            <de><![CDATA[Ihre Abonnement aus Bestellung [orderId] auf [url]]]></de>
+            <en><![CDATA[Your subscription from order [orderId] at [url]]]></en>
+        </locale>
+
+        <!-- BillingAgreements -->
+        <locale name="history.BillingAgreement.set_details">
+            <de><![CDATA[Amazon Pay :: Details für wiederkehrende Zahlung festgelegt (Amazon BillingAgreement ID: [billingAgreementId])]]></de>
+            <en><![CDATA[Amazon Pay :: Details for recurring payment set (Amazon BillingAgreement ID: [billingAgreementId])]]></en>
+        </locale>
+        <locale name="history.BillingAgreement.confirm_billing_agreement">
+            <de><![CDATA[Amazon Pay :: Wiederkehrende Zahlung eingerichtet]]></de>
+            <en><![CDATA[Amazon Pay :: Recurring payment set up]]></en>
+        </locale>
+        <locale name="history.BillingAgreement.confirm_billing_agreement_error">
+            <de><![CDATA[Amazon Pay :: Wiederkehrende Zahlung konnte nicht eingerichtet werden]]></de>
+            <en><![CDATA[Amazon Pay :: Recurring payment could not be set up]]></en>
+        </locale>
+        <locale name="history.BillingAgreement.validate_billing_agreement">
+            <de><![CDATA[Amazon Pay :: Wiederkehrende Zahlung validiert; das Amazon-Konto des Kunden kann nun für wiederkehrende Zahlungen verwendet werden]]></de>
+            <en><![CDATA[Amazon Pay :: Recurring payment validated; the Amazon account of the customer is now usable for recurring payments]]></en>
+        </locale>
+        <locale name="history.BillingAgreement.billing_agreement_not_validated">
+            <de><![CDATA[Amazon Pay :: Wiederkehrende Zahlung konnte nicht validiert werden]]></de>
+            <en><![CDATA[Amazon Pay :: Recurring payment could not be validated]]></en>
+        </locale>
+
     </groups>
 
     <groups name="quiqqer/payment-amazon" datatype="js">
@@ -302,6 +339,12 @@
         <locale name="controls.PaymentDisplay.wallet_error">
             <de><![CDATA[Beim Bezahlungsvorgang mit Amazon Pay ist ein Fehler aufgetreten. Die Zahlung konnte nicht durchgeführt werden. Ihre ausgewählte Zahlungsweise wurde nicht belastet. Bitte wählen Sie eine andere Zahlungsweise.]]></de>
             <en><![CDATA[An error occurred while paying with Amazon Pay. The payment could not be processed. Your selected payment method has not been charged. Please choose a different payment method.]]></en>
+        </locale>
+        
+        <!-- Control: recurring/PaymentDisplay -->
+        <locale name="controls.recurring.PaymentDisplay.consent_denied">
+            <de><![CDATA[Sie haben die Genehmigung für eine wiederkehrende Zahlung mit Ihrem Amazon Pay Konto nicht erteilt. Bitte wiederholen Sie den Vorgang und erteilen Sie die Genehmigung oder wählen Sie eine andere Zahlungsmethode.]]></de>
+            <en><![CDATA[You have not given permission for a recurring payment with your Amazon Pay account. Please repeat the process and give approval or choose another payment method.]]></en>
         </locale>
 
     </groups>
