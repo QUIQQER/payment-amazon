@@ -4,6 +4,8 @@ namespace QUI\ERP\Payments\Amazon\Recurring;
 
 use QUI;
 use QUI\ERP\Payments\Amazon\Provider;
+use QUI\ERP\Plans\Utils as ERPPlansUtils;
+use QUI\ERP\Plans\Handler as ERPPlansHandler;
 
 /**
  * Class PaymentDisplay
@@ -55,6 +57,22 @@ class PaymentDisplay extends QUI\Control
         ]);
 
         $this->setJavaScriptControlOption('orderhash', $Order->getHash());
+        $this->setJavaScriptControlOption('displayprice', $PriceCalculation->getSum()->formatted());
+
+        $planDetails = ERPPlansUtils::getPlanDetailsFromOrder($Order);
+
+        if (!empty($planDetails['invoice_interval'])) {
+            try {
+                $InvoiceInterval = ERPPlansUtils::parseIntervalFromDuration($planDetails['invoice_interval']);
+
+                $this->setJavaScriptControlOption(
+                    'displayinterval',
+                    ERPPlansUtils::intervalToIntervalText($InvoiceInterval)
+                );
+            } catch (\Exception $Exception) {
+                QUI\System\Log::writeException($Exception);
+            }
+        }
 
         // Check if an Amazon Pay authorization already exists (i.e. Order is successful / can be processed)
         $this->setJavaScriptControlOption('successful', $Order->isSuccessful());

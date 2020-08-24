@@ -21,14 +21,14 @@ class BillingAgreements
     const TBL_BILLING_AGREEMENTS             = 'amazon_billing_agreements';
     const TBL_BILLING_AGREEMENT_TRANSACTIONS = 'amazon_billing_agreement_transactions';
 
-    const BILLING_AGREEMENT_STATE_ACTIVE = 'Active';
-    const BILLING_AGREEMENT_STATE_OPEN   = 'Open';
-
+    const BILLING_AGREEMENT_STATE_ACTIVE       = 'Active';
+    const BILLING_AGREEMENT_STATE_OPEN         = 'Open';
     const BILLING_AGREEMENT_VALIDATION_SUCCESS = 'Success';
-    const BILLING_AGREEMENT_VALIDATION_FAILURE = 'Failure';
 
     const TRANSACTION_STATE_COMPLETED = 'Completed';
     const TRANSACTION_STATE_DENIED    = 'Denied';
+
+    const EXCEPTION_CODE_BILLING_AGREEMENT_VALIDATION_ERROR = 630001;
 
     /**
      * Runtime cache that knows then a transaction history
@@ -106,11 +106,10 @@ class BillingAgreements
         ]);
 
         $details = $Response->toArray();
+        $details = $details['GetBillingAgreementDetailsResult']['BillingAgreementDetails'];
 
-        \QUI\System\Log::writeRecursive($details);
-
-        if (empty($details['BillingAgreementStatus'] ||
-                  $details['BillingAgreementStatus'] !== self::BILLING_AGREEMENT_STATE_OPEN)) {
+        if (empty($details['BillingAgreementStatus']['State'] ||
+                  $details['BillingAgreementStatus']['State'] !== self::BILLING_AGREEMENT_STATE_OPEN)) {
             $Order->addHistory(Utils::getHistoryText(
                 'BillingAgreement.confirm_billing_agreement_error'
             ));
@@ -142,6 +141,7 @@ class BillingAgreements
      * @return void
      *
      * @throws AmazonPayException
+     * @throws QUI\Exception
      */
     public static function validateBillingAgreement(AbstractOrder $Order)
     {
@@ -156,8 +156,7 @@ class BillingAgreements
         ]);
 
         $result = $Response->toArray();
-
-        \QUI\System\Log::writeRecursive($result);
+        $result = $result['ValidateBillingAgreementResult'];
 
         if (empty($result['ValidationResult']) || $result['ValidationResult'] !== self::BILLING_AGREEMENT_VALIDATION_SUCCESS) {
             $Order->addHistory(Utils::getHistoryText(
@@ -166,10 +165,13 @@ class BillingAgreements
 
             Utils::saveOrder($Order);
 
-            throw new AmazonPayException([
-                'quiqqer/payment-amazon',
-                'exception.BillingAgreements.billing_agreement_not_validated'
-            ]);
+            throw new AmazonPayException(
+                [
+                    'quiqqer/payment-amazon',
+                    'exception.BillingAgreements.billing_agreement_not_validated'
+                ],
+                self::EXCEPTION_CODE_BILLING_AGREEMENT_VALIDATION_ERROR
+            );
         }
 
         $Order->addHistory(Utils::getHistoryText(
@@ -179,6 +181,19 @@ class BillingAgreements
         $Order->setAttribute(Payment::ATTR_AMAZON_BILLING_AGREEMENT_VALIDATED, true);
 
         Utils::saveOrder($Order);
+
+        // Save billing agreement data in database
+        $Customer = $Order->getCustomer();
+
+        QUI::getDataBase()->insert(
+            self::getBillingAgreementsTable(),
+            [
+                'amazon_agreement_id' => $Order->getAttribute(Payment::ATTR_AMAZON_BILLING_AGREEMENT_ID),
+                'customer'            => $Customer->getName().' ('.$Customer->getId().')',
+                'global_process_id'   => $Order->getHash(),
+                'active'              => 1
+            ]
+        );
     }
 
     /**

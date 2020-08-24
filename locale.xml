@@ -324,6 +324,18 @@
             <de><![CDATA[Bitte wählen Sie die Zahlungsweise aus, über die Amazon den Betrag der Bestellung einzieht.]]></de>
             <en><![CDATA[Please select the method of payment through which Amazon collects the order amount.]]></en>
         </locale>
+        <locale name="controls.recurring.PaymentDisplay.wallet_info" html="true">
+            <de><![CDATA[Bitte wählen Sie die Zahlungsweise aus, über die Amazon den Betrag Ihres Abonnements <b>[interval]</b> i.H.v. <b>[price]</b> einzieht.]]></de>
+            <en><![CDATA[Please select the payment method that Amazon uses to collect the amount of your subscription of <b>[price]</b> in a <b>[interval]</b> interval.]]></en>
+        </locale>
+        <locale name="controls.recurring.PaymentDisplay.btn_pay.text">
+            <de><![CDATA[Regelmäßige Zahlung jetzt einrichten]]></de>
+            <en><![CDATA[Set up regular payment now]]></en>
+        </locale>
+        <locale name="controls.recurring.PaymentDisplay.btn_pay.title">
+            <de><![CDATA[Hier klicken, um die regelmäßige Zahlung Ihres Abonnements über Ihr Amazon-Konto einzurichten]]></de>
+            <en><![CDATA[Click here to set up regular payment of your subscription through your Amazon account]]></en>
+        </locale>
         <locale name="controls.PaymentDisplay.authorize_payment">
             <de><![CDATA[Autorisiere Zahlung bei Amazon]]></de>
             <en><![CDATA[Authorize payment with Amazon]]></en>

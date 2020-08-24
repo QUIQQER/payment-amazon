@@ -35,11 +35,13 @@ define('package/quiqqer/payment-amazon/bin/controls/recurring/PaymentDisplay', [
         ],
 
         options: {
-            sandbox   : true,
-            sellerid  : '',
-            clientid  : '',
-            orderhash : '',
-            successful: false
+            sandbox        : true,
+            sellerid       : '',
+            clientid       : '',
+            orderhash      : '',
+            successful     : false,
+            displayprice   : '',
+            displayinterval: ''
         },
 
         initialize: function (options) {
@@ -238,7 +240,10 @@ define('package/quiqqer/payment-amazon/bin/controls/recurring/PaymentDisplay', [
 
             if (showInfoMessage) {
                 this.$showMsg(
-                    QUILocale.get(pkg, 'controls.PaymentDisplay.wallet_info')
+                    QUILocale.get(pkg, 'controls.recurring.PaymentDisplay.wallet_info', {
+                        price   : this.getAttribute('displayprice'),
+                        interval: this.getAttribute('displayinterval')
+                    })
                 );
             }
 
@@ -252,13 +257,11 @@ define('package/quiqqer/payment-amazon/bin/controls/recurring/PaymentDisplay', [
                 },
                 agreementType  : 'BillingAgreement',
                 onReady        : function (billingAgreement) {
-                    self.$billingAgreementId = billingAgreement.getAmazonBillingAgreementId();
-
-                    console.log("billingAgreementId", self.$billingAgreementId);
-
+                    if (!self.$billingAgreementId) {
+                        self.$billingAgreementId = billingAgreement.getAmazonBillingAgreementId();
+                    }
 
                     self.$OrderProcess.resize();
-                    //self.$PayBtn.enable();
                 },
                 onPaymentSelect: function (billingAgreement) {
                     self.$showRecurringPaymentConsent();
@@ -309,26 +312,6 @@ define('package/quiqqer/payment-amazon/bin/controls/recurring/PaymentDisplay', [
 
             var PayBtnElm = this.getElm().getElement('#quiqqer-payment-amazon-btn-pay');
 
-            if (!this.$PayBtn) {
-                this.$PayBtn = new QUIButton({
-                    'class'  : 'btn-primary',
-                    disabled : true,
-                    text     : QUILocale.get(pkg, 'controls.PaymentDisplay.btn_pay.text', {
-                        display_price: PayBtnElm.get('data-price')
-                    }),
-                    alt      : QUILocale.get(pkg, 'controls.PaymentDisplay.btn_pay.title', {
-                        display_price: PayBtnElm.get('data-price')
-                    }),
-                    title    : QUILocale.get(pkg, 'controls.PaymentDisplay.btn_pay.title', {
-                        display_price: PayBtnElm.get('data-price')
-                    }),
-                    textimage: 'fa fa-amazon',
-                    events   : {
-                        onClick: this.$onPayBtnClick
-                    }
-                }).inject(PayBtnElm);
-            }
-
             // rendet wallet widget
             var WalletWidget = new OffAmazonPayments.Widgets.Wallet(Options);
             WalletWidget.setPresentmentCurrency(PayBtnElm.get('data-currencycode'));
@@ -337,21 +320,13 @@ define('package/quiqqer/payment-amazon/bin/controls/recurring/PaymentDisplay', [
 
         /**
          * Show Amazon Pay consent widget for recurring payment
-         *
-         * @param {Boolean} [showInfoMessage] - Show info message
          */
-        $showRecurringPaymentConsent: function (showInfoMessage) {
+        $showRecurringPaymentConsent: function () {
             if (this.$consentBoxShown) {
                 return;
             }
 
             var self = this;
-
-            if (showInfoMessage) {
-                this.$showMsg(
-                    QUILocale.get(pkg, 'controls.PaymentDisplay.wallet_info')
-                );
-            }
 
             this.$ConsentElm.set('html', '');
             this.$ConsentElm.removeClass('quiqqer-payment-amazon__hidden');
@@ -369,23 +344,20 @@ define('package/quiqqer/payment-amazon/bin/controls/recurring/PaymentDisplay', [
                 onConsent: function (billingAgreementConsentStatus) {
                     var buyerBillingAgreementConsentStatus = billingAgreementConsentStatus.getConsentStatus();
 
-                    if (!buyerBillingAgreementConsentStatus) {
+                    if (!buyerBillingAgreementConsentStatus || buyerBillingAgreementConsentStatus !== 'true') {
                         self.$showErrorMsg(
                             QUILocale.get(pkg, 'controls.recurring.PaymentDisplay.consent_denied')
                         );
 
                         self.fireEvent('processingError', [self]);
+                        self.$PayBtn.disable();
                         return;
                     }
 
-                    self.$OrderProcess.Loader.show();
-
-                    self.$createBillingAgreement().then(function () {
-                        self.$OrderProcess.Loader.hide();
-                        console.log("billing agreement created!");
-                    })
+                    self.$PayBtn.enable();
                 },
                 onError  : function (Error) {
+                    console.log(Error);
                     switch (Error.getErrorCode()) {
                         // handle errors on the shop side (most likely misconfiguration)
                         case 'InvalidAccountStatus':
@@ -435,123 +407,36 @@ define('package/quiqqer/payment-amazon/bin/controls/recurring/PaymentDisplay', [
             ConsentWidget.bind('quiqqer-payment-amazon-consent');
 
             this.$consentBoxShown = true;
+
+            if (!this.$PayBtn) {
+                this.$PayBtn = new QUIButton({
+                    'class'  : 'btn-primary',
+                    disabled : true,
+                    text     : QUILocale.get(pkg, 'controls.recurring.PaymentDisplay.btn_pay.text'),
+                    title    : QUILocale.get(pkg, 'controls.recurring.PaymentDisplay.btn_pay.title'),
+                    textimage: 'fa fa-amazon',
+                    events   : {
+                        onClick: this.$onPayBtnClick
+                    }
+                }).inject(this.getElm().getElement('#quiqqer-payment-amazon-btn-pay'));
+            }
         },
 
-        ///**
-        // * Start payment process
-        // *
-        // * @param {Object} Btn
-        // */
-        //$onPayBtnClick: function (Btn) {
-        //    var self = this;
-        //
-        //    Btn.disable();
-        //    Btn.setAttribute('texticon', 'fa fa-spinner fa-spin');
-        //
-        //    self.$WalletElm.addClass('quiqqer-payment-amazon__hidden');
-        //
-        //    self.$OrderProcess.Loader.show(
-        //        QUILocale.get(pkg, 'controls.PaymentDisplay.authorize_payment')
-        //    );
-        //
-        //    self.$initConfirmationFlow().then(function () {
-        //        return self.$confirmOrder();
-        //    }).then(function (success) {
-        //        if (success) {
-        //            self.$confirmationFlow.success();
-        //            return;
-        //        }
-        //
-        //        self.$OrderProcess.Loader.hide();
-        //
-        //        self.$showErrorMsg(
-        //            QUILocale.get(pkg, 'controls.PaymentDisplay.processing_error')
-        //        );
-        //
-        //        self.$showAmazonWallet(false);
-        //
-        //        Btn.enable();
-        //        Btn.setAttribute('textimage', 'fa fa-amazon');
-        //    }, function (error) {
-        //        self.$OrderProcess.Loader.hide();
-        //        self.$showErrorMsg(error.getMessage());
-        //
-        //        if (error.getAttribute('orderCancelled')) {
-        //            self.$orderReferenceId = false;
-        //        }
-        //
-        //        // abort Amazon Pay initConfirmationFlow
-        //        self.$confirmationFlow.error();
-        //
-        //        if (error.getAttribute('reRenderWallet')) {
-        //            self.$WalletElm.removeClass('quiqqer-payment-amazon__hidden');
-        //            self.$showAmazonWallet(false);
-        //
-        //            Btn.enable();
-        //            Btn.setAttribute('textimage', 'fa fa-amazon');
-        //
-        //            self.fireEvent('processingError', [self]);
-        //            return;
-        //        }
-        //
-        //        // sign out
-        //        amazon.Login.logout();
-        //        Btn.destroy();
-        //
-        //        self.$showErrorMsg(
-        //            QUILocale.get(pkg, 'controls.PaymentDisplay.fatal_error')
-        //        );
-        //
-        //        new QUIButton({
-        //            text    : QUILocale.get(pkg, 'controls.PaymentDisplay.btn_reselect_payment.text'),
-        //            texticon: 'fa fa-credit-card',
-        //            events  : {
-        //                onClick: function () {
-        //                    window.location.reload();
-        //                }
-        //            }
-        //        }).inject(self.getElm().getElement('#quiqqer-payment-amazon-btn-pay'));
-        //    });
-        //},
-        //
-        ///**
-        // * Init SCA-compatible confirmation flow
-        // *
-        // * @return {Promise}
-        // */
-        //$initConfirmationFlow: function () {
-        //    var self = this;
-        //
-        //    return new Promise(function (resolve, reject) {
-        //        OffAmazonPayments.initConfirmationFlow(
-        //            self.getAttribute('sellerid'),
-        //            self.$orderReferenceId,
-        //            function (confirmationFlow) {
-        //                self.$confirmationFlow = confirmationFlow;
-        //                resolve();
-        //            },
-        //            reject
-        //        );
-        //    });
-        //},
-        //
-        ///**
-        // * Confirm order with Amazon Pay
-        // *
-        // * @return {Promise}
-        // */
-        //$confirmOrder: function () {
-        //    var self = this;
-        //
-        //    return new Promise(function (resolve, reject) {
-        //        QUIAjax.post('package_quiqqer_payment-amazon_ajax_confirmOrder', resolve, {
-        //            'package'       : pkg,
-        //            orderHash       : self.getAttribute('orderhash'),
-        //            orderReferenceId: self.$orderReferenceId,
-        //            onError         : reject
-        //        })
-        //    });
-        //},
+        /**
+         * Event: on pay btn click
+         */
+        $onPayBtnClick: function () {
+            var self = this;
+
+            this.$OrderProcess.Loader.show();
+
+            this.$createBillingAgreement().then(function () {
+                self.$OrderProcess.Loader.hide();
+            }, function (e) {
+                self.$showError(e.getMessage());
+                self.$showAmazonWallet(false);
+            });
+        },
 
         /**
          * Create / set up a BillingAgreement
