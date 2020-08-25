@@ -293,8 +293,6 @@ class BillingAgreements
         }
 
 
-
-
         foreach ($unprocessedTransactions as $transaction) {
             $amount   = (float)$transaction['amount']['value'];
             $currency = $transaction['amount']['currency'];
@@ -359,7 +357,6 @@ class BillingAgreements
      */
     public static function authorizeBillingAgreementPayment(Invoice $Invoice)
     {
-
     }
 
     /**
