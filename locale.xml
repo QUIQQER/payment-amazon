@@ -222,6 +222,18 @@
 <li><b>{orderId}</b> - Order number (with prefix)</li>
 </ul>]]></en>
         </locale>
+        <locale name="settings.billing_agreements.title">
+            <de><![CDATA[Abrechnungsvereinbarungen (Abonnements)]]></de>
+            <en><![CDATA[Billing agreements (subscriptions)]]></en>
+        </locale>
+        <locale name="settings.billing_agreements.max_capture_tries.title">
+            <de><![CDATA[Einzug von Rechnungsbeträgen - max. Anzahl Versuche]]></de>
+            <en><![CDATA[Collection of invoice amounts - max. number of attempts]]></en>
+        </locale>
+        <locale name="settings.billing_agreements.max_capture_tries.description">
+            <de><![CDATA[Maximale Anzahl an Versuchen, die durchgeführt werden, um Rechnunen zu Abonnements über die zugehörige Abrechnungsvereinbarung bei Amazon einzuzeiehn. Schlägt der Vorgang zu oft fehl, wird die Abrechnungsvereinbarung automatisch auf inaktiv gesetzt.]]></de>
+            <en><![CDATA[Maximum number of attempts made to bill subscriptions via the associated Amazon billing agreement. If the process fails too often, the billing agreement is automatically set to inactive.]]></en>
+        </locale>
 
     </groups>
 
@@ -293,6 +305,30 @@
         <locale name="history.BillingAgreement.billing_agreement_not_validated">
             <de><![CDATA[Amazon Pay :: Wiederkehrende Zahlung konnte nicht validiert werden]]></de>
             <en><![CDATA[Amazon Pay :: Recurring payment could not be validated]]></en>
+        </locale>
+        <locale name="history.invoice.error.agreement_id_not_found">
+            <de><![CDATA[Es wurde versucht, die Rechnung über wiederkehrende Zahlungen mit Amazon Pay zu begleichen, jedoch enthielten die Rechnungsdaten keine zugeordnete Abrechnungsvereinbarung.]]></de>
+            <en><![CDATA[An attempt was made to settle the recurring payment invoice using Amazon Pay, but the invoice data did not contain an associated billing agreement.]]></en>
+        </locale>
+        <locale name="history.invoice.error.agreement_not_found">
+            <de><![CDATA[Es wurde versucht, die Rechnung über wiederkehrende Zahlungen mit Amazon Pay zu begleichen, jedoch wurde die zugeordnete Abrechnungsvereinbarung [billingAgreementId] nicht im System gefunden.]]></de>
+            <en><![CDATA[An attempt was made to settle the recurring payment invoice using Amazon Pay, but the associated billing agreement [billingAgreementId] was not found in the system.]]></en>
+        </locale>
+        <locale name="history.invoice.error.agreement_capture_failed">
+            <de><![CDATA[Der Einzug des Rechnungsbetrags über Amazon Pay ist fehlgeschlagen.]]></de>
+            <en><![CDATA[]]></en>
+        </locale>
+        <locale name="exception.Recurring.agreement_not_found">
+            <de><![CDATA[Amazon Pay Billing Agreement [billingAgreementId] wurde nicht gefunden.]]></de>
+            <en><![CDATA[Amazon Pay Billing Agreement [billingAgreementId] was not found.]]></en>
+        </locale>
+        <locale name="exception.Recurring.agreement_id_not_found">
+            <de><![CDATA[Amazon Pay Billing Agreement ID konnte in Rechnung #[invoiceId] nicht gefunden werden.]]></de>
+            <en><![CDATA[Amazon Pay Billing Agreement ID was not found in Invoice #[invoiceId].]]></en>
+        </locale>
+        <locale name="recurring.BillingAgreement.seller_authorization_note">
+            <de><![CDATA[Rechnung [invoiceId] zu Ihrem Abonnement auf [url]]]></de>
+            <en><![CDATA[Invoice [invoiceId] for your subscription at [url]]]></en>
         </locale>
 
     </groups>

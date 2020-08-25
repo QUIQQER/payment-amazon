@@ -3,10 +3,9 @@
 namespace QUI\ERP\Payments\Amazon;
 
 use QUI;
-use QUI\ERP\Accounting\CalculationValue;
 use QUI\ERP\Accounting\Payments\Payments;
 use QUI\ERP\Order\AbstractOrder;
-use QUI\ERP\Shipping\Shipping;
+use QUI\ERP\Accounting\Invoice\Invoice;
 
 /**
  * Class Utils
@@ -80,5 +79,30 @@ class Utils
         return Payments::getInstance()->getHost().
                URL_OPT_DIR.
                'quiqqer/payment-amazon/bin/confirmation.php?hash='.$Order->getHash().'&error=1';
+    }
+
+    /**
+     * Get the total price of an Order formatted for Amazon Pay API usage.
+     *
+     * @param AbstractOrder $Order
+     * @return string
+     *
+     * @throws QUI\Exception
+     */
+    public static function getFormattedPriceByOrder(AbstractOrder $Order)
+    {
+        return (string)$Order->getPriceCalculation()->getSum()->precision(2)->get();
+    }
+
+    /**
+     * Get the total price of an Invoice formatted for Amazon Pay API usage.
+     *
+     * @param Invoice $Invoice
+     * @return string
+     */
+    public static function getFormattedPriceByInvoice(Invoice $Invoice)
+    {
+        $Invoice->calculatePayments();
+        return (string)(float)$Invoice->getAttribute('toPay');
     }
 }

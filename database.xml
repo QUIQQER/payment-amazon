@@ -13,12 +13,14 @@
         </table>
 
         <table name="amazon_billing_agreement_transactions">
-            <field type="VARCHAR(255) NOT NULL">amazon_transaction_id</field>
+            <field type="BIGINT(20) NOT NULL">invoice_id</field>
             <field type="VARCHAR(255) NOT NULL">amazon_agreement_id</field>
-            <field type="MEDIUMTEXT NOT NULL">amazon_transaction_data</field>
-            <field type="DATETIME NOT NULL">amazon_transaction_date</field>
-            <field type="VARCHAR(255) NULL">quiqqer_transaction_id</field>
+            <field type="VARCHAR(255) NULL DEFAULT NULL">amazon_authorization_id</field>
+            <field type="MEDIUMTEXT NULL DEFAULT NULL">amazon_transaction_data</field>
+            <field type="DATETIME NULL DEFAULT NULL">amazon_transaction_date</field>
+            <field type="VARCHAR(255) NULL DEFAULT NULL">quiqqer_transaction_id</field>
             <field type="TINYINT(1) NOT NULL DEFAULT 0">quiqqer_transaction_completed</field>
+            <field type="TINYINT(1) NOT NULL DEFAULT 0">capture_attempts</field>
             <field type="VARCHAR(250) NOT NULL">global_process_id</field>
 
             <primary>amazon_transaction_id,amazon_transaction_date</primary>

@@ -10,6 +10,7 @@ use QUI\ERP\Accounting\Payments\Gateway\Gateway;
 use QUI\ERP\Payments\Amazon\Payment as BasePayment;
 use QUI\ERP\Payments\Amazon\AmazonPayException as AmazonException;
 use QUI\ERP\Accounting\Invoice\Invoice;
+use QUI\ERP\Accounting\Payments\Transactions\Factory as TransactionFactory;
 
 /**
  * Class BillingAgreements
@@ -206,7 +207,7 @@ class BillingAgreements
      */
     public static function billBillingAgreementBalance(Invoice $Invoice)
     {
-        $billingAgreementId = $Invoice->getPaymentDataEntry(RecurringPayment::ATTR_AMAZON_BILLING_AGREEMENT_ID);
+        $billingAgreementId = $Invoice->getPaymentDataEntry(Payment::ATTR_AMAZON_BILLING_AGREEMENT_ID);
 
         if (empty($billingAgreementId)) {
             $Invoice->addHistory(
@@ -246,26 +247,53 @@ class BillingAgreements
             );
         }
 
-//        try {
-//            /** @var QUI\Locale $Locale */
-//            $Locale      = $Invoice->getCustomer()->getLocale();
-//            $InvoiceDate = new \DateTime($Invoice->getAttribute('date'));
-//        } catch (\Exception $Exception) {
-//            $Invoice->addHistory(
-//                Utils::getHistoryText('invoice.error.general')
-//            );
-//
-//            QUI\System\Log::writeException($Exception);
-//            return;
-//        }
-
         // Check if a Billing Agreement transaction matches the Invoice
-        $unprocessedTransactions = self::getUnprocessedTransactions($billingAgreementId);
-        $Invoice->calculatePayments();
-
-        $invoiceAmount   = (float)$Invoice->getAttribute('toPay');
+        $invoiceAmount   = Utils::getFormattedPriceByInvoice($Invoice);
         $invoiceCurrency = $Invoice->getCurrency()->getCode();
-        $Payment         = new RecurringPayment();
+        $Payment         = new Payment();
+        $AmazonPay       = BasePayment::getAmazonPayClient();
+
+        $Request = $AmazonPay->authorizeOnBillingAgreement([
+            'amazon_billing_agreement_id' => $billingAgreementId,
+            'authorization_reference_id'  => $Invoice->getHash(),
+            'authorization_amount'        => $invoiceAmount,
+            'currency_code'               => $invoiceCurrency,
+            'capture_now'                 => true,   // immediately capture amount
+            'seller_authorization_note'   => QUI::getLocale()->get(
+                'quiqqer/payment-amazon',
+                'recurring.BillingAgreement.seller_authorization_note',
+                [
+                    'url'       => Utils::getProjectUrl(),
+                    'invoiceId' => $Invoice->getId()
+                ]
+            )
+        ]);
+
+        $data = $Request->toArray();
+        $data = $data['AuthorizeOnBillingAgreementResult']['AuthorizationDetails'];
+
+        $capturedAmount = $data['CapturedAmount'];
+
+        if ($capturedAmount['Amount'] !== $invoiceAmount || $capturedAmount['CurrencyCode'] !== $invoiceCurrency) {
+            $Invoice->addHistory(
+                Utils::getHistoryText('invoice.error.agreement_capture_failed', [
+                    'billingAgreementId' => $billingAgreementId
+                ])
+            );
+
+//            throw new AmazonException(
+//                QUI::getLocale()->get(
+//                    'quiqqer/payment-amazon',
+//                    'exception.Recurring.agreement_capture_failed',
+//                    [
+//                        'billingAgreementId' => $billingAgreementId
+//                    ]
+//                )
+//            );
+        }
+
+
+
 
         foreach ($unprocessedTransactions as $transaction) {
             $amount   = (float)$transaction['amount']['value'];
@@ -321,6 +349,17 @@ class BillingAgreements
 
             break;
         }
+    }
+
+    /**
+     * Authorize and capture a payment against a BillingAgreement
+     *
+     * @param Invoice $Invoice
+     * @return void
+     */
+    public static function authorizeBillingAgreementPayment(Invoice $Invoice)
+    {
+
     }
 
     /**
@@ -1024,7 +1063,7 @@ class BillingAgreements
         $data = current($result);
 
         return [
-            'active'          => !empty($data['active']) ? true : false,
+            'active'          => !empty($data['active']),
             'globalProcessId' => $data['global_process_id'],
             'customer'        => json_decode($data['customer'], true),
         ];

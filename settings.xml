@@ -41,6 +41,13 @@
                 </conf>
             </section>
 
+            <section name="billing_agreements">
+                <conf name="max_capture_tries">
+                    <type><![CDATA[integer]]></type>
+                    <defaultvalue>3</defaultvalue>
+                </conf>
+            </section>
+
             <section name="widgets">
                 <conf name="btn_color">
                     <type><![CDATA[string]]></type>
@@ -131,6 +138,22 @@
                             </text>
                             <description>
                                 <locale group="quiqqer/payment-amazon" var="settings.api.sandbox.description"/>
+                            </description>
+                        </input>
+
+                    </settings>
+
+                    <settings title="billing_agreements" name="billing_agreements">
+                        <title>
+                            <locale group="quiqqer/payment-amazon" var="settings.billing_agreements.title"/>
+                        </title>
+
+                        <input conf="billing_agreements.max_capture_tries" type="text">
+                            <text>
+                                <locale group="quiqqer/payment-amazon" var="settings.billing_agreements.max_capture_tries.title"/>
+                            </text>
+                            <description>
+                                <locale group="quiqqer/payment-amazon" var="settings.billing_agreements.max_capture_tries.description"/>
                             </description>
                         </input>
 
