@@ -234,10 +234,46 @@
             <de><![CDATA[Maximale Anzahl an Versuchen, die durchgeführt werden, um Rechnunen zu Abonnements über die zugehörige Abrechnungsvereinbarung bei Amazon einzuzeiehn. Schlägt der Vorgang zu oft fehl, wird die Abrechnungsvereinbarung automatisch auf inaktiv gesetzt.]]></de>
             <en><![CDATA[Maximum number of attempts made to bill subscriptions via the associated Amazon billing agreement. If the process fails too often, the billing agreement is automatically set to inactive.]]></en>
         </locale>
+        <locale name="settings.category.amazon_billing_agreements.title">
+            <de><![CDATA[Amazon Pay Abrechnungsvereinbarungen (Billing Agreements)]]></de>
+            <en><![CDATA[Amazon Pay Billing Agreements]]></en>
+        </locale>
+
+        <locale name="cron.processUnpaidInvoices.title">
+            <de><![CDATA[Amazon Pay: Rechnungen für wiederkehrende Zahlungen abarbeiten]]></de>
+            <en><![CDATA[Amazon Pay: Process invoices for recurring payments]]></en>
+        </locale>
+        <locale name="cron.processUnpaidInvoices.description">
+            <de><![CDATA[Für alle offenen Rechnungen mit wiederkehrenden Zahlungen die passenden Amazon Abrechnungsvereinbarungen belasten.]]></de>
+            <en><![CDATA[Charge all open invoices with recurring payments to the appropriate Amazon billing agreements.]]></en>
+        </locale>
+
+        <!-- Permissions -->
+        <locale name="permission.quiqqer.payments.paypal._header">
+            <de><![CDATA[Amazon Pay]]></de>
+            <en><![CDATA[Amazon Pay]]></en>
+        </locale>
+                <locale name="permission.quiqqer.payments.paypal.billing_agreements._header">
+            <de><![CDATA[Amazon Pay - Abrechnungsvereinbarungen (Billing Agreements)]]></de>
+            <en><![CDATA[Amazon Pay - Billing Agreements]]></en>
+        </locale>
+        <locale name="permission.quiqqer.payments.paypal.billing_agreements.view">
+            <de><![CDATA[Darf Abrechnungsvereinbarungen ansehen]]></de>
+            <en><![CDATA[Can view Billing Agreements]]></en>
+        </locale>
+        <locale name="permission.quiqqer.payments.paypal.billing_agreements.cancel">
+            <de><![CDATA[Darf Abrechnungsvereinbarungen kündigen]]></de>
+            <en><![CDATA[Can cancel Billing Agreements]]></en>
+        </locale>
 
     </groups>
 
     <groups name="quiqqer/payment-amazon" datatype="php">
+
+        <locale name="message.ajax.recurring.cancelBillingAgreement.success">
+            <de><![CDATA[Die Amazon Pay Abrechnungsvereinbarung [billingAgreementId] wurde erfolgreich gekündigt.]]></de>
+            <en><![CDATA[The Amazon Pay Billing Agreement [billingAgreementId] has been cancelled successfully.]]></en>
+        </locale>
 
         <!-- PaymentDisplay -->
         <locale name="PaymentDisplay.no_javascript">
@@ -318,6 +354,15 @@
             <de><![CDATA[Der Einzug des Rechnungsbetrags über Amazon Pay ist fehlgeschlagen.]]></de>
             <en><![CDATA[]]></en>
         </locale>
+        <locale name="history.invoice.error.agreement_cancel_max_capture_attempts_exceeded">
+            <de><![CDATA[Amazon Pay Abrechnungsvereinbarung [billingAgreementId] wurde deaktiviert, da der Versuch, diese Rechnung zu bezahlen, [attempts] Mal fehlgeschlagen ist.]]></de>
+            <en><![CDATA[Amazon Pay Billing Agreement [billingAgreementId] was deactivated because the attempt to pay this invoice failed [attempts] times.]]></en>
+        </locale>
+        <locale name="history.invoice.add_amazon_transaction">
+            <de><![CDATA[Rechnungsbetrag über Amazon Abrechnungsvereinbarung [billingAgreementId] eingezogen. Amazon Authorisierungs-ID: [amazonAuthorizationId]; QUIQQER Transaktions-ID: [quiqqerTransactionId]]]></de>
+            <en><![CDATA[Invoice amount collected via Amazon Billing Agreement [billingAgreementId]. Amazon Authorization ID: [amazonAuthorizationId]; QUIQQER Ttransaction ID: [quiqqerTransactionId].]]></en>
+        </locale>
+        
         <locale name="exception.Recurring.agreement_not_found">
             <de><![CDATA[Amazon Pay Billing Agreement [billingAgreementId] wurde nicht gefunden.]]></de>
             <en><![CDATA[Amazon Pay Billing Agreement [billingAgreementId] was not found.]]></en>
@@ -329,6 +374,10 @@
         <locale name="recurring.BillingAgreement.seller_authorization_note">
             <de><![CDATA[Rechnung [invoiceId] zu Ihrem Abonnement auf [url]]]></de>
             <en><![CDATA[Invoice [invoiceId] for your subscription at [url]]]></en>
+        </locale>
+        <locale name="message.BillingAgreements.agreement_cancel.max_capture_attempts_exceeded">
+            <de><![CDATA[Zahlungsversuche für diese Abrechnungsvereinbarung sind [attempts] Mal fehlgeschlagen. Die Abrechnungsvereinbarung wurde automatisch gekündigt. Sie werden ggf. von uns bzgl. noch ausstehender Rechnungsbeträge benachrichtigt.]]></de>
+            <en><![CDATA[Payment attempts for this billing agreement have failed [attempts] times. The billing agreement was automatically terminated. You will be contacted by us about any outstanding invoice amounts.]]></en>
         </locale>
 
     </groups>
@@ -393,6 +442,66 @@
         <locale name="controls.recurring.PaymentDisplay.consent_denied">
             <de><![CDATA[Sie haben die Genehmigung für eine wiederkehrende Zahlung mit Ihrem Amazon Pay Konto nicht erteilt. Bitte wiederholen Sie den Vorgang und erteilen Sie die Genehmigung oder wählen Sie eine andere Zahlungsmethode.]]></de>
             <en><![CDATA[You have not given permission for a recurring payment with your Amazon Pay account. Please repeat the process and give approval or choose another payment method.]]></en>
+        </locale>
+
+        <!-- Control: bin/controls/backend/BillingAgreementWindow -->
+        <locale name="controls.backend.BillingAgreementWindow.title">
+            <de><![CDATA[Amazon Pay Abrechnungsvereinbarung (Billing Agreement)]]></de>
+            <en><![CDATA[Amazon Pay Billing Agreement]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreementWindow.btn.cancel">
+            <de><![CDATA[Vereinbarung kündigen]]></de>
+            <en><![CDATA[Cancel agreement]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreementWindow.cancel.title">
+            <de><![CDATA[Abrechnungsvereinbarung kündigen]]></de>
+            <en><![CDATA[Cancel Billing Agreement]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreementWindow.cancel.information">
+            <de><![CDATA[Durch diesen Vorgang werden <b>keine zukünftigen Zahlungen</b> mehr von Amazon in Bezug auf diese Abrechnungsvereinbarung durchgeführt. Dies lässt sich <b>nicht rückgängig machen!</b>]]></de>
+            <en><![CDATA[Through this process, <b>no future payments</b> will be made by Amazon with respect to this billing agreement. This can <b>not be undone!</b>]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreementWindow.cancel.text">
+            <de><![CDATA[Soll die Abrechnungsvereinbarung wirklich gekündigt werden?]]></de>
+            <en><![CDATA[Shall the Billing Agreement be cancelled?]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreementWindow.cancel.confirm">
+            <de><![CDATA[Jetzt kündigen]]></de>
+            <en><![CDATA[Cancel now]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreementWindow.load_error">
+            <de><![CDATA[Die Details der Abrechnungsvereinbarung konnten von Amazon nicht abgerufen werden. Dies kann z.B. daran liegen, dass die Abrechnungsvereinbarung mit einem anderen als dem aktuell verwendeten API-Schlüssel erstellt wurde (z.B. Sandbox).]]></de>
+            <en><![CDATA[The Billing Agreement details could not be retrieved from Amazon. This could be because the Billing Agreement was created with a different API key than the current one (e.g. sandbox).]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreementWindow.inactive_warning" html="true">
+            <de><![CDATA[<b>Achtung!</b> Diese Abrechnungsvereinbarung ist auf Seiten von Amazon gekündigt, in diesem QUIQQER-System jedoch noch als aktiv gekennzeichnet. Dies kann bedeuten, dass der Kunde in seinem Amazon-Konto die Abrechnungsvereinbarung gekündigt hat ohne seinen laufenden Vertrag/Mitgliedschaft in diesem QUIQQER-System zu kündigen. Dies hat zur Folge, dass <b>keine Zahlungen</b> mehr von Amazon für die zugeordneten Rechnungen eingezogen werden. Bitte kontaktieren Sie den Kunden, um die Angelegenheit individuell zu klären.]]></de>
+            <en><![CDATA[<b>Caution!</b> This Billing Agreement has been terminated on the side of Amazon, but is still marked as active in this QUIQQER system. This may mean that the customer has cancelled the Billing Agreement in his Amazon account without cancelling his current contract/membership in this QUIQQER system. As a result, <b>no payments</b> will be collected by Amazon for the associated invoices. Please contact the customer to clarify the matter individually.]]></en>
+        </locale>
+
+        <!-- Control: bin/controls/backend/BillingAgreements -->
+        <locale name="controls.backend.BillingAgreements.tbl.btn.details">
+            <de><![CDATA[Details anzeigen]]></de>
+            <en><![CDATA[Show details]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreements.tbl.customer_text">
+            <de><![CDATA[Kunde]]></de>
+            <en><![CDATA[Customer]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreements.tbl.global_process_id">
+            <de><![CDATA[Vorgangs-Nr.]]></de>
+            <en><![CDATA[Global process ID]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreements.tbl.active_status">
+            <de><![CDATA[Aktiv]]></de>
+            <en><![CDATA[Active]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreements.tbl.amazon_agreement_id">
+            <de><![CDATA[Amazon Billing Agreement ID]]></de>
+            <en><![CDATA[Amazon Billing Agreement ID]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreements.search.placeholder">
+            <de><![CDATA[Vorgangs-Nr.]]></de>
+            <en><![CDATA[Global process ID]]></en>
         </locale>
 
     </groups>

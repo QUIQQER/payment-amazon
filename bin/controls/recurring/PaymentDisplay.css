@@ -2,15 +2,15 @@
     z-index: 1000 !important;
 }
 
-.quiqqer-payment-paypal-recurring-paymentdisplay-btn {
+.quiqqer-payment-amazon-recurring-paymentdisplay-btn {
     background: #ffc439;
     color: #111;
 }
 
-.fa-paypal {
+.fa-amazon {
     font-family: FontAwesome, "Font Awesome 5 Brands";
 }
 
-.fa-paypal:before {
+.fa-amazon:before {
     content: "\f1ed";
 }

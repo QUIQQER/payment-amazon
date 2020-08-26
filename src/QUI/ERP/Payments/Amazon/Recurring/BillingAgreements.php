@@ -6,11 +6,13 @@ use QUI;
 use QUI\ERP\Order\AbstractOrder;
 use QUI\ERP\Payments\Amazon\AmazonPayException;
 use QUI\ERP\Payments\Amazon\Utils;
-use QUI\ERP\Accounting\Payments\Gateway\Gateway;
+use QUI\Utils\Security\Orthos;
 use QUI\ERP\Payments\Amazon\Payment as BasePayment;
 use QUI\ERP\Payments\Amazon\AmazonPayException as AmazonException;
 use QUI\ERP\Accounting\Invoice\Invoice;
 use QUI\ERP\Accounting\Payments\Transactions\Factory as TransactionFactory;
+use QUI\ERP\Accounting\Invoice\Handler as InvoiceHandler;
+use QUI\ERP\Accounting\Payments\Payments;
 
 /**
  * Class BillingAgreements
@@ -28,6 +30,8 @@ class BillingAgreements
 
     const TRANSACTION_STATE_COMPLETED = 'Completed';
     const TRANSACTION_STATE_DENIED    = 'Denied';
+
+    const ATTR_BILLING_AGREEMENT_AUTHORIZATION_ID = 'amazon-AmazonBillingAgreementAuthorizationId';
 
     const EXCEPTION_CODE_BILLING_AGREEMENT_VALIDATION_ERROR = 630001;
 
@@ -72,6 +76,7 @@ class BillingAgreements
         ]);
 
         $Order->setAttribute(Payment::ATTR_AMAZON_BILLING_AGREEMENT_ID, $billingAgreementId);
+        $Order->setPaymentData(Payment::ATTR_AMAZON_BILLING_AGREEMENT_ID, $billingAgreementId);
         $Order->addHistory(Utils::getHistoryText('BillingAgreement.set_details'));
         Utils::saveOrder($Order);
     }
@@ -190,7 +195,7 @@ class BillingAgreements
             self::getBillingAgreementsTable(),
             [
                 'amazon_agreement_id' => $Order->getAttribute(Payment::ATTR_AMAZON_BILLING_AGREEMENT_ID),
-                'customer'            => $Customer->getName().' ('.$Customer->getId().')',
+                'customer'            => \json_encode($Customer->getAttributes()),
                 'global_process_id'   => $Order->getHash(),
                 'active'              => 1
             ]
@@ -202,8 +207,9 @@ class BillingAgreements
      *
      * @param Invoice $Invoice
      * @return void
+     *
      * @throws AmazonException
-     * @throws \QUI\Exception
+     * @throws QUI\Exception
      */
     public static function billBillingAgreementBalance(Invoice $Invoice)
     {
@@ -226,7 +232,7 @@ class BillingAgreements
             );
         }
 
-        $data = self::getBillingAgreementData($billingAgreementId);
+        $data = self::getQuiqqerBillingAgreementData($billingAgreementId);
 
         if ($data === false) {
             $Invoice->addHistory(
@@ -247,7 +253,24 @@ class BillingAgreements
             );
         }
 
+        // Do not process invoices for inactive billing agreements
+        if (!$data['active']) {
+            return;
+        }
+
         // Check if a Billing Agreement transaction matches the Invoice
+        $transactionData = self::getBillingAgreementTransactionData($billingAgreementId, $Invoice->getCleanId());
+
+        // If no transaction data found -> create DB entry
+        QUI::getDataBase()->insert(
+            self::getBillingAgreementTransactionsTable(),
+            [
+                'invoice_id'          => $Invoice->getCleanId(),
+                'amazon_agreement_id' => $billingAgreementId,
+                'global_process_id'   => $Invoice->getGlobalProcessId()
+            ]
+        );
+
         $invoiceAmount   = Utils::getFormattedPriceByInvoice($Invoice);
         $invoiceCurrency = $Invoice->getCurrency()->getCode();
         $Payment         = new Payment();
@@ -270,9 +293,15 @@ class BillingAgreements
         ]);
 
         $data = $Request->toArray();
+
+        \QUI\System\Log::writeRecursive($data);
+
         $data = $data['AuthorizeOnBillingAgreementResult']['AuthorizationDetails'];
 
         $capturedAmount = $data['CapturedAmount'];
+
+        $captureAttempts = $transactionData ? $transactionData['capture_attempts'] : 0;
+        $captureAttempts++;
 
         if ($capturedAmount['Amount'] !== $invoiceAmount || $capturedAmount['CurrencyCode'] !== $invoiceCurrency) {
             $Invoice->addHistory(
@@ -281,71 +310,85 @@ class BillingAgreements
                 ])
             );
 
-//            throw new AmazonException(
-//                QUI::getLocale()->get(
-//                    'quiqqer/payment-amazon',
-//                    'exception.Recurring.agreement_capture_failed',
-//                    [
-//                        'billingAgreementId' => $billingAgreementId
-//                    ]
-//                )
-//            );
-        }
-
-
-        foreach ($unprocessedTransactions as $transaction) {
-            $amount   = (float)$transaction['amount']['value'];
-            $currency = $transaction['amount']['currency'];
-
-            if ($currency !== $invoiceCurrency) {
-                continue;
-            }
-
-            if ($amount < $invoiceAmount) {
-                continue;
-            }
-
-            // Transaction amount equals Invoice amount
-            try {
-                $AmazonTransactionDate = date_create($transaction['time_stamp']);
-
-                $InvoiceTransaction = TransactionFactory::createPaymentTransaction(
-                    $amount,
-                    $Invoice->getCurrency(),
-                    $Invoice->getHash(),
-                    $Payment->getName(),
-                    [
-                        RecurringPayment::ATTR_AMAZON_BILLING_AGREEMENT_TRANSACTION_ID => $transaction['transaction_id']
-                    ],
-                    null,
-                    $AmazonTransactionDate->getTimestamp(),
-                    $Invoice->getGlobalProcessId()
-                );
-
-                $Invoice->addTransaction($InvoiceTransaction);
-
-                QUI::getDataBase()->update(
-                    self::getBillingAgreementTransactionsTable(),
-                    [
-                        'quiqqer_transaction_id'        => $InvoiceTransaction->getTxId(),
-                        'quiqqer_transaction_completed' => 1
-                    ],
-                    [
-                        'amazon_transaction_id' => $transaction['transaction_id']
-                    ]
+            // Increase capture attempts
+            if ($captureAttempts >= self::getBillingAgreementMaxCaptureAttempts()) {
+                self::cancelBillingAgreement(
+                    $billingAgreementId,
+                    QUI::getLocale()->get(
+                        'quiqqer/payment-amazon',
+                        'message.BillingAgreements.agreement_cancel.max_capture_attempts_exceeded',
+                        [
+                            'attempts' => $captureAttempts
+                        ]
+                    )
                 );
 
                 $Invoice->addHistory(
-                    Utils::getHistoryText('invoice.add_amazon_transaction', [
-                        'quiqqerTransactionId' => $InvoiceTransaction->getTxId(),
-                        'amazonTransactionId'  => $transaction['transaction_id']
+                    Utils::getHistoryText('invoice.error.agreement_cancel_max_capture_attempts_exceeded', [
+                        'billingAgreementId' => $billingAgreementId,
+                        'attempts'           => $captureAttempts
                     ])
                 );
-            } catch (\Exception $Exception) {
-                QUI\System\Log::writeException($Exception);
             }
 
-            break;
+            QUI::getDataBase()->update(
+                self::getBillingAgreementTransactionsTable(),
+                [
+                    'capture_attempts' => $captureAttempts
+                ],
+                [
+                    'invoice_id'          => $Invoice->getCleanId(),
+                    'amazon_agreement_id' => $billingAgreementId
+                ]
+            );
+
+            return;
+        }
+
+        // Transaction amount equals Invoice amount
+        try {
+            $InvoiceTransaction = TransactionFactory::createPaymentTransaction(
+                $invoiceAmount,
+                $invoiceCurrency,
+                $Invoice->getHash(),
+                $Payment->getName(),
+                [
+                    self::ATTR_BILLING_AGREEMENT_AUTHORIZATION_ID => $data['AmazonAuthorizationId']
+                ],
+                null,
+                null,
+                $Invoice->getGlobalProcessId()
+            );
+
+            $Invoice->addTransaction($InvoiceTransaction);
+
+            $TransactionDate = \date_create($data['CreationTimestamp']);
+
+            QUI::getDataBase()->update(
+                self::getBillingAgreementTransactionsTable(),
+                [
+                    'quiqqer_transaction_id'        => $InvoiceTransaction->getTxId(),
+                    'quiqqer_transaction_completed' => 1,
+                    'amazon_authorization_id'       => $data['AmazonAuthorizationId'],
+                    'amazon_transaction_data'       => \json_encode($Request->toArray()),
+                    'amazon_transaction_date'       => $TransactionDate->format('Y-m-d H:i:s'),
+                    'capture_attempts'              => $captureAttempts,
+                ],
+                [
+                    'invoice_id'          => $Invoice->getCleanId(),
+                    'amazon_agreement_id' => $billingAgreementId
+                ]
+            );
+
+            $Invoice->addHistory(
+                Utils::getHistoryText('invoice.add_amazon_transaction', [
+                    'quiqqerTransactionId'  => $InvoiceTransaction->getTxId(),
+                    'amazonAuthorizationId' => $data['AmazonAuthorizationId'],
+                    'billingAgreementId'    => $billingAgreementId
+                ])
+            );
+        } catch (\Exception $Exception) {
+            QUI\System\Log::writeException($Exception);
         }
     }
 
@@ -435,10 +478,7 @@ class BillingAgreements
             $Stmt->execute();
             $result = $Stmt->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Exception $Exception) {
-            QUI\System\Log::addError(
-                self::class.' :: searchUsers() -> '.$Exception->getMessage()
-            );
-
+            QUI\System\Log::writeException($Exception);
             return [];
         }
 
@@ -450,21 +490,32 @@ class BillingAgreements
     }
 
     /**
-     * Get details of a Billing Agreement (Amazon data)
+     * Get billing agreement transaction data by invoice
      *
      * @param string $billingAgreementId
-     * @return array
-     * @throws AmazonException
+     * @param int $invoiceId
+     * @return array|false - Transaction data or false if not yet created
      */
-    public static function getBillingAgreementDetails($billingAgreementId)
+    public static function getBillingAgreementTransactionData(string $billingAgreementId, int $invoiceId)
     {
-        return self::amazonApiRequest(
-            RecurringPayment::AMAZON_REQUEST_TYPE_GET_BILLING_AGREEMENT,
-            [],
-            [
-                RecurringPayment::ATTR_AMAZON_BILLING_AGREEMENT_ID => $billingAgreementId
-            ]
-        );
+        try {
+            $result = QUI::getDataBase()->fetch([
+                'from'  => self::getBillingAgreementTransactionsTable(),
+                'where' => [
+                    'amazon_agreement_id' => $billingAgreementId,
+                    'invoice_id'          => $invoiceId
+                ]
+            ]);
+        } catch (\Exception $Exception) {
+            QUI\System\Log::writeException($Exception);
+            return false;
+        }
+
+        if (empty($result)) {
+            return false;
+        }
+
+        return \current($result);
     }
 
     /**
@@ -511,74 +562,27 @@ class BillingAgreements
     }
 
     /**
-     * Cancel a Billing Agreement
-     *
-     * @param int|string $billingAgreementId
-     * @param string $reason (optional) - The reason why the billing agreement is being cancelled
-     * @return void
-     * @throws AmazonException
-     * @throws QUI\Database\Exception
-     */
-    public static function cancelBillingAgreement($billingAgreementId, $reason = '')
-    {
-        $data = self::getBillingAgreementData($billingAgreementId);
-
-        if (empty($data)) {
-            return;
-        }
-
-        try {
-            $Locale = new QUI\Locale();
-            $Locale->setCurrent($data['customer']['lang']);
-        } catch (\Exception $Exception) {
-            QUI\System\Log::writeException($Exception);
-            return;
-        }
-
-        if (empty($reason)) {
-            $reason = $Locale->get(
-                'quiqqer/payment-amazon',
-                'recurring.billing_agreement.cancel.note',
-                [
-                    'url'             => Utils::getProjectUrl(),
-                    'globalProcessId' => $data['globalProcessId']
-                ]
-            );
-        }
-
-        try {
-            self::amazonApiRequest(
-                RecurringPayment::AMAZON_REQUEST_TYPE_CANCEL_BILLING_AGREEMENT,
-                [
-                    'note' => $reason
-                ],
-                [
-                    RecurringPayment::ATTR_AMAZON_BILLING_AGREEMENT_ID => $billingAgreementId
-                ]
-            );
-        } catch (\Exception $Exception) {
-            QUI\System\Log::writeException($Exception);
-
-            throw new AmazonException(
-                QUI::getLocale()->get(
-                    'quiqqer/payment-amazon',
-                    'exception.Recurring.cancel.error'
-                )
-            );
-        }
-
-        self::setBillingAgreementAsInactive($billingAgreementId);
-    }
-
-    /**
-     * Set status of a BillingAgreement as inactive
+     * Set status of a BillingAgreement as inactive (QUIQQER and Amazon)
      *
      * @param string $billingAgreementId
+     * @param string $reason (optional) - Reason for deactivation (max. 1024 characters)
      * @return void
      */
-    public static function setBillingAgreementAsInactive($billingAgreementId)
+    public static function cancelBillingAgreement($billingAgreementId, string $reason = null)
     {
         try {
+            $AmazonPay = BasePayment::getAmazonPayClient();
+
+            $closeArguments = [
+                'amazon_billing_agreement_id' => $billingAgreementId
+            ];
+
+            if (!empty($reason)) {
+                $closeArguments['closure_reason'] = \mb_substr($reason, 0, 1024);
+            }
+
+            $AmazonPay->closeBillingAgreement($closeArguments);
+
             QUI::getDataBase()->update(
                 self::getBillingAgreementsTable(),
                 [
@@ -590,72 +594,6 @@ class BillingAgreements
             );
         } catch (\Exception $Exception) {
             QUI\System\Log::writeException($Exception);
-        }
-    }
-
-    /**
-     * Execute a Billing Agreement
-     *
-     * @param AbstractOrder $Order
-     * @param string $agreementToken
-     * @return void
-     * @throws AmazonException
-     */
-    public static function executeBillingAgreement(AbstractOrder $Order, string $agreementToken)
-    {
-        try {
-            $response = self::amazonApiRequest(
-                RecurringPayment::AMAZON_REQUEST_TYPE_EXECUTE_BILLING_AGREEMENT,
-                [],
-                [
-                    RecurringPayment::ATTR_AMAZON_BILLING_AGREEMENT_TOKEN => $agreementToken
-                ]
-            );
-        } catch (AmazonException $Exception) {
-            $Order->addHistory('Amazon :: Amazon API ERROR. Please check error logs.');
-            Utils::saveOrder($Order);
-
-            QUI\System\Log::writeException($Exception);
-
-            throw new AmazonException(
-                QUI::getLocale()->get(
-                    'quiqqer/payment-amazon',
-                    'exception.Recurring.order.error'
-                )
-            );
-        }
-
-        $Order->addHistory(Utils::getHistoryText('order.billing_agreement_accepted', [
-            'agreementToken' => $agreementToken,
-            'agreementId'    => $response['id']
-        ]));
-
-        $Order->setPaymentData(RecurringPayment::ATTR_AMAZON_BILLING_AGREEMENT_TOKEN, $agreementToken);
-        $Order->setPaymentData(RecurringPayment::ATTR_AMAZON_BILLING_AGREEMENT_ID, $response['id']);
-        $Order->setPaymentData(BasePayment::ATTR_AMAZON_PAYMENT_SUCCESSFUL, true);
-        Utils::saveOrder($Order);
-
-        // Save billing agreement reference in database
-        try {
-            QUI::getDataBase()->insert(
-                self::getBillingAgreementsTable(),
-                [
-                    'amazon_agreement_id' => $Order->getPaymentDataEntry(RecurringPayment::ATTR_AMAZON_BILLING_AGREEMENT_ID),
-                    'amazon_plan_id'      => $Order->getPaymentDataEntry(RecurringPayment::ATTR_AMAZON_BILLING_PLAN_ID),
-                    'customer'            => json_encode($Order->getCustomer()->getAttributes()),
-                    'global_process_id'   => $Order->getHash(),
-                    'active'              => 1
-                ]
-            );
-        } catch (\Exception $Exception) {
-            QUI\System\Log::writeException($Exception);
-
-            throw new AmazonException(
-                QUI::getLocale()->get(
-                    'quiqqer/payment-amazon',
-                    'exception.Recurring.order.error'
-                )
-            );
         }
     }
 
@@ -672,7 +610,7 @@ class BillingAgreements
         $payments = Payments::getInstance()->getPayments([
             'select' => ['id'],
             'where'  => [
-                'payment_type' => RecurringPayment::class
+                'payment_type' => Payment::class
             ]
         ]);
 
@@ -746,9 +684,6 @@ class BillingAgreements
                     try {
                         $Invoice = $Invoices->get($invoiceId);
 
-                        // First: Process all failed transactions for Invoice
-                        self::processDeniedTransactions($Invoice);
-
                         // Second: Process all completed transactions for Invoice
                         self::billBillingAgreementBalance($Invoice);
                     } catch (\Exception $Exception) {
@@ -760,286 +695,12 @@ class BillingAgreements
     }
 
     /**
-     * Processes all denied Amazon transactions for an Invoice and creates a corresponding ERP Transaction
-     *
-     * @param Invoice $Invoice
-     * @return void
-     */
-    public static function processDeniedTransactions(Invoice $Invoice)
-    {
-        $billingAgreementId = $Invoice->getPaymentDataEntry(RecurringPayment::ATTR_AMAZON_BILLING_AGREEMENT_ID);
-
-        if (empty($billingAgreementId)) {
-            return;
-        }
-
-        $data = self::getBillingAgreementData($billingAgreementId);
-
-        if (empty($data)) {
-            return;
-        }
-
-        // Get all "Denied" Amazon transactions
-        try {
-            $unprocessedTransactions = self::getUnprocessedTransactions(
-                $billingAgreementId,
-                self::TRANSACTION_STATE_DENIED
-            );
-        } catch (\Exception $Exception) {
-            QUI\System\Log::writeException($Exception);
-            return;
-        }
-
-        try {
-            $Invoice->calculatePayments();
-
-            $invoiceAmount   = (float)$Invoice->getAttribute('toPay');
-            $invoiceCurrency = $Invoice->getCurrency()->getCode();
-        } catch (\Exception $Exception) {
-            QUI\System\Log::writeException($Exception);
-            return;
-        }
-
-        $Payment = new RecurringPayment();
-
-        foreach ($unprocessedTransactions as $transaction) {
-            $amount   = (float)$transaction['amount']['value'];
-            $currency = $transaction['amount']['currency'];
-
-            if ($currency !== $invoiceCurrency) {
-                continue;
-            }
-
-            if ($amount < $invoiceAmount) {
-                continue;
-            }
-
-            // Transaction amount equals Invoice amount
-            try {
-                $InvoiceTransaction = TransactionFactory::createPaymentTransaction(
-                    $amount,
-                    $Invoice->getCurrency(),
-                    $Invoice->getHash(),
-                    $Payment->getName(),
-                    [],
-                    null,
-                    false,
-                    $Invoice->getGlobalProcessId()
-                );
-
-                $InvoiceTransaction->changeStatus(TransactionHandler::STATUS_ERROR);
-
-                $Invoice->addTransaction($InvoiceTransaction);
-
-                QUI::getDataBase()->update(
-                    self::getBillingAgreementTransactionsTable(),
-                    [
-                        'quiqqer_transaction_id'        => $InvoiceTransaction->getTxId(),
-                        'quiqqer_transaction_completed' => 1
-                    ],
-                    [
-                        'amazon_transaction_id' => $transaction['transaction_id']
-                    ]
-                );
-
-                $Invoice->addHistory(
-                    Utils::getHistoryText('invoice.add_amazon_transaction', [
-                        'quiqqerTransactionId' => $InvoiceTransaction->getTxId(),
-                        'amazonTransactionId'  => $transaction['id']
-                    ])
-                );
-            } catch (\Exception $Exception) {
-                QUI\System\Log::writeException($Exception);
-            }
-        }
-    }
-
-    /**
-     * Refreshes transactions for a Billing Agreement
-     *
-     * @param string $billingAgreementId
-     * @return void
-     * @throws AmazonException
-     * @throws QUI\Database\Exception
-     * @throws \Exception
-     */
-    protected static function refreshTransactionList($billingAgreementId)
-    {
-        if (isset(self::$transactionsRefreshed[$billingAgreementId])) {
-            return;
-        }
-
-        // Get global process id
-        $data            = self::getBillingAgreementData($billingAgreementId);
-        $globalProcessId = $data['globalProcessId'];
-
-        // Determine start date
-        $result = QUI::getDataBase()->fetch([
-            'select' => ['amazon_transaction_date'],
-            'from'   => self::getBillingAgreementTransactionsTable(),
-            'where'  => [
-                'amazon_agreement_id' => $billingAgreementId
-            ],
-            'order'  => [
-                'field' => 'amazon_transaction_date',
-                'sort'  => 'DESC'
-            ],
-            'limit'  => 1
-        ]);
-
-        if (empty($result)) {
-            $Start = new \DateTime(date('Y').'-01-01 00:00:00'); // Beginning of current year
-        } else {
-            $Start = new \DateTime($result[0]['amazon_transaction_date']);
-        }
-
-        $End = new \DateTime(); // today
-
-        // Determine existing transactions
-        $result = QUI::getDataBase()->fetch([
-            'select' => ['amazon_transaction_id', 'amazon_transaction_date'],
-            'from'   => self::getBillingAgreementTransactionsTable(),
-            'where'  => [
-                'amazon_agreement_id' => $billingAgreementId
-            ]
-        ]);
-
-        $existing = [];
-
-        foreach ($result as $row) {
-            $idHash            = md5($row['amazon_transaction_id'].$row['amazon_transaction_date']);
-            $existing[$idHash] = true;
-        }
-
-        // Parse NEW transactions
-        $transactions = self::getBillingAgreementTransactions($billingAgreementId, $Start, $End);
-
-        foreach ($transactions as $transaction) {
-            if (!isset($transaction['amount'])) {
-                continue;
-            }
-
-            // Add warning if a transaction is unclaimed
-            if ($transaction['status'] === 'Unclaimed') {
-                QUI\System\Log::addWarning(
-                    'Amazon Recurring Payments -> Some transactions for Billing Agreement '.$billingAgreementId
-                    .' are marked as "Unclaimed" and cannot be processed for QUIQQER ERP Invoices. This most likely'
-                    .' means that your Amazon merchant account does not support transactions'
-                    .' in the transaction currency ('.$transaction['amount']['currency'].')!'
-                );
-
-                continue;
-            }
-
-            // Only collect transactions with status "Completed" or "Denied"
-            if ($transaction['status'] !== self::TRANSACTION_STATE_COMPLETED
-                && $transaction['status'] !== self::TRANSACTION_STATE_DENIED) {
-                continue;
-            }
-
-            $TransactionTime = new \DateTime($transaction['time_stamp']);
-            $transactionTime = $TransactionTime->format('Y-m-d H:i:s');
-
-            $idHash = md5($transaction['transaction_id'].$transactionTime);
-
-            if (isset($existing[$idHash])) {
-                continue;
-            }
-
-            QUI::getDataBase()->insert(
-                self::getBillingAgreementTransactionsTable(),
-                [
-                    'amazon_transaction_id'   => $transaction['transaction_id'],
-                    'amazon_agreement_id'     => $billingAgreementId,
-                    'amazon_transaction_data' => json_encode($transaction),
-                    'amazon_transaction_date' => $transactionTime,
-                    'global_process_id'       => $globalProcessId
-                ]
-            );
-        }
-
-        self::$transactionsRefreshed[$billingAgreementId] = true;
-    }
-
-    /**
-     * Get all completed Billing Agreement transactions that are unprocessed by QUIQQER ERP
-     *
-     * @param string $billingAgreementId
-     * @param string $status (optional) - Get transactions with this status [default: "Completed"]
-     * @return array
-     * @throws QUI\Database\Exception
-     * @throws AmazonException
-     * @throws \Exception
-     */
-    protected static function getUnprocessedTransactions(
-        $billingAgreementId,
-        $status = self::TRANSACTION_STATE_COMPLETED
-    ) {
-        $result = QUI::getDataBase()->fetch([
-            'select' => ['amazon_transaction_data'],
-            'from'   => self::getBillingAgreementTransactionsTable(),
-            'where'  => [
-                'amazon_agreement_id'    => $billingAgreementId,
-                'quiqqer_transaction_id' => null
-            ]
-        ]);
-
-        // Try to refresh list if no unprocessed transactions found
-        if (empty($result)) {
-            self::refreshTransactionList($billingAgreementId);
-
-            $result = QUI::getDataBase()->fetch([
-                'select' => ['amazon_transaction_data'],
-                'from'   => self::getBillingAgreementTransactionsTable(),
-                'where'  => [
-                    'amazon_agreement_id'    => $billingAgreementId,
-                    'quiqqer_transaction_id' => null
-                ]
-            ]);
-        }
-
-        $transactions = [];
-
-        foreach ($result as $row) {
-            $t = json_decode($row['amazon_transaction_data'], true);
-
-            if ($t['status'] !== $status) {
-                continue;
-            }
-
-            $transactions[] = $t;
-        }
-
-        return $transactions;
-    }
-
-    /**
-     * Make a Amazon REST API request
-     *
-     * @param string $request - Request type (see self::AMAZON_REQUEST_TYPE_*)
-     * @param array $body - Request data
-     * @param AbstractOrder|Transaction|array $TransactionObj - Object that contains necessary request data
-     * ($Order has to have the required paymentData attributes for the given $request value!)
-     * @return array|false - Response body or false on error
-     *
-     * @throws AmazonException
-     */
-    protected static function amazonApiRequest($request, $body, $TransactionObj)
-    {
-        if (is_null(self::$Payment)) {
-            self::$Payment = new QUI\ERP\Payments\Amazon\Payment();
-        }
-
-        return self::$Payment->amazonApiRequest($request, $body, $TransactionObj);
-    }
-
-    /**
      * Get available data by Billing Agreement ID (QUIQQER data)
      *
      * @param string $billingAgreementId - Amazon Billing Agreement ID
      * @return array|false
      */
-    public static function getBillingAgreementData($billingAgreementId)
+    public static function getQuiqqerBillingAgreementData(string $billingAgreementId)
     {
         try {
             $result = QUI::getDataBase()->fetch([
@@ -1062,8 +723,47 @@ class BillingAgreements
         return [
             'active'          => !empty($data['active']),
             'globalProcessId' => $data['global_process_id'],
-            'customer'        => json_decode($data['customer'], true),
+            'customer'        => json_decode($data['customer'], true)
         ];
+    }
+
+    /**
+     * Get available data by Billing Agreement ID (Amazon data)
+     *
+     * @param string $billingAgreementId - Amazon Billing Agreement ID
+     * @return array|false
+     *
+     * @throws \Exception
+     */
+    public static function getAmazonBillingAgreementData(string $billingAgreementId)
+    {
+        $AmazonPay = BasePayment::getAmazonPayClient();
+
+        $Response = $AmazonPay->getBillingAgreementDetails([
+            'amazon_billing_agreement_id' => $billingAgreementId
+        ]);
+
+        $data = $Response->toArray();
+
+        return $data['GetBillingAgreementDetailsResult']['BillingAgreementDetails'];
+    }
+
+    /**
+     * Get number of attempts for trying to capture funds from a BillingAgreement
+     *
+     * @return int
+     */
+    protected static function getBillingAgreementMaxCaptureAttempts()
+    {
+        try {
+            return (int)QUI::getPackage('quiqqer/payment-amazon')->getConfig()->get(
+                'billing_agreements',
+                'max_capture_tries'
+            );
+        } catch (\Exception $Exception) {
+            QUI\System\Log::writeException($Exception);
+            return 3; // fallback
+        }
     }
 
     /**

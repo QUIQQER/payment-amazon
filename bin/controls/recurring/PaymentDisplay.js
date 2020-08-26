@@ -1,5 +1,5 @@
 /**
- * PaymentDisplay for PayPal
+ * PaymentDisplay for Amazon
  *
  * @author Patrick Müller (www.pcsg.de)
  */
@@ -432,6 +432,7 @@ define('package/quiqqer/payment-amazon/bin/controls/recurring/PaymentDisplay', [
 
             this.$createBillingAgreement().then(function () {
                 self.$OrderProcess.Loader.hide();
+                self.$OrderProcess.next();
             }, function (e) {
                 self.$showError(e.getMessage());
                 self.$showAmazonWallet(false);

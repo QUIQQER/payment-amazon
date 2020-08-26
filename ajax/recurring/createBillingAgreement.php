@@ -24,6 +24,8 @@ QUI::$Ajax->registerFunction(
             BillingAgreements::setBillingAgreementDetails(Orthos::clear($billingAgreementId), $Order);
             BillingAgreements::confirmBillingAgreement($Order);
             BillingAgreements::validateBillingAgreement($Order);
+
+            $Order->setSuccessfulStatus();
         } catch (AmazonPayException $Exception) {
             QUI\System\Log::writeDebugException($Exception);
             throw $Exception;

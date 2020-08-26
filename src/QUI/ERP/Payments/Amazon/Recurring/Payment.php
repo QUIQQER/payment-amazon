@@ -91,7 +91,11 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      */
     public function captureSubscription(Invoice $Invoice)
     {
-        // TODO: Implement captureSubscription() method.
+        try {
+            BillingAgreements::billBillingAgreementBalance($Invoice);
+        } catch (\Exception $Exception) {
+            QUI\System\Log::writeException($Exception);
+        }
     }
 
     /**
@@ -103,7 +107,7 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      */
     public function cancelSubscription($subscriptionId, $reason = '')
     {
-        // TODO: Implement cancelSubscription() method.
+        BillingAgreements::cancelBillingAgreement($subscriptionId, $reason);
     }
 
     /**
@@ -117,7 +121,19 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      */
     public function setSubscriptionAsInactive($subscriptionId)
     {
-        // TODO: Implement setSubscriptionAsInactive() method.
+        try {
+            QUI::getDataBase()->update(
+                BillingAgreements::getBillingAgreementsTable(),
+                [
+                    'active' => 0
+                ],
+                [
+                    'amazon_agreement_id' => $subscriptionId
+                ]
+            );
+        } catch (\Exception $Exception) {
+            QUI\System\Log::writeException($Exception);
+        }
     }
 
     /**
@@ -128,7 +144,7 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      */
     public function isSubscriptionEditable()
     {
-        // TODO: Implement isSubscriptionEditable() method.
+        return true;
     }
 
     /**
@@ -140,7 +156,8 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      */
     public function getSubscriptionIdByOrder(AbstractOrder $Order)
     {
-        // TODO: Implement getSubscriptionIdByOrder() method.
+        $billingAgreementId = $Order->getAttribute(self::ATTR_AMAZON_BILLING_AGREEMENT_ID);
+        return $billingAgreementId ?: false;
     }
 
     /**
@@ -151,7 +168,13 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      */
     public function isSubscriptionActiveAtPaymentProvider($subscriptionId)
     {
-        // TODO: Implement isSubscriptionActiveAtPaymentProvider() method.
+        try {
+            $data = BillingAgreements::getAmazonBillingAgreementData($subscriptionId);
+            return $data['BillingAgreementStatus']['State'] === 'Open';
+        } catch (\Exception $Exception) {
+            QUI\System\Log::writeException($Exception);
+            return true;
+        }
     }
 
     /**
@@ -162,18 +185,53 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      */
     public function isSubscriptionActiveAtQuiqqer($subscriptionId)
     {
-        // TODO: Implement isSubscriptionActiveAtQuiqqer() method.
+        try {
+            $result = QUI::getDataBase()->fetch([
+                'select' => ['active'],
+                'from'   => BillingAgreements::getBillingAgreementsTable(),
+                'where'  => [
+                    'amazon_agreement_id' => $subscriptionId
+                ]
+            ]);
+
+            if (empty($result)) {
+                return false;
+            }
+
+            return !empty($result[0]['active']);
+        } catch (\Exception $Exception) {
+            return true;
+        }
     }
 
     /**
      * Get IDs of all subscriptions
      *
      * @param bool $includeInactive (optional) - Include inactive subscriptions [default: false]
-     * @return int[]
+     * @return string[]
      */
     public function getSubscriptionIds($includeInactive = false)
     {
-        // TODO: Implement getSubscriptionIds() method.
+        try {
+            $where = [
+                'active' => 1
+            ];
+
+            if ($includeInactive) {
+                unset($where['active']);
+            }
+
+            $result = QUI::getDataBase()->fetch([
+                'select' => ['amazon_agreement_id'],
+                'from'   => BillingAgreements::getBillingAgreementsTable(),
+                'where'  => $where
+            ]);
+
+            return \array_column($result, 'amazon_agreement_id');
+        } catch (\Exception $Exception) {
+            QUI\System\Log::writeException($Exception);
+            return [];
+        }
     }
 
     /**
@@ -184,6 +242,23 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      */
     public function getSubscriptionGlobalProcessingId($subscriptionId)
     {
-        // TODO: Implement getSubscriptionGlobalProcessingId() method.
+        try {
+            $result = QUI::getDataBase()->fetch([
+                'select' => ['global_process_id'],
+                'from'   => BillingAgreements::getBillingAgreementsTable(),
+                'where'  => [
+                    'amazon_agreement_id' => $subscriptionId
+                ]
+            ]);
+
+            if (empty($result)) {
+                return false;
+            }
+
+            return $result[0]['global_process_id'];
+        } catch (\Exception $Exception) {
+            QUI\System\Log::writeException($Exception);
+            return false;
+        }
     }
 }
