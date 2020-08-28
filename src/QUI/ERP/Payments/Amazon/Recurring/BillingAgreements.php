@@ -116,7 +116,6 @@ class BillingAgreements
 
         if (empty($details['BillingAgreementStatus']['State']) ||
             $details['BillingAgreementStatus']['State'] !== self::BILLING_AGREEMENT_STATE_OPEN) {
-
             // Check if there are any constraints that prevent confirmation of the BillingAgreement
             if (!empty($details['Constraints'])) {
                 $constraintId = $details['Constraints']['Constraint']['ConstraintID'];
