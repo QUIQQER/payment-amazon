@@ -160,7 +160,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
         ]);
 
         try {
-            $response = $this->getResponseData($Response);
+            $response = Utils::getResponseData($Response);
         } catch (AmazonPayException $Exception) {
             $Order->addHistory(
                 'Amazon Pay :: An error occurred while trying to validate the Capture -> '.$Exception->getMessage()
@@ -330,7 +330,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
                 'amazon_order_reference_id' => $orderReferenceId
             ]);
 
-            $this->getResponseData($Response); // check response data
+            Utils::getResponseData($Response); // check response data
 
             $Order->setPaymentData(self::ATTR_RECONFIRM_ORDER, false);
             $Order->setPaymentData(self::ATTR_ORDER_CONFIRMED, true);
@@ -358,7 +358,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
                 )
             ]);
 
-            $response              = $this->getResponseData($Response);
+            $response              = Utils::getResponseData($Response);
             $orderReferenceDetails = $response['SetOrderReferenceDetailsResult']['OrderReferenceDetails'];
 
             if (!empty($orderReferenceDetails['Constraints']['Constraint']['ConstraintID'])) {
@@ -367,7 +367,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
                     .$orderReferenceDetails['Constraints']['Constraint']['ConstraintID'].'""'
                 );
 
-                $this->throwAmazonPayException(
+                Utils::throwAmazonPayException(
                     $orderReferenceDetails['Constraints']['Constraint']['ConstraintID'],
                     [
                         'reRenderWallet' => 1
@@ -423,7 +423,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
             'transaction_timeout'        => 0  // get authorization status synchronously
         ]);
 
-        $response = $this->getResponseData($Response);
+        $response = Utils::getResponseData($Response);
 
         // save reference ids in $Order
         $authorizationDetails  = $response['AuthorizeResult']['AuthorizationDetails'];
@@ -474,7 +474,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
                         $Order->setPaymentData(self::ATTR_RECONFIRM_ORDER, true);
                         $Order->update(QUI::getUsers()->getSystemUser());
 
-                        $this->throwAmazonPayException($reason, [
+                        Utils::throwAmazonPayException($reason, [
                             'reRenderWallet' => 1
                         ]);
                         break;
@@ -493,7 +493,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
                         $Order->setPaymentData(self::ATTR_ORDER_REFERENCE_SET, false);
                         $Order->update(QUI::getUsers()->getSystemUser());
 
-                        $this->throwAmazonPayException($reason, [
+                        Utils::throwAmazonPayException($reason, [
                             'reRenderWallet' => 1,
                             'orderCancelled' => 1
                         ]);
@@ -525,7 +525,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
                         $Order->clearPayment();
                         $Order->update(QUI::getUsers()->getSystemUser());
 
-                        $this->throwAmazonPayException($reason);
+                        Utils::throwAmazonPayException($reason);
                 }
                 break;
 
@@ -538,7 +538,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
                     .' ReasonCode: "'.$reason.'"'
                 );
 
-                $this->throwAmazonPayException($reason);
+                Utils::throwAmazonPayException($reason);
         }
     }
 
@@ -615,7 +615,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
             'seller_capture_note'     => $this->getSellerNote($Order)
         ]);
 
-        $response = $this->getResponseData($Response);
+        $response = Utils::getResponseData($Response);
 
         $captureDetails  = $response['CaptureResult']['CaptureDetails'];
         $amazonCaptureId = $captureDetails['AmazonCaptureId'];
@@ -662,7 +662,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
 
                 // @todo Change order status to "problems with Amazon Payment"
 
-                $this->throwAmazonPayException($reason);
+                Utils::throwAmazonPayException($reason);
                 break;
         }
     }
@@ -726,7 +726,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
         ]);
 
         try {
-            $response = $this->getResponseData($Response);
+            $response = Utils::getResponseData($Response);
         } catch (AmazonPayException $Exception) {
             $Process->addHistory(
                 'Amazon Pay :: Refund operation failed.'
@@ -770,7 +770,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
                 );
 
                 $RefundTransaction->error();
-                $this->throwAmazonPayException($reason);
+                Utils::throwAmazonPayException($reason);
                 break;
         }
     }
@@ -837,30 +837,6 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
             'amazon_order_reference_id' => $orderReferenceId,
             'closure_reason'            => $reason ?: 'Order #'.$Order->getHash().' completed'
         ]);
-    }
-
-    /**
-     * Check if the Amazon Pay API response is OK
-     *
-     * @param ResponseInterface $Response - Amazon Pay API Response
-     * @return array
-     * @throws AmazonPayException
-     */
-    protected function getResponseData(ResponseInterface $Response)
-    {
-        $response = $Response->toArray();
-
-        if (!empty($response['Error']['Code'])) {
-            $this->throwAmazonPayException(
-                $response['Error']['Code'],
-                [
-                    'amazonApiErrorCode' => $response['Error']['Code'],
-                    'amazonApiErrorMsg'  => $response['Error']['Message']
-                ]
-            );
-        }
-
-        return $response;
     }
 
     /**

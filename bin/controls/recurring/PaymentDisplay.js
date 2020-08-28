@@ -333,31 +333,38 @@ define('package/quiqqer/payment-amazon/bin/controls/recurring/PaymentDisplay', [
 
             this.$OrderProcess.Loader.show();
 
+            var handleConsentStatus = function (billingAgreementConsentStatus) {
+                var buyerBillingAgreementConsentStatus = billingAgreementConsentStatus.getConsentStatus();
+
+                if (!buyerBillingAgreementConsentStatus || buyerBillingAgreementConsentStatus !== 'true') {
+                    self.$showErrorMsg(
+                        QUILocale.get(pkg, 'controls.recurring.PaymentDisplay.consent_denied')
+                    );
+
+                    self.fireEvent('processingError', [self]);
+                    self.$PayBtn.disable();
+                    return;
+                }
+
+                self.$PayBtn.enable();
+            }
+
             var Options = {
                 sellerId : this.getAttribute('sellerid'),
                 design   : {
                     designMode: 'responsive'
                 },
-                onReady  : function () {
+                onReady  : function (billingAgreementConsentStatus) {
                     self.$OrderProcess.Loader.hide();
-                },
-                onConsent: function (billingAgreementConsentStatus) {
+
                     var buyerBillingAgreementConsentStatus = billingAgreementConsentStatus.getConsentStatus();
 
-                    if (!buyerBillingAgreementConsentStatus || buyerBillingAgreementConsentStatus !== 'true') {
-                        self.$showErrorMsg(
-                            QUILocale.get(pkg, 'controls.recurring.PaymentDisplay.consent_denied')
-                        );
-
-                        self.fireEvent('processingError', [self]);
-                        self.$PayBtn.disable();
-                        return;
+                    if (buyerBillingAgreementConsentStatus === 'true') {
+                        self.$PayBtn.enable();
                     }
-
-                    self.$PayBtn.enable();
                 },
+                onConsent: handleConsentStatus,
                 onError  : function (Error) {
-                    console.log(Error);
                     switch (Error.getErrorCode()) {
                         // handle errors on the shop side (most likely misconfiguration)
                         case 'InvalidAccountStatus':
@@ -430,12 +437,27 @@ define('package/quiqqer/payment-amazon/bin/controls/recurring/PaymentDisplay', [
 
             this.$OrderProcess.Loader.show();
 
-            this.$createBillingAgreement().then(function () {
+            this.$createBillingAgreement().then(function (success) {
                 self.$OrderProcess.Loader.hide();
+
+                if (!success) {
+                    self.$showAmazonWallet(false);
+                    self.$showErrorMsg(
+                        QUILocale.get(pkg, 'controls.recurring.PaymentDisplay.billing_agreement_failed')
+                    );
+
+                    self.fireEvent('processingError', [self]);
+
+                    return;
+                }
+
                 self.$OrderProcess.next();
             }, function (e) {
-                self.$showError(e.getMessage());
+                self.$OrderProcess.Loader.hide();
+
+                self.$showErrorMsg(e.getMessage());
                 self.$showAmazonWallet(false);
+                self.fireEvent('processingError', [self]);
             });
         },
 

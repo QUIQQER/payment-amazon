@@ -23,7 +23,7 @@
             <field type="TINYINT(1) NOT NULL DEFAULT 0">capture_attempts</field>
             <field type="VARCHAR(250) NOT NULL">global_process_id</field>
 
-            <primary>amazon_transaction_id,amazon_transaction_date</primary>
+            <primary>invoice_id,amazon_agreement_id</primary>
         </table>
     </global>
 

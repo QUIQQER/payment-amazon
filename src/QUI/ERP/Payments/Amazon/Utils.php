@@ -2,6 +2,7 @@
 
 namespace QUI\ERP\Payments\Amazon;
 
+use AmazonPay\ResponseInterface;
 use QUI;
 use QUI\ERP\Accounting\Payments\Payments;
 use QUI\ERP\Order\AbstractOrder;
@@ -104,5 +105,84 @@ class Utils
     {
         $Invoice->calculatePayments();
         return (string)(float)$Invoice->getAttribute('toPay');
+    }
+
+    /**
+     * Format a string for Amazon Api usage.
+     *
+     * The Amazon docs usually recommend the following characters: A-Z a-z 0-9 - _
+     *
+     * @param string $str
+     * @param int $maxLength (optional)
+     * @return string
+     */
+    public static function formatApiString(string $str, int $maxLength = null)
+    {
+        $str = \preg_replace('#[^A-Za-z0-9\-_]#i', '', $str);
+
+        if (!empty($maxLength)) {
+            $str = \mb_substr($str, 0, $maxLength);
+        }
+
+        return $str;
+    }
+
+    /**
+     * Check if the Amazon Pay API response is OK and return response data as array
+     *
+     * @param ResponseInterface $Response - Amazon Pay API Response
+     * @return array
+     * @throws AmazonPayException
+     */
+    public static function getResponseData(ResponseInterface $Response)
+    {
+        $response = $Response->toArray();
+
+        if (!empty($response['Error']['Code'])) {
+            self::throwAmazonPayException(
+                $response['Error']['Code'],
+                [
+                    'amazonApiErrorCode' => $response['Error']['Code'],
+                    'amazonApiErrorMsg'  => $response['Error']['Message']
+                ]
+            );
+        }
+
+        return $response;
+    }
+
+    /**
+     * Throw AmazonPayException for specific Amazon API Error
+     *
+     * @param string $errorCode
+     * @param array $exceptionAttributes (optional) - Additional Exception attributes that may be relevant for the Frontend
+     * @return string
+     *
+     * @throws AmazonPayException
+     */
+    public static function throwAmazonPayException($errorCode, $exceptionAttributes = [])
+    {
+        $L   = QUI::getLocale();
+        $lg  = 'quiqqer/payment-amazon';
+        $msg = $L->get($lg, 'payment.error_msg.general_error');
+
+        switch ($errorCode) {
+            case 'InvalidPaymentMethod':
+            case 'PaymentMethodNotAllowed':
+            case 'TransactionTimedOut':
+            case 'AmazonRejected':
+            case 'ProcessingFailure':
+            case 'MaxCapturesProcessed':
+                $msg                                    = $L->get($lg, 'payment.error_msg.'.$errorCode);
+                $exceptionAttributes['amazonErrorCode'] = $errorCode;
+                break;
+        }
+
+        $Exception = new AmazonPayException($msg);
+        $Exception->setAttributes($exceptionAttributes);
+
+        QUI\System\Log::writeException($Exception, QUI\System\Log::LEVEL_DEBUG, $exceptionAttributes);
+
+        throw $Exception;
     }
 }
