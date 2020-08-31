@@ -168,13 +168,7 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      */
     public function isSubscriptionActiveAtPaymentProvider($subscriptionId)
     {
-        try {
-            $data = BillingAgreements::getAmazonBillingAgreementData($subscriptionId);
-            return $data['BillingAgreementStatus']['State'] === 'Open';
-        } catch (\Exception $Exception) {
-            QUI\System\Log::writeException($Exception);
-            return true;
-        }
+        return BillingAgreements::isBillingAgreementActiveAtAmazon($subscriptionId);
     }
 
     /**

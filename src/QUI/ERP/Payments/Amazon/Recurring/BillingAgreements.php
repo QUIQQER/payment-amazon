@@ -272,6 +272,10 @@ class BillingAgreements
             return;
         }
 
+        if (!self::isBillingAgreementActiveAtAmazon($billingAgreementId)) {
+            return;
+        }
+
         // Check if a Billing Agreement transaction matches the Invoice
         $transactionData = self::getBillingAgreementTransactionData($billingAgreementId, $Invoice->getCleanId());
 
@@ -332,7 +336,10 @@ class BillingAgreements
                 'authorization_reference_id'  => Utils::formatApiString($Invoice->getId(), 32),
                 'authorization_amount'        => $invoiceAmount,
                 'currency_code'               => $invoiceCurrency,
-                'capture_now'                 => true,   // immediately capture amount
+                // immediately capture amount
+                'capture_now'                 => true,
+                // synchronous mode; https://developer.amazon.com/de/docs/amazon-pay-automatic/sync-modes.html
+                'transaction_timeout'         => 0,
                 'seller_authorization_note'   => QUI::getLocale()->get(
                     'quiqqer/payment-amazon',
                     'recurring.BillingAgreement.seller_authorization_note',
@@ -656,6 +663,23 @@ class BillingAgreements
             );
         } catch (\Exception $Exception) {
             QUI\System\Log::writeException($Exception);
+        }
+    }
+
+    /**
+     * Checks if the subscription is active at the Amazon side
+     *
+     * @param string $billingAgreementId
+     * @return bool
+     */
+    public static function isBillingAgreementActiveAtAmazon(string $billingAgreementId)
+    {
+        try {
+            $data = BillingAgreements::getAmazonBillingAgreementData($billingAgreementId);
+            return $data['BillingAgreementStatus']['State'] === 'Open';
+        } catch (\Exception $Exception) {
+            QUI\System\Log::writeException($Exception);
+            return true;
         }
     }
 

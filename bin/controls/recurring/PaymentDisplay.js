@@ -435,7 +435,9 @@ define('package/quiqqer/payment-amazon/bin/controls/recurring/PaymentDisplay', [
         $onPayBtnClick: function () {
             var self = this;
 
-            this.$OrderProcess.Loader.show();
+            this.$OrderProcess.Loader.show(
+                QUILocale.get(pkg, 'controls.recurring.PaymentDisplay.loader.submit')
+            );
 
             this.$createBillingAgreement().then(function (success) {
                 self.$OrderProcess.Loader.hide();

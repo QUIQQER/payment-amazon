@@ -482,6 +482,10 @@
             <de><![CDATA[Die Erstellung der Abrechnungsvereinbarung über Amazon Pay ist fehlgeschlagen. Bitte wiederholen Sie den Vorgang oder wählen Sie eine andere Zahlungsmethode.]]></de>
             <en><![CDATA[The creation of the billing agreement via Amazon Pay failed. Please repeat the process or choose another payment method.]]></en>
         </locale>
+        <locale name="controls.recurring.PaymentDisplay.loader.submit">
+            <de><![CDATA[Zahlungsvereinbarung wird bei Amazon eingerichtet...]]></de>
+            <en><![CDATA[Billing agreement is set up at Amazon...]]></en>
+        </locale>
 
         <!-- Control: bin/controls/backend/BillingAgreementWindow -->
         <locale name="controls.backend.BillingAgreementWindow.title">
