@@ -1,0 +1,16 @@
+[data-qui="package/quiqqer/order/bin/frontend/controls/OrderProcess"] > .qui-loader {
+    z-index: 1000 !important;
+}
+
+.quiqqer-payment-amazon-recurring-paymentdisplay-btn {
+    background: #ffc439;
+    color: #111;
+}
+
+.fa-amazon {
+    font-family: FontAwesome, "Font Awesome 5 Brands";
+}
+
+.fa-amazon:before {
+    content: "\f1ed";
+}

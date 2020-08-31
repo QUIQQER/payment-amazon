@@ -21,6 +21,15 @@
             <de><![CDATA[Komfortable Bezahlung mit ihrem Amazon-Konto.]]></de>
             <en><![CDATA[Comfortable payment with your Amazon account.]]></en>
         </locale>
+        <locale name="payment.recurring.title">
+            <de><![CDATA[Amazon Pay - Wiederkehrende Zahlungen]]></de>
+            <en><![CDATA[Amazon Pay - Recurring payments]]></en>
+        </locale>
+        <locale name="payment.recurring.description">
+            <de><![CDATA[Komfortable Bezahlung mit ihrem Amazon-Konto.]]></de>
+            <en><![CDATA[Comfortable payment with your Amazon account.]]></en>
+        </locale>
+        
         <locale name="payment.step.title">
             <de><![CDATA[Bezahlung mit Amazon]]></de>
             <en><![CDATA[Payment with Amazon]]></en>
@@ -213,10 +222,58 @@
 <li><b>{orderId}</b> - Order number (with prefix)</li>
 </ul>]]></en>
         </locale>
+        <locale name="settings.billing_agreements.title">
+            <de><![CDATA[Abrechnungsvereinbarungen (Abonnements)]]></de>
+            <en><![CDATA[Billing agreements (subscriptions)]]></en>
+        </locale>
+        <locale name="settings.billing_agreements.max_capture_tries.title">
+            <de><![CDATA[Einzug von Rechnungsbeträgen - max. Anzahl Versuche]]></de>
+            <en><![CDATA[Collection of invoice amounts - max. number of attempts]]></en>
+        </locale>
+        <locale name="settings.billing_agreements.max_capture_tries.description">
+            <de><![CDATA[Maximale Anzahl an Versuchen, die durchgeführt werden, um Rechnunen zu Abonnements über die zugehörige Abrechnungsvereinbarung bei Amazon einzuzeiehn. Schlägt der Vorgang zu oft fehl, wird die Abrechnungsvereinbarung automatisch auf inaktiv gesetzt.]]></de>
+            <en><![CDATA[Maximum number of attempts made to bill subscriptions via the associated Amazon billing agreement. If the process fails too often, the billing agreement is automatically set to inactive.]]></en>
+        </locale>
+        <locale name="settings.category.amazon_billing_agreements.title">
+            <de><![CDATA[Amazon Pay Abrechnungsvereinbarungen (Billing Agreements)]]></de>
+            <en><![CDATA[Amazon Pay Billing Agreements]]></en>
+        </locale>
+
+        <locale name="cron.processUnpaidInvoices.title">
+            <de><![CDATA[Amazon Pay: Rechnungen für wiederkehrende Zahlungen abarbeiten]]></de>
+            <en><![CDATA[Amazon Pay: Process invoices for recurring payments]]></en>
+        </locale>
+        <locale name="cron.processUnpaidInvoices.description">
+            <de><![CDATA[Für alle offenen Rechnungen mit wiederkehrenden Zahlungen die passenden Amazon Abrechnungsvereinbarungen belasten.]]></de>
+            <en><![CDATA[Charge all open invoices with recurring payments to the appropriate Amazon billing agreements.]]></en>
+        </locale>
+
+        <!-- Permissions -->
+        <locale name="permission.quiqqer.payments.paypal._header">
+            <de><![CDATA[Amazon Pay]]></de>
+            <en><![CDATA[Amazon Pay]]></en>
+        </locale>
+                <locale name="permission.quiqqer.payments.paypal.billing_agreements._header">
+            <de><![CDATA[Amazon Pay - Abrechnungsvereinbarungen (Billing Agreements)]]></de>
+            <en><![CDATA[Amazon Pay - Billing Agreements]]></en>
+        </locale>
+        <locale name="permission.quiqqer.payments.paypal.billing_agreements.view">
+            <de><![CDATA[Darf Abrechnungsvereinbarungen ansehen]]></de>
+            <en><![CDATA[Can view Billing Agreements]]></en>
+        </locale>
+        <locale name="permission.quiqqer.payments.paypal.billing_agreements.cancel">
+            <de><![CDATA[Darf Abrechnungsvereinbarungen kündigen]]></de>
+            <en><![CDATA[Can cancel Billing Agreements]]></en>
+        </locale>
 
     </groups>
 
     <groups name="quiqqer/payment-amazon" datatype="php">
+
+        <locale name="message.ajax.recurring.cancelBillingAgreement.success">
+            <de><![CDATA[Die Amazon Pay Abrechnungsvereinbarung [billingAgreementId] wurde erfolgreich gekündigt.]]></de>
+            <en><![CDATA[The Amazon Pay Billing Agreement [billingAgreementId] has been cancelled successfully.]]></en>
+        </locale>
 
         <!-- PaymentDisplay -->
         <locale name="PaymentDisplay.no_javascript">
@@ -258,6 +315,106 @@
             <en><![CDATA[The payment process with Amazon was not successful. Your chosen payment method was not debited. Please try again or choose another payment method.]]></en>
         </locale>
 
+        <!-- BillingAgreements -->
+        <locale name="recurring.BillingAgreement.seller_note">
+            <de><![CDATA[Ihr Abonnement aus Bestellung [orderId] auf [url]]]></de>
+            <en><![CDATA[Your subscription from order [orderId] at [url]]]></en>
+        </locale>
+        <locale name="history.BillingAgreement.set_details">
+            <de><![CDATA[Amazon Pay :: Details für wiederkehrende Zahlung festgelegt (Amazon BillingAgreement ID: [billingAgreementId])]]></de>
+            <en><![CDATA[Amazon Pay :: Details for recurring payment set (Amazon BillingAgreement ID: [billingAgreementId])]]></en>
+        </locale>
+        <locale name="history.BillingAgreement.confirm_billing_agreement">
+            <de><![CDATA[Amazon Pay :: Wiederkehrende Zahlung eingerichtet]]></de>
+            <en><![CDATA[Amazon Pay :: Recurring payment set up]]></en>
+        </locale>
+        <locale name="history.BillingAgreement.confirm_billing_agreement_error">
+            <de><![CDATA[Amazon Pay :: Wiederkehrende Zahlung konnte nicht eingerichtet werden. Fehler-Code: [constraint]]]></de>
+            <en><![CDATA[Amazon Pay :: Recurring payment could not be set up. Error code: [constraint]]]></en>
+        </locale>
+        <locale name="history.BillingAgreement.validate_billing_agreement">
+            <de><![CDATA[Amazon Pay :: Wiederkehrende Zahlung validiert; das Amazon-Konto des Kunden kann nun für wiederkehrende Zahlungen verwendet werden]]></de>
+            <en><![CDATA[Amazon Pay :: Recurring payment validated; the Amazon account of the customer is now usable for recurring payments]]></en>
+        </locale>
+        <locale name="history.BillingAgreement.billing_agreement_not_validated">
+            <de><![CDATA[Amazon Pay :: Wiederkehrende Zahlung konnte nicht validiert werden]]></de>
+            <en><![CDATA[Amazon Pay :: Recurring payment could not be validated]]></en>
+        </locale>
+        <locale name="history.invoice.error.agreement_id_not_found">
+            <de><![CDATA[Es wurde versucht, die Rechnung über wiederkehrende Zahlungen mit Amazon Pay zu begleichen, jedoch enthielten die Rechnungsdaten keine zugeordnete Abrechnungsvereinbarung.]]></de>
+            <en><![CDATA[An attempt was made to settle the recurring payment invoice using Amazon Pay, but the invoice data did not contain an associated billing agreement.]]></en>
+        </locale>
+        <locale name="history.invoice.error.agreement_not_found">
+            <de><![CDATA[Es wurde versucht, die Rechnung über wiederkehrende Zahlungen mit Amazon Pay zu begleichen, jedoch wurde die zugeordnete Abrechnungsvereinbarung [billingAgreementId] nicht im System gefunden.]]></de>
+            <en><![CDATA[An attempt was made to settle the recurring payment invoice using Amazon Pay, but the associated billing agreement [billingAgreementId] was not found in the system.]]></en>
+        </locale>
+        <locale name="history.invoice.error.agreement_capture_failed">
+            <de><![CDATA[Der Einzug des Rechnungsbetrags über Amazon Pay (Abrechnungsvereinbarung [billingAgreementId]) ist fehlgeschlagen.]]></de>
+            <en><![CDATA[The collection of the invoice amount via Amazon Pay (Billing Agreement [billingAgreementId]) has failed.]]></en>
+        </locale>
+        <locale name="history.invoice.error.agreement_cancel_max_capture_attempts_exceeded">
+            <de><![CDATA[Amazon Pay Abrechnungsvereinbarung [billingAgreementId] wurde deaktiviert, da der Versuch, diese Rechnung zu bezahlen, [attempts] Mal fehlgeschlagen ist.]]></de>
+            <en><![CDATA[Amazon Pay Billing Agreement [billingAgreementId] was deactivated because the attempt to pay this invoice failed [attempts] times.]]></en>
+        </locale>
+        <locale name="history.invoice.add_amazon_transaction">
+            <de><![CDATA[Rechnungsbetrag über Amazon Abrechnungsvereinbarung [billingAgreementId] eingezogen. Amazon Authorisierungs-ID: [amazonAuthorizationId]; QUIQQER Transaktions-ID: [quiqqerTransactionId]]]></de>
+            <en><![CDATA[Invoice amount collected via Amazon Billing Agreement [billingAgreementId]. Amazon Authorization ID: [amazonAuthorizationId]; QUIQQER Ttransaction ID: [quiqqerTransactionId].]]></en>
+        </locale>
+        
+        <locale name="exception.Recurring.agreement_not_found">
+            <de><![CDATA[Amazon Pay Billing Agreement [billingAgreementId] wurde nicht gefunden.]]></de>
+            <en><![CDATA[Amazon Pay Billing Agreement [billingAgreementId] was not found.]]></en>
+        </locale>
+        <locale name="exception.Recurring.agreement_id_not_found">
+            <de><![CDATA[Amazon Pay Billing Agreement ID konnte in Rechnung #[invoiceId] nicht gefunden werden.]]></de>
+            <en><![CDATA[Amazon Pay Billing Agreement ID was not found in Invoice #[invoiceId].]]></en>
+        </locale>
+        <locale name="recurring.BillingAgreement.seller_authorization_note">
+            <de><![CDATA[Rechnung [invoiceId] zu Ihrem Abonnement auf [url]]]></de>
+            <en><![CDATA[Invoice [invoiceId] for your subscription at [url]]]></en>
+        </locale>
+        <locale name="message.BillingAgreements.agreement_cancel.max_capture_attempts_exceeded">
+            <de><![CDATA[Zahlungsversuche für diese Abrechnungsvereinbarung sind [attempts] Mal fehlgeschlagen. Die Abrechnungsvereinbarung wurde automatisch gekündigt. Sie werden ggf. von uns bzgl. noch ausstehender Rechnungsbeträge benachrichtigt.]]></de>
+            <en><![CDATA[Payment attempts for this billing agreement have failed [attempts] times. The billing agreement was automatically terminated. You will be contacted by us about any outstanding invoice amounts.]]></en>
+        </locale>
+        
+        <locale name="exception.BillingAgreements.constraint.general">
+            <de><![CDATA[Die Zahlung mit Ihrem Amazon Konto kann momentan nicht durchgeführt werden. Bitte wählen Sie eine andere Zahlungsmethode.]]></de>
+            <en><![CDATA[The payment with your Amazon account cannot be done at the moment. Please choose another payment method.]]></en>
+        </locale>
+        <locale name="exception.BillingAgreements.constraint.BuyerConsentNotSet">
+            <de><![CDATA[Sie haben die Genehmigung für eine wiederkehrende Zahlung mit Ihrem Amazon Konto nicht erteilt. Bitte wiederholen Sie den Vorgang und erteilen Sie die Genehmigung oder wählen Sie eine andere Zahlungsmethode.]]></de>
+            <en><![CDATA[You have not given permission for a recurring payment with your Amazon account. Please repeat the process and give approval or choose another payment method.]]></en>
+        </locale>
+        <locale name="exception.BillingAgreements.constraint.PaymentPlanNotSet">
+            <de><![CDATA[Bitte wählen Sie eine Zahlungsmethode für die wiederkehrende Zahlung mit Ihrem Amazon Konto.]]></de>
+            <en><![CDATA[Please select a payment method for recurring payments with your Amazon account.]]></en>
+        </locale>
+        <locale name="exception.BillingAgreements.constraint.ShippingAddressNotSet">
+            <de><![CDATA[Bitte wählen Sie eine Versandadresse aus Ihrem Amazon-Konto.]]></de>
+            <en><![CDATA[Please select a shipping address from your Amazon account.]]></en>
+        </locale>
+        <locale name="exception.BillingAgreements.constraint.BillingAddressDeleted">
+            <de><![CDATA[Bitte wählen Sie eine gültige Rechnungsadresse aus Ihrem Amazon-Konto.]]></de>
+            <en><![CDATA[Please select a valid billing address from your Amazon account.]]></en>
+        </locale>
+        <locale name="exception.BillingAgreements.constraint.InvalidPaymentPlan">
+            <de><![CDATA[Die von Ihnen gewählte Zahlungsmethode Ihres Amazon Kontos kann nicht für wiederkehrende Zahlungen verwendet werden. Bitte wählen Sie eine andere Zahlungsmethode aus Ihrem Amazon Konto oder unten aus.]]></de>
+            <en><![CDATA[The payment method you have chosen for your Amazon account cannot be used for recurring payments. Please select another payment method from your Amazon account or below.]]></en>
+        </locale>
+        <locale name="exception.BillingAgreements.constraint.PaymentMethodDeleted">
+            <de><![CDATA[Die von Ihnen gewählte Zahlungsmethode Ihres Amazon Kontos kann nicht für wiederkehrende Zahlungen verwendet werden. Bitte wählen Sie eine andere Zahlungsmethode aus Ihrem Amazon Konto oder unten aus.]]></de>
+            <en><![CDATA[The payment method you have chosen for your Amazon account cannot be used for recurring payments. Please select another payment method from your Amazon account or below.]]></en>
+        </locale>
+        <locale name="exception.BillingAgreements.constraint.PaymentMethodExpired">
+            <de><![CDATA[Die von Ihnen gewählte Zahlungsmethode Ihres Amazon Kontos kann nicht für wiederkehrende Zahlungen verwendet werden. Bitte wählen Sie eine andere Zahlungsmethode aus Ihrem Amazon Konto oder unten aus.]]></de>
+            <en><![CDATA[The payment method you have chosen for your Amazon account cannot be used for recurring payments. Please select another payment method from your Amazon account or below.]]></en>
+        </locale>
+        <locale name="exception.BillingAgreements.constraint.PaymentMethodNotAllowed">
+            <de><![CDATA[Die von Ihnen gewählte Zahlungsmethode Ihres Amazon Kontos kann nicht für wiederkehrende Zahlungen verwendet werden. Bitte wählen Sie eine andere Zahlungsmethode aus Ihrem Amazon Konto oder unten aus.]]></de>
+            <en><![CDATA[The payment method you have chosen for your Amazon account cannot be used for recurring payments. Please select another payment method from your Amazon account or below.]]></en>
+        </locale>
+
     </groups>
 
     <groups name="quiqqer/payment-amazon" datatype="js">
@@ -287,6 +444,18 @@
             <de><![CDATA[Bitte wählen Sie die Zahlungsweise aus, über die Amazon den Betrag der Bestellung einzieht.]]></de>
             <en><![CDATA[Please select the method of payment through which Amazon collects the order amount.]]></en>
         </locale>
+        <locale name="controls.recurring.PaymentDisplay.wallet_info" html="true">
+            <de><![CDATA[Bitte wählen Sie die Zahlungsweise aus, über die Amazon den Betrag Ihres Abonnements <b>[interval]</b> i.H.v. <b>[price]</b> einzieht.]]></de>
+            <en><![CDATA[Please select the payment method that Amazon uses to collect the amount of your subscription of <b>[price]</b> in a <b>[interval]</b> interval.]]></en>
+        </locale>
+        <locale name="controls.recurring.PaymentDisplay.btn_pay.text">
+            <de><![CDATA[Regelmäßige Zahlung jetzt einrichten]]></de>
+            <en><![CDATA[Set up regular payment now]]></en>
+        </locale>
+        <locale name="controls.recurring.PaymentDisplay.btn_pay.title">
+            <de><![CDATA[Hier klicken, um die regelmäßige Zahlung Ihres Abonnements über Ihr Amazon-Konto einzurichten]]></de>
+            <en><![CDATA[Click here to set up regular payment of your subscription through your Amazon account]]></en>
+        </locale>
         <locale name="controls.PaymentDisplay.authorize_payment">
             <de><![CDATA[Autorisiere Zahlung bei Amazon]]></de>
             <en><![CDATA[Authorize payment with Amazon]]></en>
@@ -302,6 +471,80 @@
         <locale name="controls.PaymentDisplay.wallet_error">
             <de><![CDATA[Beim Bezahlungsvorgang mit Amazon Pay ist ein Fehler aufgetreten. Die Zahlung konnte nicht durchgeführt werden. Ihre ausgewählte Zahlungsweise wurde nicht belastet. Bitte wählen Sie eine andere Zahlungsweise.]]></de>
             <en><![CDATA[An error occurred while paying with Amazon Pay. The payment could not be processed. Your selected payment method has not been charged. Please choose a different payment method.]]></en>
+        </locale>
+        
+        <!-- Control: recurring/PaymentDisplay -->
+        <locale name="controls.recurring.PaymentDisplay.consent_denied">
+            <de><![CDATA[Sie haben die Genehmigung für eine wiederkehrende Zahlung mit Ihrem Amazon Pay Konto nicht erteilt. Bitte wiederholen Sie den Vorgang und erteilen Sie die Genehmigung oder wählen Sie eine andere Zahlungsmethode.]]></de>
+            <en><![CDATA[You have not given permission for a recurring payment with your Amazon Pay account. Please repeat the process and give approval or choose another payment method.]]></en>
+        </locale>
+        <locale name="controls.recurring.PaymentDisplay.billing_agreement_failed">
+            <de><![CDATA[Die Erstellung der Abrechnungsvereinbarung über Amazon Pay ist fehlgeschlagen. Bitte wiederholen Sie den Vorgang oder wählen Sie eine andere Zahlungsmethode.]]></de>
+            <en><![CDATA[The creation of the billing agreement via Amazon Pay failed. Please repeat the process or choose another payment method.]]></en>
+        </locale>
+        <locale name="controls.recurring.PaymentDisplay.loader.submit">
+            <de><![CDATA[Zahlungsvereinbarung wird bei Amazon eingerichtet...]]></de>
+            <en><![CDATA[Billing agreement is set up at Amazon...]]></en>
+        </locale>
+
+        <!-- Control: bin/controls/backend/BillingAgreementWindow -->
+        <locale name="controls.backend.BillingAgreementWindow.title">
+            <de><![CDATA[Amazon Pay Abrechnungsvereinbarung (Billing Agreement)]]></de>
+            <en><![CDATA[Amazon Pay Billing Agreement]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreementWindow.btn.cancel">
+            <de><![CDATA[Vereinbarung kündigen]]></de>
+            <en><![CDATA[Cancel agreement]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreementWindow.cancel.title">
+            <de><![CDATA[Abrechnungsvereinbarung kündigen]]></de>
+            <en><![CDATA[Cancel Billing Agreement]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreementWindow.cancel.information">
+            <de><![CDATA[Durch diesen Vorgang werden <b>keine zukünftigen Zahlungen</b> mehr von Amazon in Bezug auf diese Abrechnungsvereinbarung durchgeführt. Dies lässt sich <b>nicht rückgängig machen!</b>]]></de>
+            <en><![CDATA[Through this process, <b>no future payments</b> will be made by Amazon with respect to this billing agreement. This can <b>not be undone!</b>]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreementWindow.cancel.text">
+            <de><![CDATA[Soll die Abrechnungsvereinbarung wirklich gekündigt werden?]]></de>
+            <en><![CDATA[Shall the Billing Agreement be cancelled?]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreementWindow.cancel.confirm">
+            <de><![CDATA[Jetzt kündigen]]></de>
+            <en><![CDATA[Cancel now]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreementWindow.load_error">
+            <de><![CDATA[Die Details der Abrechnungsvereinbarung konnten von Amazon nicht abgerufen werden. Dies kann z.B. daran liegen, dass die Abrechnungsvereinbarung mit einem anderen als dem aktuell verwendeten API-Schlüssel erstellt wurde (z.B. Sandbox).]]></de>
+            <en><![CDATA[The Billing Agreement details could not be retrieved from Amazon. This could be because the Billing Agreement was created with a different API key than the current one (e.g. sandbox).]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreementWindow.inactive_warning" html="true">
+            <de><![CDATA[<b>Achtung!</b> Diese Abrechnungsvereinbarung ist auf Seiten von Amazon gekündigt, in diesem QUIQQER-System jedoch noch als aktiv gekennzeichnet. Dies kann bedeuten, dass der Kunde in seinem Amazon-Konto die Abrechnungsvereinbarung gekündigt hat ohne seinen laufenden Vertrag/Mitgliedschaft in diesem QUIQQER-System zu kündigen. Dies hat zur Folge, dass <b>keine Zahlungen</b> mehr von Amazon für die zugeordneten Rechnungen eingezogen werden. Bitte kontaktieren Sie den Kunden, um die Angelegenheit individuell zu klären.]]></de>
+            <en><![CDATA[<b>Caution!</b> This Billing Agreement has been terminated on the side of Amazon, but is still marked as active in this QUIQQER system. This may mean that the customer has cancelled the Billing Agreement in his Amazon account without cancelling his current contract/membership in this QUIQQER system. As a result, <b>no payments</b> will be collected by Amazon for the associated invoices. Please contact the customer to clarify the matter individually.]]></en>
+        </locale>
+
+        <!-- Control: bin/controls/backend/BillingAgreements -->
+        <locale name="controls.backend.BillingAgreements.tbl.btn.details">
+            <de><![CDATA[Details anzeigen]]></de>
+            <en><![CDATA[Show details]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreements.tbl.customer_text">
+            <de><![CDATA[Kunde]]></de>
+            <en><![CDATA[Customer]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreements.tbl.global_process_id">
+            <de><![CDATA[Vorgangs-Nr.]]></de>
+            <en><![CDATA[Global process ID]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreements.tbl.active_status">
+            <de><![CDATA[Aktiv]]></de>
+            <en><![CDATA[Active]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreements.tbl.amazon_agreement_id">
+            <de><![CDATA[Amazon Billing Agreement ID]]></de>
+            <en><![CDATA[Amazon Billing Agreement ID]]></en>
+        </locale>
+        <locale name="controls.backend.BillingAgreements.search.placeholder">
+            <de><![CDATA[Vorgangs-Nr.]]></de>
+            <en><![CDATA[Global process ID]]></en>
         </locale>
 
     </groups>

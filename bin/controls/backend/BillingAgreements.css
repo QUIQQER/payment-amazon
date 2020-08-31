@@ -1,0 +1,10 @@
+.quiqqer-payment-amazon-billingagreements {
+    float: left;
+    height: 100%;
+    width: calc(100% - 190px);
+}
+
+.quiqqer-payment-amazon-billingagreements-search {
+    margin: 10px 0;
+    width: 50%;
+}

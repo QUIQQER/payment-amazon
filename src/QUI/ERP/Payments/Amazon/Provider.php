@@ -1,13 +1,10 @@
 <?php
 
-/**
- * This file contains QUI\ERP\Payments\Amazon\Provider
- */
-
 namespace QUI\ERP\Payments\Amazon;
 
 use QUI;
 use QUI\ERP\Accounting\Payments\Api\AbstractPaymentProvider;
+use QUI\ERP\Payments\Amazon\Recurring\Payment as PaymentRecurring;
 
 /**
  * Class Provider
@@ -22,7 +19,8 @@ class Provider extends AbstractPaymentProvider
     public function getPaymentTypes()
     {
         return [
-            Payment::class
+            Payment::class,
+            PaymentRecurring::class
         ];
     }
 
@@ -112,9 +110,9 @@ class Provider extends AbstractPaymentProvider
             if (empty($v)) {
                 QUI\System\Log::addError(
                     'Your Amazon Pay API credentials seem to be (partially) missing.'
-                    . ' Amazon Pay CAN NOT be used at the moment. Please enter all your'
-                    . ' API credentials. See https://dev.quiqqer.com/quiqqer/payment-amazon/wikis/api-configuration'
-                    . ' for further instructions.'
+                    .' Amazon Pay CAN NOT be used at the moment. Please enter all your'
+                    .' API credentials. See https://dev.quiqqer.com/quiqqer/payment-amazon/wikis/api-configuration'
+                    .' for further instructions.'
                 );
 
                 return false;
