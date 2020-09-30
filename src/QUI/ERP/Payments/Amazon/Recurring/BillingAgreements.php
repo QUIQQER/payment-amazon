@@ -353,7 +353,9 @@ class BillingAgreements
             $data = Utils::getResponseData($Response);
             $data = $data['AuthorizeOnBillingAgreementResult']['AuthorizationDetails'];
 
-            // Save authorization ID
+            // Save authorization and capture ID
+
+
             QUI::getDataBase()->update(
                 self::getBillingAgreementTransactionsTable(),
                 [
@@ -429,6 +431,9 @@ class BillingAgreements
                 null,
                 $Invoice->getGlobalProcessId()
             );
+
+            $InvoiceTransaction->setData(BasePayment::ATTR_AMAZON_CAPTURE_ID, $data['IdList']['member']);
+            $InvoiceTransaction->updateData();
 
             $Invoice->addTransaction($InvoiceTransaction);
 
@@ -585,49 +590,6 @@ class BillingAgreements
         }
 
         return \current($result);
-    }
-
-    /**
-     * Get transaction list for a Billing Agreement
-     *
-     * @param string $billingAgreementId
-     * @param \DateTime $Start (optional)
-     * @param \DateTime $End (optional)
-     * @return array
-     * @throws AmazonException
-     * @throws \Exception
-     */
-    public static function getBillingAgreementTransactions(
-        $billingAgreementId,
-        \DateTime $Start = null,
-        \DateTime $End = null
-    ) {
-        $data = [
-            RecurringPayment::ATTR_AMAZON_BILLING_AGREEMENT_ID => $billingAgreementId
-        ];
-
-        if (is_null($Start)) {
-            $Start = new \DateTime(date('Y-m').'-01 00:00:00');
-        }
-
-        if (is_null($End)) {
-            $End = clone $Start;
-            $End->add(new \DateInterval('P1M')); // Start + 1 month as default time period
-        }
-
-        $data['start_date'] = $Start->format('Y-m-d');
-
-        if ($End > $Start && $Start->format('Y-m-d') !== $End->format('Y-m-d')) {
-            $data['end_date'] = $End->format('Y-m-d');
-        }
-
-        $result = self::amazonApiRequest(
-            RecurringPayment::AMAZON_REQUEST_TYPE_GET_BILLING_AGREEMENT_TRANSACTIONS,
-            [],
-            $data
-        );
-
-        return $result['agreement_transaction_list'];
     }
 
     /**

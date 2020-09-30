@@ -79,13 +79,33 @@ class Provider extends AbstractPaymentProvider
     }
 
     /**
-     * Check if IPN handling is activated in the module settings
+     * Check if Amazon Pay refunds can currently be handled in the system.
      *
      * @return bool
      */
-    public static function isIpnHandlingActivated()
+    public static function isRefundHandlingActivated()
     {
-        return boolval(self::getApiSetting('use_ipn_handler'));
+        if (boolval(self::getApiSetting('use_ipn_handler'))) {
+            return true;
+        }
+
+        try {
+            $result = QUI::getDataBase()->fetch([
+                'count' => 1,
+                'from'  => QUI\Cron\Manager::table(),
+                'where' => [
+                    'exec' => '\\'.RefundProcessor::class.'::processOpenRefundTransactions'
+                ]
+            ]);
+
+            if ((int)\current(\current($result))) {
+                return true;
+            }
+        } catch (\Exception $Exception) {
+            QUI\System\Log::writeException($Exception);
+        }
+
+        return false;
     }
 
     /**
