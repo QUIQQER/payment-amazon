@@ -65,6 +65,16 @@ class RefundProcessor
 
         $RefundTransaction = TransactionHandler::getInstance()->get($txId);
 
+        $removeEntry = function () use ($txId) {
+            // Remove entry from db
+            QUI::getDataBase()->delete(
+                self::getRefundTransactionsTable(),
+                [
+                    'tx_id' => $txId
+                ]
+            );
+        };
+
         switch ($data['RefundStatus']['State']) {
             case 'Completed':
                 try {
@@ -73,6 +83,8 @@ class RefundProcessor
                 } catch (\Exception $Exception) {
                     QUI\System\Log::writeException($Exception);
                 }
+
+                $removeEntry();
                 break;
 
             case 'Pending':
@@ -90,6 +102,8 @@ class RefundProcessor
                 );
 
                 $RefundTransaction->error();
+
+                $removeEntry();
                 break;
         }
     }
