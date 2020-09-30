@@ -33,12 +33,12 @@ $ipnData = $IpnHandler->toArray();
 // Handle Refund request
 if (!empty($ipnData['RefundDetails']['RefundReferenceId'])) {
     try {
-        $AmazonPayment     = new \QUI\ERP\Payments\Amazon\Payment();
+        $AmazonPayment     = new AmazonPayment();
         $refundReferenceId = $ipnData['RefundDetails']['RefundReferenceId'];
         $transactionId     = $AmazonPayment->rebuildCroppedTransactionId($refundReferenceId);
         $RefundTransaction = TransactionsHandler::getInstance()->get($transactionId);
 
-        $AmazonPayment->finalizeRefund($RefundTransaction, $ipnData);
+        $AmazonPayment->finalizeRefund($RefundTransaction, $ipnData['RefundDetails']);
     } catch (\Exception $Exception) {
         QUI\System\Log::writeException($Exception);
         badRequest();

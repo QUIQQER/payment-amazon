@@ -10,4 +10,13 @@
         </description>
     </cron>
 
+    <cron exec="\QUI\ERP\Payments\Amazon\RefundProcessor::processOpenRefundTransactions">
+        <title>
+            <locale group="quiqqer/payment-amazon" var="cron.processOpenRefundTransactions.title"/>
+        </title>
+        <description>
+            <locale group="quiqqer/payment-amazon" var="cron.processOpenRefundTransactions.description"/>
+        </description>
+    </cron>
+
 </crons>

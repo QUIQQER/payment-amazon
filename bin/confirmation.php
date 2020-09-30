@@ -53,11 +53,7 @@ $GoToStep = new OrderProcessStepPayments([
     'Order' => $Order
 ]);
 
-\QUI\System\Log::writeRecursive($_REQUEST);
-
 // Differentiate between standard order and recurring payment
-
-
 if ($_REQUEST['AuthenticationStatus'] === 'Success') {
     // If the SCA was successful -> Authorize the Order
     try {
