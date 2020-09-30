@@ -137,8 +137,8 @@
             <en><![CDATA[IPN Handling]]></en>
         </locale>
         <locale name="settings.api.use_ipn_handler.description" html="true">
-            <de><![CDATA[<b>Aktiviere asnychronen Empfang von Nachrichten seitens Amazon bzgl. des Status von Zahlungsoperationen</b> (notwendig für Durchführung von Rückzahlungen und/oder wenn Anweisung zur Zahlungsdurchführung später als 7 Tage nach Zahlungsautorisierung erfolgt; erfordert Einrichtung einer von außen erreichbaren <a href="https://pay.amazon.com/de/developer/documentation/lpwa/201952050" target="_blank">IPN-URL</a>)]]></de>
-            <en><![CDATA[<b>Enable asynchronous reception of Amazon messages regarding the status of payment capture requests</b> (necessary for executing refund and/or if payment capture requests are performed more than 7 days after payment authorization requests; requires an <a href="https://pay.amazon.com/de/developer/documentation/lpwa/201952050" target="_blank">IPN-URL</a> to be set up)]]></en>
+            <de><![CDATA[<b>Aktiviere asnychronen Empfang von Nachrichten seitens Amazon bzgl. des Status von Zahlungsoperationen</b> (u.U. notwendig für Durchführung von Rückzahlungen und/oder wenn Anweisung zur Zahlungsdurchführung später als 7 Tage nach Zahlungsautorisierung erfolgt; erfordert Einrichtung einer von außen erreichbaren <a href="https://pay.amazon.com/de/developer/documentation/lpwa/201952050" target="_blank">IPN-URL</a>)]]></de>
+            <en><![CDATA[<b>Enable asynchronous reception of Amazon messages regarding the status of payment capture requests</b> (may be necessary for executing refund and/or if payment capture requests are performed more than 7 days after payment authorization requests; requires an <a href="https://pay.amazon.com/de/developer/documentation/lpwa/201952050" target="_blank">IPN-URL</a> to be set up)]]></en>
         </locale>
         <locale name="settings.category.payment.title">
             <de><![CDATA[Zahlungsprozess]]></de>
