@@ -133,7 +133,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      */
     public function refundSupport()
     {
-        return true;
+        return Provider::isRefundHandlingActivated();
     }
 
     /**
