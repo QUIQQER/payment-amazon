@@ -247,6 +247,10 @@
                     </title>
 
                     <settings name="amazon_billing_agreements" title="amazon_billing_agreements">
+                        <title>
+                            <locale group="quiqqer/payment-amazon" var="settings.category.amazon_billing_agreements.title"/>
+                        </title>
+
                         <input type="hidden" data-qui="package/quiqqer/payment-amazon/bin/controls/backend/BillingAgreements" label="false">
                         </input>
                     </settings>
