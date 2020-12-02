@@ -77,7 +77,14 @@ class BillingAgreements
 
         $Order->setAttribute(Payment::ATTR_AMAZON_BILLING_AGREEMENT_ID, $billingAgreementId);
         $Order->setPaymentData(Payment::ATTR_AMAZON_BILLING_AGREEMENT_ID, $billingAgreementId);
-        $Order->addHistory(Utils::getHistoryText('BillingAgreement.set_details'));
+        $Order->addHistory(
+            Utils::getHistoryText(
+                'BillingAgreement.set_details',
+                [
+                    'billingAgreementId' => $billingAgreementId
+                ]
+            )
+        );
         Utils::saveOrder($Order);
     }
 
