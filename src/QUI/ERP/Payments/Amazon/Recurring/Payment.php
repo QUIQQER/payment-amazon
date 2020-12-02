@@ -255,4 +255,27 @@ class Payment extends BasePayment implements RecurringPaymentInterface
             return false;
         }
     }
+
+    /**
+     * Is the payment process successful?
+     * This method returns the payment success type
+     *
+     * @param string $hash - Vorgangsnummer - hash number - procedure number
+     * @return bool
+     */
+    public function isSuccessful($hash)
+    {
+        try {
+            $Order = QUI\ERP\Order\Handler::getInstance()->getOrderByHash($hash);
+        } catch (\Exception $Exception) {
+            QUI\System\Log::addError(
+                'Amazon Pay :: Cannot check if payment process for Order #'.$hash.' is successful'
+                .' -> '.$Exception->getMessage()
+            );
+
+            return false;
+        }
+
+        return $Order->getPaymentDataEntry(self::ATTR_AMAZON_BILLING_AGREEMENT_VALIDATED);
+    }
 }
