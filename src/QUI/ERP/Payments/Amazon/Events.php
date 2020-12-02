@@ -3,10 +3,8 @@
 namespace QUI\ERP\Payments\Amazon;
 
 use QUI;
-use QUI\ERP\Accounting\Payments\Gateway\Gateway;
-use AmazonPay\IpnHandler;
-use QUI\ERP\Order\Handler as OrderHandler;
 use QUI\ERP\Payments\Amazon\Payment as AmazonPayment;
+use QUI\ERP\Payments\Amazon\Recurring\Payment as AmazonPaymentRecurring;
 
 /**
  * Class Events
@@ -36,7 +34,14 @@ class Events
             return;
         }
 
-        if (!($OrderPayment->getPaymentType() instanceof AmazonPayment)) {
+        $OrderPaymentType = $OrderPayment->getPaymentType();
+
+        if (!($OrderPaymentType instanceof AmazonPayment)) {
+            return;
+        }
+
+        // Recurring payments are handled via cron
+        if (($OrderPaymentType instanceof AmazonPaymentRecurring)) {
             return;
         }
 
