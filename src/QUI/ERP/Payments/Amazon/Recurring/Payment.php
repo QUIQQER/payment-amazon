@@ -111,6 +111,46 @@ class Payment extends BasePayment implements RecurringPaymentInterface
     }
 
     /**
+     * Suspend a Subscription
+     *
+     * This *temporarily* suspends the automated collection of payments until explicitly resumed.
+     *
+     * @param int|string $subscriptionId
+     * @param string $note (optional) - Suspension note
+     * @return void
+     */
+    public function suspendSubscription($subscriptionId, string $note = null)
+    {
+        // @todo implement
+    }
+
+    /**
+     * Resume a suspended Subscription
+     *
+     * This resumes automated collection of payments of a previously supsendes Subscription.
+     *
+     * @param int|string $subscriptionId
+     * @param string $note (optional) - Resume note
+     * @return void
+     */
+    public function resumeSubscription($subscriptionId, string $note = null)
+    {
+        // @todo implement
+    }
+
+    /**
+     * Checks if a subscription is currently suspended
+     *
+     * @param int|string $subscriptionId
+     * @return bool
+     */
+    public function isSuspended($subscriptionId)
+    {
+        // @todo implement
+        return false;
+    }
+
+    /**
      * Sets a subscription as inactive (on the side of this QUIQQER system only!)
      *
      * IMPORTANT: This does NOT mean that the corresponding subscription at the payment provider
