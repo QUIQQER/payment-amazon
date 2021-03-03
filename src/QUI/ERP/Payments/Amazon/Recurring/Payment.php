@@ -195,7 +195,7 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      */
     public function getSubscriptionIdByOrder(AbstractOrder $Order)
     {
-        $billingAgreementId = $Order->getAttribute(self::ATTR_AMAZON_BILLING_AGREEMENT_ID);
+        $billingAgreementId = $Order->getPaymentDataEntry(self::ATTR_AMAZON_BILLING_AGREEMENT_ID);
         return $billingAgreementId ?: false;
     }
 
