@@ -579,7 +579,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
 
         if (!$Order->getPaymentDataEntry(self::ATTR_AMAZON_AUTHORIZATION_ID)) {
             try {
-                $this->authorizePayment($orderReferenceId, $Order);
+                $this->authorizePayment($Order);
             } catch (AmazonPayException $Exception) {
                 $Order->addHistory(
                     'Amazon Pay :: Capture failed because the Order has no OPEN Authorization'

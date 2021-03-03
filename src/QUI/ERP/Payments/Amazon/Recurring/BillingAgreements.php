@@ -484,6 +484,86 @@ class BillingAgreements
     }
 
     /**
+     * Suspend a Subscription
+     *
+     * This *temporarily* suspends the automated collection of payments until explicitly resumed.
+     *
+     * @param int|string $subscriptionId
+     * @return void
+     *
+     * @throws QUI\Database\Exception
+     */
+    public static function suspendSubscription($subscriptionId)
+    {
+        if (self::isSuspended($subscriptionId)) {
+            return;
+        }
+
+        QUI::getDataBase()->update(
+            self::getBillingAgreementsTable(),
+            [
+                'suspended' => 1
+            ],
+            [
+                'amazon_agreement_id' => $subscriptionId
+            ]
+        );
+    }
+
+    /**
+     * Resume a suspended Subscription
+     *
+     * This resumes automated collection of payments of a previously supsendes Subscription.
+     *
+     * @param int|string $subscriptionId
+     * @return void
+     *
+     * @throws QUI\Database\Exception
+     */
+    public static function resumeSubscription($subscriptionId)
+    {
+        if (!self::isSuspended($subscriptionId)) {
+            return;
+        }
+
+        QUI::getDataBase()->update(
+            self::getBillingAgreementsTable(),
+            [
+                'suspended' => 0
+            ],
+            [
+                'amazon_agreement_id' => $subscriptionId
+            ]
+        );
+    }
+
+    /**
+     * Checks if a subscription is currently suspended
+     *
+     * @param int|string $subscriptionId
+     * @return bool
+     *
+     * @throws QUI\Database\Exception
+     */
+    public static function isSuspended($subscriptionId)
+    {
+        $result = QUI::getDataBase()->fetch([
+            'select' => ['suspended'],
+            'from'   => self::getBillingAgreementsTable(),
+            'where'  => [
+                'amazon_agreement_id' => $subscriptionId
+            ],
+            'limit'  => 1
+        ]);
+
+        if (empty($result)) {
+            return false;
+        }
+
+        return !empty($result[0]['suspended']);
+    }
+
+    /**
      * Get data of all Billing Agreements (QUIQQER data only; no Amazon query performed!)
      *
      * @param array $searchParams
