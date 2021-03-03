@@ -279,6 +279,10 @@ class BillingAgreements
             return;
         }
 
+        if (self::isSuspended($billingAgreementId)) {
+            return;
+        }
+
         if (!self::isBillingAgreementActiveAtAmazon($billingAgreementId)) {
             return;
         }
