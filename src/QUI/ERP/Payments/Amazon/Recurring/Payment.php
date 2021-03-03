@@ -121,7 +121,7 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      */
     public function suspendSubscription($subscriptionId, string $note = null)
     {
-        // @todo implement
+        BillingAgreements::suspendSubscription($subscriptionId);
     }
 
     /**
@@ -135,7 +135,7 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      */
     public function resumeSubscription($subscriptionId, string $note = null)
     {
-        // @todo implement
+        BillingAgreements::resumeSubscription($subscriptionId);
     }
 
     /**
@@ -146,8 +146,7 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      */
     public function isSuspended($subscriptionId)
     {
-        // @todo implement
-        return false;
+        return BillingAgreements::isSuspended($subscriptionId);
     }
 
     /**

@@ -7,6 +7,7 @@
             <field type="MEDIUMTEXT NOT NULL">customer</field>
             <field type="VARCHAR(250) NULL DEFAULT NULL">global_process_id</field>
             <field type="TINYINT(1) NOT NULL DEFAULT 1">active</field>
+            <field type="TINYINT(1) NOT NULL DEFAULT 0">suspended</field>
 
             <primary>amazon_agreement_id</primary>
             <index>global_process_id</index>
