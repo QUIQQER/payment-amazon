@@ -111,6 +111,45 @@ class Payment extends BasePayment implements RecurringPaymentInterface
     }
 
     /**
+     * Suspend a Subscription
+     *
+     * This *temporarily* suspends the automated collection of payments until explicitly resumed.
+     *
+     * @param int|string $subscriptionId
+     * @param string $note (optional) - Suspension note
+     * @return void
+     */
+    public function suspendSubscription($subscriptionId, string $note = null)
+    {
+        BillingAgreements::suspendSubscription($subscriptionId);
+    }
+
+    /**
+     * Resume a suspended Subscription
+     *
+     * This resumes automated collection of payments of a previously supsendes Subscription.
+     *
+     * @param int|string $subscriptionId
+     * @param string $note (optional) - Resume note
+     * @return void
+     */
+    public function resumeSubscription($subscriptionId, string $note = null)
+    {
+        BillingAgreements::resumeSubscription($subscriptionId);
+    }
+
+    /**
+     * Checks if a subscription is currently suspended
+     *
+     * @param int|string $subscriptionId
+     * @return bool
+     */
+    public function isSuspended($subscriptionId)
+    {
+        return BillingAgreements::isSuspended($subscriptionId);
+    }
+
+    /**
      * Sets a subscription as inactive (on the side of this QUIQQER system only!)
      *
      * IMPORTANT: This does NOT mean that the corresponding subscription at the payment provider
@@ -156,7 +195,7 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      */
     public function getSubscriptionIdByOrder(AbstractOrder $Order)
     {
-        $billingAgreementId = $Order->getAttribute(self::ATTR_AMAZON_BILLING_AGREEMENT_ID);
+        $billingAgreementId = $Order->getPaymentDataEntry(self::ATTR_AMAZON_BILLING_AGREEMENT_ID);
         return $billingAgreementId ?: false;
     }
 
@@ -254,5 +293,28 @@ class Payment extends BasePayment implements RecurringPaymentInterface
             QUI\System\Log::writeException($Exception);
             return false;
         }
+    }
+
+    /**
+     * Is the payment process successful?
+     * This method returns the payment success type
+     *
+     * @param string $hash - Vorgangsnummer - hash number - procedure number
+     * @return bool
+     */
+    public function isSuccessful($hash)
+    {
+        try {
+            $Order = QUI\ERP\Order\Handler::getInstance()->getOrderByHash($hash);
+        } catch (\Exception $Exception) {
+            QUI\System\Log::addError(
+                'Amazon Pay :: Cannot check if payment process for Order #'.$hash.' is successful'
+                .' -> '.$Exception->getMessage()
+            );
+
+            return false;
+        }
+
+        return $Order->getPaymentDataEntry(self::ATTR_AMAZON_BILLING_AGREEMENT_VALIDATED);
     }
 }

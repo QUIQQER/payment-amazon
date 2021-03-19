@@ -3,7 +3,6 @@
 namespace QUI\ERP\Payments\Amazon;
 
 use AmazonPay\Client as AmazonPayClient;
-use AmazonPay\ResponseInterface;
 use QUI;
 use QUI\ERP\Accounting\Payments\Payments;
 use QUI\ERP\Accounting\Payments\Transactions\Transaction;
@@ -134,7 +133,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      */
     public function refundSupport()
     {
-        return true;
+        return Provider::isRefundHandlingActivated();
     }
 
     /**
@@ -239,10 +238,10 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
         $message = '',
         $hash = false
     ) {
-        if (!Provider::isIpnHandlingActivated()) {
+        if (!Provider::isRefundHandlingActivated()) {
             throw new QUI\ERP\Accounting\Payments\Transactions\RefundException([
                 'quiqqer/payment-amazon',
-                'exception.Payment.refund.ipn_not_activated'
+                'exception.Payment.refund.handling_not_activated'
             ]);
         }
 
@@ -580,7 +579,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
 
         if (!$Order->getPaymentDataEntry(self::ATTR_AMAZON_AUTHORIZATION_ID)) {
             try {
-                $this->authorizePayment($orderReferenceId, $Order);
+                $this->authorizePayment($Order);
             } catch (AmazonPayException $Exception) {
                 $Order->addHistory(
                     'Amazon Pay :: Capture failed because the Order has no OPEN Authorization'
@@ -647,7 +646,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
 
             case 'Pending':
                 // @todo pending status
-                if (Provider::isIpnHandlingActivated()) {
+                if (Provider::isRefundHandlingActivated()) {
                     // etc.
                 }
                 break;
@@ -756,8 +755,19 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
             case 'Pending':
                 $Process->addHistory(
                     'Amazon Pay :: Refund for '.$AmountValue->formatted().' successfully started.'
-                    .' Waiting for Amazon answer via IPN. Transaction #'.$RefundTransaction->getTxId()
+                    .' Waiting for Amazon answer via IPN or refund checker cron execution.'
+                    .' Transaction #'.$RefundTransaction->getTxId()
                 );
+
+                // Add to open refund transaction table so it can be checked
+                QUI::getDataBase()->insert(
+                    RefundProcessor::getRefundTransactionsTable(),
+                    [
+                        'tx_id'            => $RefundTransaction->getTxId(),
+                        'amazon_refund_id' => $amazonRefundId
+                    ]
+                );
+
                 break;
 
             default:
@@ -779,11 +789,11 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * Finalize a refund process
      *
      * @param QUI\ERP\Accounting\Payments\Transactions\Transaction $RefundTransaction
-     * @param array $amazonIpnData
+     * @param array $refundData
      * @return void
      * @throws \QUI\Exception
      */
-    public function finalizeRefund(Transaction $RefundTransaction, $amazonIpnData)
+    public function finalizeRefund(Transaction $RefundTransaction, $refundData)
     {
         // finalize refund
         $Process = new QUI\ERP\Process($RefundTransaction->getGlobalProcessId());
@@ -793,13 +803,12 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
         }
 
         $Process->addHistory('Amazon Pay :: Refund IPN answer received for transaction #'.$RefundTransaction->getTxId());
-        $refundDetails = $amazonIpnData['RefundDetails'];
 
-        switch ($refundDetails['RefundStatus']['State']) {
+        switch ($refundData['RefundStatus']['State']) {
             case 'Declined':
                 $Process->addHistory(
                     'Amazon Pay :: Refund transaction #'.$RefundTransaction->getTxId().' was DECLINED by Amazon.'
-                    .' ReasonCode: "'.$refundDetails['RefundStatus']['ReasonCode'].'".'
+                    .' ReasonCode: "'.$refundData['RefundStatus']['ReasonCode'].'".'
                 );
 
                 $RefundTransaction->error();
@@ -808,7 +817,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
             case 'Completed':
                 $Process->addHistory(
                     'Amazon Pay :: Refund transaction #'.$RefundTransaction->getTxId().' was SUCCESSFUL.'
-                    .' Amount refunded: '.$refundDetails['RefundAmount']['Amount'].' '.$refundDetails['RefundAmount']['CurrencyCode'].'.'
+                    .' Amount refunded: '.$refundData['RefundAmount']['Amount'].' '.$refundData['RefundAmount']['CurrencyCode'].'.'
                 );
 
                 $RefundTransaction->complete();

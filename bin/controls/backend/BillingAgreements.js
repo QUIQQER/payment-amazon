@@ -6,10 +6,9 @@
  */
 define('package/quiqqer/payment-amazon/bin/controls/backend/BillingAgreements', [
 
+    'qui/QUI',
     'qui/controls/Control',
     'qui/controls/loader/Loader',
-    'qui/controls/windows/Confirm',
-    'qui/controls/buttons/Button',
     'controls/grid/Grid',
     'package/quiqqer/payment-amazon/bin/AmazonPay',
 
@@ -19,7 +18,7 @@ define('package/quiqqer/payment-amazon/bin/controls/backend/BillingAgreements', 
 
     'css!package/quiqqer/payment-amazon/bin/controls/backend/BillingAgreements.css'
 
-], function (QUIControl, QUILoader, QUIConfirm, QUIButton, Grid, AmazonPay, BillingAgreementWindow, QUILocale) {
+], function (QUI, QUIControl, QUILoader, Grid, AmazonPay, BillingAgreementWindow, QUILocale) {
     "use strict";
 
     var lg = 'quiqqer/payment-amazon';
@@ -46,6 +45,7 @@ define('package/quiqqer/payment-amazon/bin/controls/backend/BillingAgreements', 
 
             this.$search      = false;
             this.$SearchInput = null;
+            this.$Panel       = null;
 
             this.addEvents({
                 onCreate: this.$onCreate,
@@ -119,10 +119,10 @@ define('package/quiqqer/payment-amazon/bin/controls/backend/BillingAgreements', 
 
             this.Loader.inject(this.$Content);
 
-            this.$Content.getParent('form').setStyle('height', '100%');
-            this.$Content.getParent('table').setStyle('height', '100%');
-            this.$Content.getParent('tbody').setStyle('height', '100%');
-            this.$Content.getParent('.field-container').setStyle('height', '100%');
+            this.$Content.getParent('form').setStyle('height', 'calc(100% - 40px)');
+            this.$Content.getParent('table').setStyle('height', 'calc(100% - 40px)');
+            this.$Content.getParent('tbody').setStyle('height', 'calc(100% - 40px)');
+            this.$Content.getParent('.field-container').setStyle('height', 'calc(100% - 40px)');
 
             this.create();
             this.$onCreate();
@@ -220,6 +220,9 @@ define('package/quiqqer/payment-amazon/bin/controls/backend/BillingAgreements', 
                 onDblClick: this.$clickDetails
             });
 
+            this.$Panel = QUI.Controls.getById(this.getElm().getParent('.qui-panel').get('data-quiid'));
+            this.$Panel.addEvent('onResize', this.$onResize);
+
             this.$onResize();
         },
 
@@ -231,10 +234,12 @@ define('package/quiqqer/payment-amazon/bin/controls/backend/BillingAgreements', 
                 return;
             }
 
-            var size = this.$Content.getSize();
+            var size = this.$Panel.getContent().getSize();
 
-            this.$Grid.setHeight(size.y - 20);
-            this.$Grid.setWidth(size.x - 20);
+            this.$Content.setStyle('width', size.x - 60);
+
+            this.$Grid.setHeight(size.y - 185);
+            this.$Grid.setWidth(size.x - 60);
             this.$Grid.resize();
         },
 

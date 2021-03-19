@@ -77,7 +77,14 @@ class BillingAgreements
 
         $Order->setAttribute(Payment::ATTR_AMAZON_BILLING_AGREEMENT_ID, $billingAgreementId);
         $Order->setPaymentData(Payment::ATTR_AMAZON_BILLING_AGREEMENT_ID, $billingAgreementId);
-        $Order->addHistory(Utils::getHistoryText('BillingAgreement.set_details'));
+        $Order->addHistory(
+            Utils::getHistoryText(
+                'BillingAgreement.set_details',
+                [
+                    'billingAgreementId' => $billingAgreementId
+                ]
+            )
+        );
         Utils::saveOrder($Order);
     }
 
@@ -272,6 +279,10 @@ class BillingAgreements
             return;
         }
 
+        if (self::isSuspended($billingAgreementId)) {
+            return;
+        }
+
         if (!self::isBillingAgreementActiveAtAmazon($billingAgreementId)) {
             return;
         }
@@ -353,7 +364,9 @@ class BillingAgreements
             $data = Utils::getResponseData($Response);
             $data = $data['AuthorizeOnBillingAgreementResult']['AuthorizationDetails'];
 
-            // Save authorization ID
+            // Save authorization and capture ID
+
+
             QUI::getDataBase()->update(
                 self::getBillingAgreementTransactionsTable(),
                 [
@@ -430,6 +443,9 @@ class BillingAgreements
                 $Invoice->getGlobalProcessId()
             );
 
+            $InvoiceTransaction->setData(BasePayment::ATTR_AMAZON_CAPTURE_ID, $data['IdList']['member']);
+            $InvoiceTransaction->updateData();
+
             $Invoice->addTransaction($InvoiceTransaction);
 
             $TransactionDate = \date_create($data['CreationTimestamp']);
@@ -469,6 +485,86 @@ class BillingAgreements
      */
     public static function authorizeBillingAgreementPayment(Invoice $Invoice)
     {
+    }
+
+    /**
+     * Suspend a Subscription
+     *
+     * This *temporarily* suspends the automated collection of payments until explicitly resumed.
+     *
+     * @param int|string $subscriptionId
+     * @return void
+     *
+     * @throws QUI\Database\Exception
+     */
+    public static function suspendSubscription($subscriptionId)
+    {
+        if (self::isSuspended($subscriptionId)) {
+            return;
+        }
+
+        QUI::getDataBase()->update(
+            self::getBillingAgreementsTable(),
+            [
+                'suspended' => 1
+            ],
+            [
+                'amazon_agreement_id' => $subscriptionId
+            ]
+        );
+    }
+
+    /**
+     * Resume a suspended Subscription
+     *
+     * This resumes automated collection of payments of a previously supsendes Subscription.
+     *
+     * @param int|string $subscriptionId
+     * @return void
+     *
+     * @throws QUI\Database\Exception
+     */
+    public static function resumeSubscription($subscriptionId)
+    {
+        if (!self::isSuspended($subscriptionId)) {
+            return;
+        }
+
+        QUI::getDataBase()->update(
+            self::getBillingAgreementsTable(),
+            [
+                'suspended' => 0
+            ],
+            [
+                'amazon_agreement_id' => $subscriptionId
+            ]
+        );
+    }
+
+    /**
+     * Checks if a subscription is currently suspended
+     *
+     * @param int|string $subscriptionId
+     * @return bool
+     *
+     * @throws QUI\Database\Exception
+     */
+    public static function isSuspended($subscriptionId)
+    {
+        $result = QUI::getDataBase()->fetch([
+            'select' => ['suspended'],
+            'from'   => self::getBillingAgreementsTable(),
+            'where'  => [
+                'amazon_agreement_id' => $subscriptionId
+            ],
+            'limit'  => 1
+        ]);
+
+        if (empty($result)) {
+            return false;
+        }
+
+        return !empty($result[0]['suspended']);
     }
 
     /**
@@ -585,49 +681,6 @@ class BillingAgreements
         }
 
         return \current($result);
-    }
-
-    /**
-     * Get transaction list for a Billing Agreement
-     *
-     * @param string $billingAgreementId
-     * @param \DateTime $Start (optional)
-     * @param \DateTime $End (optional)
-     * @return array
-     * @throws AmazonException
-     * @throws \Exception
-     */
-    public static function getBillingAgreementTransactions(
-        $billingAgreementId,
-        \DateTime $Start = null,
-        \DateTime $End = null
-    ) {
-        $data = [
-            RecurringPayment::ATTR_AMAZON_BILLING_AGREEMENT_ID => $billingAgreementId
-        ];
-
-        if (is_null($Start)) {
-            $Start = new \DateTime(date('Y-m').'-01 00:00:00');
-        }
-
-        if (is_null($End)) {
-            $End = clone $Start;
-            $End->add(new \DateInterval('P1M')); // Start + 1 month as default time period
-        }
-
-        $data['start_date'] = $Start->format('Y-m-d');
-
-        if ($End > $Start && $Start->format('Y-m-d') !== $End->format('Y-m-d')) {
-            $data['end_date'] = $End->format('Y-m-d');
-        }
-
-        $result = self::amazonApiRequest(
-            RecurringPayment::AMAZON_REQUEST_TYPE_GET_BILLING_AGREEMENT_TRANSACTIONS,
-            [],
-            $data
-        );
-
-        return $result['agreement_transaction_list'];
     }
 
     /**
