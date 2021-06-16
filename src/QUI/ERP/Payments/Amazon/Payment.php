@@ -194,7 +194,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
 
         $Transaction = $Gateway->purchase(
             $actualSum,
-            new QUI\ERP\Currency\Currency($actualCurrencyCode),
+            QUI\ERP\Currency\Handler::getCurrency($actualCurrencyCode),
             $Order,
             $this
         );
