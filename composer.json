@@ -2,7 +2,7 @@
     "name": "quiqqer\/payment-amazon",
     "type": "quiqqer-module",
     "description": "Amazon Pay - Payment method for QUIQQER ERP stack",
-    "version": "1.3.2",
+    "version": "1.3.1",
     "license": [
         "GPL-3.0+",
         "PCSG QL-1.0"
