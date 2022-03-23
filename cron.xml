@@ -8,6 +8,11 @@
         <description>
             <locale group="quiqqer/payment-amazon" var="cron.processUnpaidInvoices.description"/>
         </description>
+
+        <autocreate>
+            <interval>0 1 * * *</interval>
+            <active>1</active>
+        </autocreate>
     </cron>
 
     <cron exec="\QUI\ERP\Payments\Amazon\RefundProcessor::processOpenRefundTransactions">
@@ -17,6 +22,11 @@
         <description>
             <locale group="quiqqer/payment-amazon" var="cron.processOpenRefundTransactions.description"/>
         </description>
+
+        <autocreate>
+            <interval>0 2 * * *</interval>
+            <active>1</active>
+        </autocreate>
     </cron>
 
 </crons>
