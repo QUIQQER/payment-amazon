@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * This file contains QUI\ERP\Payments\Amazon\Recurring\BillingAgreements
+ */
+
 namespace QUI\ERP\Payments\Amazon\Recurring;
 
 use QUI;
