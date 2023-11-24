@@ -477,6 +477,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
                         Utils::throwAmazonPayException($reason, [
                             'reRenderWallet' => 1
                         ]);
+                    // no break
 
                     case 'TransactionTimedOut':
                         $Order->addHistory(
@@ -497,6 +498,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
                             'reRenderWallet' => 1,
                             'orderCancelled' => 1
                         ]);
+                    // no break
 
                     default:
                         $Order->addHistory(
@@ -526,6 +528,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
 
                         Utils::throwAmazonPayException($reason);
                 }
+            // no break
 
             default:
                 // @todo Order ggf. pending
@@ -661,6 +664,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
                 // @todo Change order status to "problems with Amazon Payment"
 
                 Utils::throwAmazonPayException($reason);
+                break;
         }
     }
 
@@ -781,6 +785,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
 
                 $RefundTransaction->error();
                 Utils::throwAmazonPayException($reason);
+            // no break
         }
     }
 
