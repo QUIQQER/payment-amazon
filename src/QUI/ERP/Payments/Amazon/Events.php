@@ -14,7 +14,7 @@ use QUI\ERP\Payments\Amazon\Recurring\Payment as AmazonPaymentRecurring;
 class Events
 {
     const ACTION_CAPTURE = 'capture';
-    const ACTION_REFUND  = 'refund';
+    const ACTION_REFUND = 'refund';
 
     /**
      * quiqqer/order: onQuiqqerOrderSuccessful
@@ -47,7 +47,7 @@ class Events
 
         // determine if payment has to be captured now or later
         $articleType = Provider::getPaymentSetting('article_type');
-        $capture     = false;
+        $capture = false;
 
         switch ($articleType) {
             case Payment::SETTING_ARTICLE_TYPE_PHYSICAL:

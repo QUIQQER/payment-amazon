@@ -2,7 +2,8 @@
 
 namespace QUI\ERP\Payments\Amazon;
 
-class AmazonPayException extends \QUI\ERP\Accounting\Payments\Exception
-{
+use QUI\ERP\Accounting\Payments\Exception;
 
+class AmazonPayException extends Exception
+{
 }

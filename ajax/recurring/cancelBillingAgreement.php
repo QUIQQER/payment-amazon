@@ -1,8 +1,5 @@
 <?php
 
-use QUI\ERP\Payments\Amazon\AmazonPayException;
-use QUI\ERP\Payments\Amazon\Recurring\BillingAgreements;
-
 /**
  * Cancel a Amazon Billing Agreement
  *
@@ -10,6 +7,10 @@ use QUI\ERP\Payments\Amazon\Recurring\BillingAgreements;
  * @return void
  * @throws AmazonPayException
  */
+
+use QUI\ERP\Payments\Amazon\AmazonPayException;
+use QUI\ERP\Payments\Amazon\Recurring\BillingAgreements;
+
 QUI::$Ajax->registerFunction(
     'package_quiqqer_payment-amazon_ajax_recurring_cancelBillingAgreement',
     function ($billingAgreementId) {

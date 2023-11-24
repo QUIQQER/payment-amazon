@@ -4,9 +4,9 @@ namespace QUI\ERP\Payments\Amazon;
 
 use AmazonPay\ResponseInterface;
 use QUI;
+use QUI\ERP\Accounting\Invoice\Invoice;
 use QUI\ERP\Accounting\Payments\Payments;
 use QUI\ERP\Order\AbstractOrder;
-use QUI\ERP\Accounting\Invoice\Invoice;
 
 /**
  * Class Utils
@@ -53,7 +53,7 @@ class Utils
      */
     public static function getHistoryText(string $context, $data = [])
     {
-        return QUI::getLocale()->get('quiqqer/payment-amazon', 'history.'.$context, $data);
+        return QUI::getLocale()->get('quiqqer/payment-amazon', 'history.' . $context, $data);
     }
 
     /**
@@ -64,9 +64,9 @@ class Utils
      */
     public static function getSuccessUrl(AbstractOrder $Order)
     {
-        return Payments::getInstance()->getHost().
-               URL_OPT_DIR.
-               'quiqqer/payment-amazon/bin/confirmation.php?hash='.$Order->getHash();
+        return Payments::getInstance()->getHost() .
+            URL_OPT_DIR .
+            'quiqqer/payment-amazon/bin/confirmation.php?hash=' . $Order->getHash();
     }
 
     /**
@@ -77,9 +77,9 @@ class Utils
      */
     public static function getFailureUrl(AbstractOrder $Order)
     {
-        return Payments::getInstance()->getHost().
-               URL_OPT_DIR.
-               'quiqqer/payment-amazon/bin/confirmation.php?hash='.$Order->getHash().'&error=1';
+        return Payments::getInstance()->getHost() .
+            URL_OPT_DIR .
+            'quiqqer/payment-amazon/bin/confirmation.php?hash=' . $Order->getHash() . '&error=1';
     }
 
     /**
@@ -143,7 +143,7 @@ class Utils
                 $response['Error']['Code'],
                 [
                     'amazonApiErrorCode' => $response['Error']['Code'],
-                    'amazonApiErrorMsg'  => $response['Error']['Message']
+                    'amazonApiErrorMsg' => $response['Error']['Message']
                 ]
             );
         }
@@ -162,8 +162,8 @@ class Utils
      */
     public static function throwAmazonPayException($errorCode, $exceptionAttributes = [])
     {
-        $L   = QUI::getLocale();
-        $lg  = 'quiqqer/payment-amazon';
+        $L = QUI::getLocale();
+        $lg = 'quiqqer/payment-amazon';
         $msg = $L->get($lg, 'payment.error_msg.general_error');
 
         switch ($errorCode) {
@@ -173,7 +173,7 @@ class Utils
             case 'AmazonRejected':
             case 'ProcessingFailure':
             case 'MaxCapturesProcessed':
-                $msg                                    = $L->get($lg, 'payment.error_msg.'.$errorCode);
+                $msg = $L->get($lg, 'payment.error_msg.' . $errorCode);
                 $exceptionAttributes['amazonErrorCode'] = $errorCode;
                 break;
         }

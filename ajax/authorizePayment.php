@@ -1,10 +1,5 @@
 <?php
 
-use QUI\ERP\Order\Handler;
-use QUI\ERP\Payments\Amazon\Payment;
-use QUI\ERP\Payments\Amazon\AmazonPayException;
-use QUI\Utils\Security\Orthos;
-
 /**
  * Authorize Amazon Pay payment for an Order
  *
@@ -13,6 +8,12 @@ use QUI\Utils\Security\Orthos;
  * @return bool - success
  * @throws AmazonPayException
  */
+
+use QUI\ERP\Order\Handler;
+use QUI\ERP\Payments\Amazon\AmazonPayException;
+use QUI\ERP\Payments\Amazon\Payment;
+use QUI\Utils\Security\Orthos;
+
 QUI::$Ajax->registerFunction(
     'package_quiqqer_payment-amazon_ajax_authorizePayment',
     function ($orderReferenceId, $orderHash) {

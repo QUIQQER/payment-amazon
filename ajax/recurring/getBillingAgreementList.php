@@ -1,10 +1,5 @@
 <?php
 
-use QUI\ERP\Payments\Amazon\AmazonPayException;
-use QUI\ERP\Payments\Amazon\Recurring\BillingAgreements;
-use QUI\Utils\Security\Orthos;
-use QUI\Utils\Grid;
-
 /**
  * Get list of Amazon Billing Agreements
  *
@@ -12,6 +7,12 @@ use QUI\Utils\Grid;
  * @return array - Billing Agreements list
  * @throws AmazonPayException
  */
+
+use QUI\ERP\Payments\Amazon\AmazonPayException;
+use QUI\ERP\Payments\Amazon\Recurring\BillingAgreements;
+use QUI\Utils\Grid;
+use QUI\Utils\Security\Orthos;
+
 QUI::$Ajax->registerFunction(
     'package_quiqqer_payment-amazon_ajax_recurring_getBillingAgreementList',
     function ($searchParams) {

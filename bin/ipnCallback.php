@@ -2,13 +2,13 @@
 
 define('QUIQQER_SYSTEM', true);
 
-require_once dirname(dirname(dirname(dirname(__FILE__)))).'/header.php';
+require_once dirname(dirname(dirname(dirname(__FILE__)))) . '/header.php';
 
-use \Symfony\Component\HttpFoundation\Response;
 use AmazonPay\IpnHandler;
 use QUI\ERP\Accounting\Payments\Transactions\Handler as TransactionsHandler;
 use QUI\ERP\Order\Handler as OrderHandler;
 use QUI\ERP\Payments\Amazon\Payment as AmazonPayment;
+use Symfony\Component\HttpFoundation\Response;
 
 function badRequest()
 {
@@ -19,7 +19,7 @@ function badRequest()
 }
 
 $headers = getallheaders();
-$body    = file_get_contents('php://input');
+$body = file_get_contents('php://input');
 
 try {
     $IpnHandler = new IpnHandler($headers, $body);
@@ -33,9 +33,9 @@ $ipnData = $IpnHandler->toArray();
 // Handle Refund request
 if (!empty($ipnData['RefundDetails']['RefundReferenceId'])) {
     try {
-        $AmazonPayment     = new AmazonPayment();
+        $AmazonPayment = new AmazonPayment();
         $refundReferenceId = $ipnData['RefundDetails']['RefundReferenceId'];
-        $transactionId     = $AmazonPayment->rebuildCroppedTransactionId($refundReferenceId);
+        $transactionId = $AmazonPayment->rebuildCroppedTransactionId($refundReferenceId);
         $RefundTransaction = TransactionsHandler::getInstance()->get($transactionId);
 
         $AmazonPayment->finalizeRefund($RefundTransaction, $ipnData['RefundDetails']);
@@ -50,13 +50,13 @@ if (!empty($ipnData['CaptureDetails']['CaptureReferenceId'])) {
     try {
         // parse Order ID from special reference ID
         $orderIdentifier = explode('_', $ipnData['CaptureDetails']['CaptureReferenceId']);
-        $Orders          = OrderHandler::getInstance();
+        $Orders = OrderHandler::getInstance();
 
         try {
             $Order = $Orders->getOrderById($orderIdentifier[1]);
         } catch (\Exception $Exception) {
             QUI\System\Log::addError(
-                'Amazon Pay :: Could not load Order from IPN request. Parsed Order ID: '.$orderIdentifier[1]
+                'Amazon Pay :: Could not load Order from IPN request. Parsed Order ID: ' . $orderIdentifier[1]
             );
 
             throw $Exception;

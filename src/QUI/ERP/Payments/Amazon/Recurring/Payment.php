@@ -13,7 +13,7 @@ class Payment extends BasePayment implements RecurringPaymentInterface
     /**
      * Amazon API Order attributes for recurring payments
      */
-    const ATTR_AMAZON_BILLING_AGREEMENT_ID        = 'amazon-AmazonBillingAgreementId';
+    const ATTR_AMAZON_BILLING_AGREEMENT_ID = 'amazon-AmazonBillingAgreementId';
     const ATTR_AMAZON_BILLING_AGREEMENT_CONFIRMED = 'amazon-AmazonBillingAgreementConfirmed';
     const ATTR_AMAZON_BILLING_AGREEMENT_VALIDATED = 'amazon-AmazonBillingAgreementValidated';
 
@@ -56,7 +56,7 @@ class Payment extends BasePayment implements RecurringPaymentInterface
         );
 
         $Engine = QUI::getTemplateManager()->getEngine();
-        $Step->setContent($Engine->fetch(dirname(__FILE__, 2).'/PaymentDisplay.Header.html'));
+        $Step->setContent($Engine->fetch(dirname(__FILE__, 2) . '/PaymentDisplay.Header.html'));
 
         return $Control->create();
     }
@@ -221,8 +221,8 @@ class Payment extends BasePayment implements RecurringPaymentInterface
         try {
             $result = QUI::getDataBase()->fetch([
                 'select' => ['active'],
-                'from'   => BillingAgreements::getBillingAgreementsTable(),
-                'where'  => [
+                'from' => BillingAgreements::getBillingAgreementsTable(),
+                'where' => [
                     'amazon_agreement_id' => $subscriptionId
                 ]
             ]);
@@ -256,8 +256,8 @@ class Payment extends BasePayment implements RecurringPaymentInterface
 
             $result = QUI::getDataBase()->fetch([
                 'select' => ['amazon_agreement_id'],
-                'from'   => BillingAgreements::getBillingAgreementsTable(),
-                'where'  => $where
+                'from' => BillingAgreements::getBillingAgreementsTable(),
+                'where' => $where
             ]);
 
             return \array_column($result, 'amazon_agreement_id');
@@ -278,8 +278,8 @@ class Payment extends BasePayment implements RecurringPaymentInterface
         try {
             $result = QUI::getDataBase()->fetch([
                 'select' => ['global_process_id'],
-                'from'   => BillingAgreements::getBillingAgreementsTable(),
-                'where'  => [
+                'from' => BillingAgreements::getBillingAgreementsTable(),
+                'where' => [
                     'amazon_agreement_id' => $subscriptionId
                 ]
             ]);
@@ -308,8 +308,8 @@ class Payment extends BasePayment implements RecurringPaymentInterface
             $Order = QUI\ERP\Order\Handler::getInstance()->getOrderByHash($hash);
         } catch (\Exception $Exception) {
             QUI\System\Log::addError(
-                'Amazon Pay :: Cannot check if payment process for Order #'.$hash.' is successful'
-                .' -> '.$Exception->getMessage()
+                'Amazon Pay :: Cannot check if payment process for Order #' . $hash . ' is successful'
+                . ' -> ' . $Exception->getMessage()
             );
 
             return false;
