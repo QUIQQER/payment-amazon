@@ -5,7 +5,6 @@ namespace QUI\ERP\Payments\Amazon\Recurring;
 use QUI;
 use QUI\ERP\Payments\Amazon\Provider;
 use QUI\ERP\Plans\Utils as ERPPlansUtils;
-use QUI\ERP\Plans\Handler as ERPPlansHandler;
 
 /**
  * Class PaymentDisplay
@@ -26,7 +25,7 @@ class PaymentDisplay extends QUI\Control
 
         $this->setJavaScriptControl('package/quiqqer/payment-amazon/bin/controls/recurring/PaymentDisplay');
 
-        $this->addCSSFile(dirname(__FILE__).'/PaymentDisplay.css');
+        $this->addCSSFile(dirname(__FILE__) . '/PaymentDisplay.css');
 
         $this->setJavaScriptControlOption('sandbox', boolval(Provider::getApiSetting('sandbox')));
         $this->setJavaScriptControlOption('sellerid', Provider::getApiSetting('merchant_id'));
@@ -45,14 +44,14 @@ class PaymentDisplay extends QUI\Control
         $Engine = QUI::getTemplateManager()->getEngine();
 
         /* @var $Order QUI\ERP\Order\OrderInProcess */
-        $Order            = $this->getAttribute('Order');
+        $Order = $this->getAttribute('Order');
         $PriceCalculation = $Order->getPriceCalculation();
 
         $Engine->assign([
-            'btn_size'      => Provider::getWidgetsSetting('btn_size'),
-            'btn_color'     => Provider::getWidgetsSetting('btn_color'),
+            'btn_size' => Provider::getWidgetsSetting('btn_size'),
+            'btn_color' => Provider::getWidgetsSetting('btn_color'),
             'display_price' => $PriceCalculation->getSum()->formatted(),
-            'apiSetUp'      => Provider::isApiSetUp(),
+            'apiSetUp' => Provider::isApiSetUp(),
             'currency_code' => $Order->getCurrency()->getCode()
         ]);
 
@@ -77,6 +76,6 @@ class PaymentDisplay extends QUI\Control
         // Check if an Amazon Pay authorization already exists (i.e. Order is successful / can be processed)
         $this->setJavaScriptControlOption('successful', $Order->isSuccessful());
 
-        return $Engine->fetch(dirname(__FILE__).'/PaymentDisplay.html');
+        return $Engine->fetch(dirname(__FILE__) . '/PaymentDisplay.html');
     }
 }

@@ -3,16 +3,16 @@
 namespace QUI\ERP\Payments\Amazon\Recurring;
 
 use QUI;
+use QUI\ERP\Accounting\Invoice\Handler as InvoiceHandler;
+use QUI\ERP\Accounting\Invoice\Invoice;
+use QUI\ERP\Accounting\Payments\Payments;
+use QUI\ERP\Accounting\Payments\Transactions\Factory as TransactionFactory;
 use QUI\ERP\Order\AbstractOrder;
 use QUI\ERP\Payments\Amazon\AmazonPayException;
+use QUI\ERP\Payments\Amazon\AmazonPayException as AmazonException;
+use QUI\ERP\Payments\Amazon\Payment as BasePayment;
 use QUI\ERP\Payments\Amazon\Utils;
 use QUI\Utils\Security\Orthos;
-use QUI\ERP\Payments\Amazon\Payment as BasePayment;
-use QUI\ERP\Payments\Amazon\AmazonPayException as AmazonException;
-use QUI\ERP\Accounting\Invoice\Invoice;
-use QUI\ERP\Accounting\Payments\Transactions\Factory as TransactionFactory;
-use QUI\ERP\Accounting\Invoice\Handler as InvoiceHandler;
-use QUI\ERP\Accounting\Payments\Payments;
 
 /**
  * Class BillingAgreements
@@ -21,15 +21,15 @@ use QUI\ERP\Accounting\Payments\Payments;
  */
 class BillingAgreements
 {
-    const TBL_BILLING_AGREEMENTS             = 'amazon_billing_agreements';
+    const TBL_BILLING_AGREEMENTS = 'amazon_billing_agreements';
     const TBL_BILLING_AGREEMENT_TRANSACTIONS = 'amazon_billing_agreement_transactions';
 
-    const BILLING_AGREEMENT_STATE_ACTIVE       = 'Active';
-    const BILLING_AGREEMENT_STATE_OPEN         = 'Open';
+    const BILLING_AGREEMENT_STATE_ACTIVE = 'Active';
+    const BILLING_AGREEMENT_STATE_OPEN = 'Open';
     const BILLING_AGREEMENT_VALIDATION_SUCCESS = 'Success';
 
     const TRANSACTION_STATE_COMPLETED = 'Completed';
-    const TRANSACTION_STATE_DENIED    = 'Denied';
+    const TRANSACTION_STATE_DENIED = 'Denied';
 
     const ATTR_BILLING_AGREEMENT_AUTHORIZATION_ID = 'amazon-AmazonBillingAgreementAuthorizationId';
 
@@ -65,12 +65,12 @@ class BillingAgreements
 
         $AmazonPay->setBillingAgreementDetails([
             'amazon_billing_agreement_id' => $billingAgreementId,
-            'seller_note'                 => QUI::getLocale()->get(
+            'seller_note' => QUI::getLocale()->get(
                 'quiqqer/payment-amazon',
                 'recurring.BillingAgreement.seller_note',
                 [
                     'orderId' => $Order->getPrefixedId(),
-                    'url'     => Utils::getProjectUrl()
+                    'url' => Utils::getProjectUrl()
                 ]
             )
         ]);
@@ -104,13 +104,13 @@ class BillingAgreements
             return;
         }
 
-        $AmazonPay          = BasePayment::getAmazonPayClient();
+        $AmazonPay = BasePayment::getAmazonPayClient();
         $billingAgreementId = $Order->getAttribute(Payment::ATTR_AMAZON_BILLING_AGREEMENT_ID);
 
         $AmazonPay->confirmBillingAgreement([
             'amazon_billing_agreement_id' => $billingAgreementId,
-            'success_url'                 => Utils::getSuccessUrl($Order),
-            'failure_url'                 => Utils::getFailureUrl($Order)
+            'success_url' => Utils::getSuccessUrl($Order),
+            'failure_url' => Utils::getFailureUrl($Order)
         ]);
 
         // Check if BillingAgreement is in OPEN state
@@ -121,27 +121,33 @@ class BillingAgreements
         $details = $Response->toArray();
         $details = $details['GetBillingAgreementDetailsResult']['BillingAgreementDetails'];
 
-        if (empty($details['BillingAgreementStatus']['State']) ||
-            $details['BillingAgreementStatus']['State'] !== self::BILLING_AGREEMENT_STATE_OPEN) {
+        if (
+            empty($details['BillingAgreementStatus']['State']) ||
+            $details['BillingAgreementStatus']['State'] !== self::BILLING_AGREEMENT_STATE_OPEN
+        ) {
             // Check if there are any constraints that prevent confirmation of the BillingAgreement
             if (!empty($details['Constraints'])) {
                 $constraintId = $details['Constraints']['Constraint']['ConstraintID'];
 
-                $Order->addHistory(Utils::getHistoryText(
-                    'BillingAgreement.confirm_billing_agreement_error',
-                    [
-                        'constraint' => $constraintId
-                    ]
-                ));
+                $Order->addHistory(
+                    Utils::getHistoryText(
+                        'BillingAgreement.confirm_billing_agreement_error',
+                        [
+                            'constraint' => $constraintId
+                        ]
+                    )
+                );
 
                 $exceptionMsg = self::getBillingAgreementConfirmationConstraintExceptionMessage($constraintId);
             } else {
-                $Order->addHistory(Utils::getHistoryText(
-                    'BillingAgreement.confirm_billing_agreement_error',
-                    [
-                        'constraint' => 'unknown'
-                    ]
-                ));
+                $Order->addHistory(
+                    Utils::getHistoryText(
+                        'BillingAgreement.confirm_billing_agreement_error',
+                        [
+                            'constraint' => 'unknown'
+                        ]
+                    )
+                );
 
                 $exceptionMsg = self::getBillingAgreementConfirmationConstraintExceptionMessage('general');
             }
@@ -151,12 +157,14 @@ class BillingAgreements
             throw new AmazonPayException($exceptionMsg);
         }
 
-        $Order->addHistory(Utils::getHistoryText(
-            'BillingAgreement.confirm_billing_agreement',
-            [
-                'billingAgreementId' => $billingAgreementId
-            ]
-        ));
+        $Order->addHistory(
+            Utils::getHistoryText(
+                'BillingAgreement.confirm_billing_agreement',
+                [
+                    'billingAgreementId' => $billingAgreementId
+                ]
+            )
+        );
 
         $Order->setPaymentData(Payment::ATTR_AMAZON_BILLING_AGREEMENT_CONFIRMED, true);
         Utils::saveOrder($Order);
@@ -187,9 +195,11 @@ class BillingAgreements
         $result = $result['ValidateBillingAgreementResult'];
 
         if (empty($result['ValidationResult']) || $result['ValidationResult'] !== self::BILLING_AGREEMENT_VALIDATION_SUCCESS) {
-            $Order->addHistory(Utils::getHistoryText(
-                'BillingAgreement.validate_billing_agreement_error'
-            ));
+            $Order->addHistory(
+                Utils::getHistoryText(
+                    'BillingAgreement.validate_billing_agreement_error'
+                )
+            );
 
             Utils::saveOrder($Order);
 
@@ -202,9 +212,11 @@ class BillingAgreements
             );
         }
 
-        $Order->addHistory(Utils::getHistoryText(
-            'BillingAgreement.validate_billing_agreement'
-        ));
+        $Order->addHistory(
+            Utils::getHistoryText(
+                'BillingAgreement.validate_billing_agreement'
+            )
+        );
 
         $Order->setPaymentData(Payment::ATTR_AMAZON_BILLING_AGREEMENT_VALIDATED, true);
         Utils::saveOrder($Order);
@@ -216,9 +228,9 @@ class BillingAgreements
             self::getBillingAgreementsTable(),
             [
                 'amazon_agreement_id' => $Order->getAttribute(Payment::ATTR_AMAZON_BILLING_AGREEMENT_ID),
-                'customer'            => \json_encode($Customer->getAttributes()),
-                'global_process_id'   => $Order->getHash(),
-                'active'              => 1
+                'customer' => \json_encode($Customer->getAttributes()),
+                'global_process_id' => $Order->getHash(),
+                'active' => 1
             ]
         );
     }
@@ -295,17 +307,17 @@ class BillingAgreements
             QUI::getDataBase()->insert(
                 self::getBillingAgreementTransactionsTable(),
                 [
-                    'invoice_id'          => $Invoice->getCleanId(),
+                    'invoice_id' => $Invoice->getCleanId(),
                     'amazon_agreement_id' => $billingAgreementId,
-                    'global_process_id'   => $Invoice->getGlobalProcessId()
+                    'global_process_id' => $Invoice->getGlobalProcessId()
                 ]
             );
         }
 
-        $invoiceAmount          = Utils::getFormattedPriceByInvoice($Invoice);
-        $invoiceCurrency        = $Invoice->getCurrency()->getCode();
-        $Payment                = new Payment();
-        $AmazonPay              = BasePayment::getAmazonPayClient();
+        $invoiceAmount = Utils::getFormattedPriceByInvoice($Invoice);
+        $invoiceCurrency = $Invoice->getCurrency()->getCode();
+        $Payment = new Payment();
+        $AmazonPay = BasePayment::getAmazonPayClient();
         $createNewAuthorization = true;
 
         /**
@@ -324,13 +336,13 @@ class BillingAgreements
                 // Capture open authorization
                 $CaptureResponse = $AmazonPay->capture([
                     'amazon_authorization_id' => $transactionData['amazon_authorization_id'],
-                    'capture_amount'          => $invoiceAmount,
-                    'currency_code'           => $invoiceCurrency,
-                    'capture_reference_id'    => Utils::formatApiString($Invoice->getId(), 32)
+                    'capture_amount' => $invoiceAmount,
+                    'currency_code' => $invoiceCurrency,
+                    'capture_reference_id' => Utils::formatApiString($Invoice->getId(), 32)
                 ]);
 
-                $captureData    = Utils::getResponseData($CaptureResponse);
-                $captureData    = $captureData['CaptureResult']['CaptureDetails'];
+                $captureData = Utils::getResponseData($CaptureResponse);
+                $captureData = $captureData['CaptureResult']['CaptureDetails'];
                 $capturedAmount = $captureData['CaptureAmount'];
 
                 $createNewAuthorization = false;
@@ -344,18 +356,18 @@ class BillingAgreements
         if ($createNewAuthorization) {
             $Response = $AmazonPay->authorizeOnBillingAgreement([
                 'amazon_billing_agreement_id' => $billingAgreementId,
-                'authorization_reference_id'  => Utils::formatApiString($Invoice->getId(), 32),
-                'authorization_amount'        => $invoiceAmount,
-                'currency_code'               => $invoiceCurrency,
+                'authorization_reference_id' => Utils::formatApiString($Invoice->getId(), 32),
+                'authorization_amount' => $invoiceAmount,
+                'currency_code' => $invoiceCurrency,
                 // immediately capture amount
-                'capture_now'                 => true,
+                'capture_now' => true,
                 // synchronous mode; https://developer.amazon.com/de/docs/amazon-pay-automatic/sync-modes.html
-                'transaction_timeout'         => 0,
-                'seller_authorization_note'   => QUI::getLocale()->get(
+                'transaction_timeout' => 0,
+                'seller_authorization_note' => QUI::getLocale()->get(
                     'quiqqer/payment-amazon',
                     'recurring.BillingAgreement.seller_authorization_note',
                     [
-                        'url'       => Utils::getProjectUrl(),
+                        'url' => Utils::getProjectUrl(),
                         'invoiceId' => $Invoice->getId()
                     ]
                 )
@@ -409,7 +421,7 @@ class BillingAgreements
                 $Invoice->addHistory(
                     Utils::getHistoryText('invoice.error.agreement_cancel_max_capture_attempts_exceeded', [
                         'billingAgreementId' => $billingAgreementId,
-                        'attempts'           => $captureAttempts
+                        'attempts' => $captureAttempts
                     ])
                 );
             }
@@ -420,7 +432,7 @@ class BillingAgreements
                     'capture_attempts' => $captureAttempts
                 ],
                 [
-                    'invoice_id'          => $Invoice->getCleanId(),
+                    'invoice_id' => $Invoice->getCleanId(),
                     'amazon_agreement_id' => $billingAgreementId
                 ]
             );
@@ -453,23 +465,23 @@ class BillingAgreements
             QUI::getDataBase()->update(
                 self::getBillingAgreementTransactionsTable(),
                 [
-                    'quiqqer_transaction_id'        => $InvoiceTransaction->getTxId(),
+                    'quiqqer_transaction_id' => $InvoiceTransaction->getTxId(),
                     'quiqqer_transaction_completed' => 1,
-                    'amazon_transaction_data'       => \json_encode($data),
-                    'amazon_transaction_date'       => $TransactionDate->format('Y-m-d H:i:s'),
-                    'capture_attempts'              => $captureAttempts,
+                    'amazon_transaction_data' => \json_encode($data),
+                    'amazon_transaction_date' => $TransactionDate->format('Y-m-d H:i:s'),
+                    'capture_attempts' => $captureAttempts,
                 ],
                 [
-                    'invoice_id'          => $Invoice->getCleanId(),
+                    'invoice_id' => $Invoice->getCleanId(),
                     'amazon_agreement_id' => $billingAgreementId
                 ]
             );
 
             $Invoice->addHistory(
                 Utils::getHistoryText('invoice.add_amazon_transaction', [
-                    'quiqqerTransactionId'  => $InvoiceTransaction->getTxId(),
+                    'quiqqerTransactionId' => $InvoiceTransaction->getTxId(),
                     'amazonAuthorizationId' => $data['AmazonAuthorizationId'],
-                    'billingAgreementId'    => $billingAgreementId
+                    'billingAgreementId' => $billingAgreementId
                 ])
             );
         } catch (\Exception $Exception) {
@@ -553,11 +565,11 @@ class BillingAgreements
     {
         $result = QUI::getDataBase()->fetch([
             'select' => ['suspended'],
-            'from'   => self::getBillingAgreementsTable(),
-            'where'  => [
+            'from' => self::getBillingAgreementsTable(),
+            'where' => [
                 'amazon_agreement_id' => $subscriptionId
             ],
-            'limit'  => 1
+            'limit' => 1
         ]);
 
         if (empty($result)) {
@@ -576,7 +588,7 @@ class BillingAgreements
      */
     public static function getBillingAgreementList($searchParams, $countOnly = false)
     {
-        $Grid       = new QUI\Utils\Grid($searchParams);
+        $Grid = new QUI\Utils\Grid($searchParams);
         $gridParams = $Grid->parseDBParams($searchParams);
 
         $binds = [];
@@ -588,47 +600,49 @@ class BillingAgreements
             $sql = "SELECT *";
         }
 
-        $sql .= " FROM `".self::getBillingAgreementsTable()."`";
+        $sql .= " FROM `" . self::getBillingAgreementsTable() . "`";
 
         if (!empty($searchParams['search'])) {
             $where[] = '`global_process_id` LIKE :search';
 
             $binds['search'] = [
-                'value' => '%'.$searchParams['search'].'%',
-                'type'  => \PDO::PARAM_STR
+                'value' => '%' . $searchParams['search'] . '%',
+                'type' => \PDO::PARAM_STR
             ];
         }
 
         // build WHERE query string
         if (!empty($where)) {
-            $sql .= " WHERE ".implode(" AND ", $where);
+            $sql .= " WHERE " . implode(" AND ", $where);
         }
 
         // ORDER
         if (!empty($searchParams['sortOn'])
         ) {
             $sortOn = Orthos::clear($searchParams['sortOn']);
-            $order  = "ORDER BY ".$sortOn;
+            $order = "ORDER BY " . $sortOn;
 
-            if (isset($searchParams['sortBy']) &&
+            if (
+                isset($searchParams['sortBy']) &&
                 !empty($searchParams['sortBy'])
             ) {
-                $order .= " ".Orthos::clear($searchParams['sortBy']);
+                $order .= " " . Orthos::clear($searchParams['sortBy']);
             } else {
                 $order .= " ASC";
             }
 
-            $sql .= " ".$order;
+            $sql .= " " . $order;
         }
 
         // LIMIT
-        if (!empty($gridParams['limit'])
+        if (
+            !empty($gridParams['limit'])
             && !$countOnly
         ) {
-            $sql .= " LIMIT ".$gridParams['limit'];
+            $sql .= " LIMIT " . $gridParams['limit'];
         } else {
             if (!$countOnly) {
-                $sql .= " LIMIT ".(int)20;
+                $sql .= " LIMIT " . (int)20;
             }
         }
 
@@ -636,7 +650,7 @@ class BillingAgreements
 
         // bind search values
         foreach ($binds as $var => $bind) {
-            $Stmt->bindValue(':'.$var, $bind['value'], $bind['type']);
+            $Stmt->bindValue(':' . $var, $bind['value'], $bind['type']);
         }
 
         try {
@@ -665,10 +679,10 @@ class BillingAgreements
     {
         try {
             $result = QUI::getDataBase()->fetch([
-                'from'  => self::getBillingAgreementTransactionsTable(),
+                'from' => self::getBillingAgreementTransactionsTable(),
                 'where' => [
                     'amazon_agreement_id' => $billingAgreementId,
-                    'invoice_id'          => $invoiceId
+                    'invoice_id' => $invoiceId
                 ]
             ]);
         } catch (\Exception $Exception) {
@@ -748,7 +762,7 @@ class BillingAgreements
         // Determine payment type IDs
         $payments = Payments::getInstance()->getPayments([
             'select' => ['id'],
-            'where'  => [
+            'where' => [
                 'payment_type' => Payment::class
             ]
         ]);
@@ -767,15 +781,15 @@ class BillingAgreements
         // Get all unpaid Invoices
         $result = $Invoices->search([
             'select' => ['id', 'global_process_id'],
-            'where'  => [
-                'paid_status'    => 0,
-                'type'           => InvoiceHandler::TYPE_INVOICE,
+            'where' => [
+                'paid_status' => 0,
+                'type' => InvoiceHandler::TYPE_INVOICE,
                 'payment_method' => [
-                    'type'  => 'IN',
+                    'type' => 'IN',
                     'value' => $paymentTypeIds
                 ]
             ],
-            'order'  => 'date ASC'
+            'order' => 'date ASC'
         ]);
 
         $invoiceIds = [];
@@ -798,10 +812,10 @@ class BillingAgreements
         try {
             $result = QUI::getDataBase()->fetch([
                 'select' => ['global_process_id'],
-                'from'   => self::getBillingAgreementsTable(),
-                'where'  => [
+                'from' => self::getBillingAgreementsTable(),
+                'where' => [
                     'global_process_id' => [
-                        'type'  => 'IN',
+                        'type' => 'IN',
                         'value' => array_keys($invoiceIds)
                     ]
                 ]
@@ -843,7 +857,7 @@ class BillingAgreements
     {
         try {
             $result = QUI::getDataBase()->fetch([
-                'from'  => self::getBillingAgreementsTable(),
+                'from' => self::getBillingAgreementsTable(),
                 'where' => [
                     'amazon_agreement_id' => $billingAgreementId
                 ]
@@ -860,9 +874,9 @@ class BillingAgreements
         $data = current($result);
 
         return [
-            'active'          => !empty($data['active']),
+            'active' => !empty($data['active']),
             'globalProcessId' => $data['global_process_id'],
-            'customer'        => json_decode($data['customer'], true)
+            'customer' => json_decode($data['customer'], true)
         ];
     }
 
@@ -940,7 +954,7 @@ class BillingAgreements
             case 'PaymentMethodNotAllowed':
                 $msg = QUI::getLocale()->get(
                     'quiqqer/payment-amazon',
-                    'exception.BillingAgreements.constraint.'.$constraintId
+                    'exception.BillingAgreements.constraint.' . $constraintId
                 );
                 break;
 

@@ -3,8 +3,8 @@
 namespace QUI\ERP\Payments\Amazon;
 
 use QUI;
-use QUI\ERP\Payments\Amazon\Payment as AmazonPayment;
 use QUI\ERP\Accounting\Payments\Transactions\Handler as TransactionHandler;
+use QUI\ERP\Payments\Amazon\Payment as AmazonPayment;
 
 /**
  * Class RefundProcessor
@@ -56,7 +56,7 @@ class RefundProcessor
     protected static function checkRefund(string $txId, string $amazonRefundId)
     {
         $AmazonPay = Payment::getAmazonPayClient();
-        $Response  = $AmazonPay->getRefundDetails([
+        $Response = $AmazonPay->getRefundDetails([
             'amazon_refund_id' => $amazonRefundId
         ]);
 
@@ -92,13 +92,13 @@ class RefundProcessor
                 break;
 
             case 'Declined':
-                $reason  = $data['RefundStatus']['ReasonCode'];
+                $reason = $data['RefundStatus']['ReasonCode'];
                 $Process = new QUI\ERP\Process($RefundTransaction->getGlobalProcessId());
 
                 $Process->addHistory(
-                    'Amazon Pay :: Refund operation failed with state "'.$data['RefundStatus']['State'].'".'
-                    .' ReasonCode: "'.$reason.'".'
-                    .' Transaction #'.$RefundTransaction->getTxId()
+                    'Amazon Pay :: Refund operation failed with state "' . $data['RefundStatus']['State'] . '".'
+                    . ' ReasonCode: "' . $reason . '".'
+                    . ' Transaction #' . $RefundTransaction->getTxId()
                 );
 
                 $RefundTransaction->error();
