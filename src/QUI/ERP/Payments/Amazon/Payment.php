@@ -487,8 +487,9 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
 
                         $AmazonPay->cancelOrderReference([
                             'amazon_order_reference_id' => $orderReferenceId,
-                            'cancelation_reason' => 'Order #' . $Order->getHash(
-                                ) . ' could not be authorized :: TransactionTimedOut'
+                            'cancelation_reason' => 'Order #' .
+                                $Order->getHash() .
+                                ' could not be authorized :: TransactionTimedOut'
                         ]);
 
                         $Order->setPaymentData(self::ATTR_ORDER_REFERENCE_SET, false);
