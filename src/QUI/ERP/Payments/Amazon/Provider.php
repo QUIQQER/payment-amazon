@@ -6,6 +6,8 @@ use QUI;
 use QUI\ERP\Accounting\Payments\Api\AbstractPaymentProvider;
 use QUI\ERP\Payments\Amazon\Recurring\Payment as PaymentRecurring;
 
+use function current;
+
 /**
  * Class Provider
  *
@@ -92,13 +94,13 @@ class Provider extends AbstractPaymentProvider
         try {
             $result = QUI::getDataBase()->fetch([
                 'count' => 1,
-                'from'  => QUI\Cron\Manager::table(),
+                'from' => QUI\Cron\Manager::table(),
                 'where' => [
-                    'exec' => '\\'.RefundProcessor::class.'::processOpenRefundTransactions'
+                    'exec' => '\\' . RefundProcessor::class . '::processOpenRefundTransactions'
                 ]
             ]);
 
-            if ((int)\current(\current($result))) {
+            if ((int)current(current($result))) {
                 return true;
             }
         } catch (\Exception $Exception) {
@@ -116,7 +118,7 @@ class Provider extends AbstractPaymentProvider
      */
     public static function isApiSetUp()
     {
-        $Conf        = QUI::getPackage('quiqqer/payment-amazon')->getConfig();
+        $Conf = QUI::getPackage('quiqqer/payment-amazon')->getConfig();
         $apiSettings = $Conf->getSection('api');
 
         foreach ($apiSettings as $k => $v) {
@@ -130,9 +132,9 @@ class Provider extends AbstractPaymentProvider
             if (empty($v)) {
                 QUI\System\Log::addError(
                     'Your Amazon Pay API credentials seem to be (partially) missing.'
-                    .' Amazon Pay CAN NOT be used at the moment. Please enter all your'
-                    .' API credentials. See https://dev.quiqqer.com/quiqqer/payment-amazon/wikis/api-configuration'
-                    .' for further instructions.'
+                    . ' Amazon Pay CAN NOT be used at the moment. Please enter all your'
+                    . ' API credentials. See https://dev.quiqqer.com/quiqqer/payment-amazon/wikis/api-configuration'
+                    . ' for further instructions.'
                 );
 
                 return false;

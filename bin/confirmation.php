@@ -2,16 +2,16 @@
 
 define('QUIQQER_SYSTEM', true);
 
-require_once dirname(dirname(dirname(dirname(__FILE__)))).'/header.php';
+require_once dirname(dirname(dirname(dirname(__FILE__)))) . '/header.php';
 
+use QUI\ERP\Accounting\Payments\Order\Payment as OrderProcessStepPayments;
+use QUI\ERP\Order\Controls\OrderProcess\Finish as OrderProcessStepFinish;
 use QUI\ERP\Order\Handler;
 use QUI\ERP\Payments\Amazon\AmazonPayException;
 use QUI\ERP\Payments\Amazon\Payment;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use \Symfony\Component\HttpFoundation\Response;
 use QUI\Utils\Security\Orthos;
-use QUI\ERP\Accounting\Payments\Order\Payment as OrderProcessStepPayments;
-use QUI\ERP\Order\Controls\OrderProcess\Finish as OrderProcessStepFinish;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 function badRequest()
 {

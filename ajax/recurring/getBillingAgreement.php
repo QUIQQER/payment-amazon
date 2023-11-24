@@ -1,8 +1,5 @@
 <?php
 
-use QUI\ERP\Payments\Amazon\AmazonPayException;
-use QUI\ERP\Payments\Amazon\Recurring\BillingAgreements;
-
 /**
  * Get details of a Amazon Billing Agreement
  *
@@ -10,11 +7,15 @@ use QUI\ERP\Payments\Amazon\Recurring\BillingAgreements;
  * @return array|false- Billing Agreement data
  * @throws AmazonPayException
  */
+
+use QUI\ERP\Payments\Amazon\AmazonPayException;
+use QUI\ERP\Payments\Amazon\Recurring\BillingAgreements;
+
 QUI::$Ajax->registerFunction(
     'package_quiqqer_payment-amazon_ajax_recurring_getBillingAgreement',
     function ($billingAgreementId) {
         try {
-            $billingAgreement                 = BillingAgreements::getAmazonBillingAgreementData($billingAgreementId);
+            $billingAgreement = BillingAgreements::getAmazonBillingAgreementData($billingAgreementId);
             $billingAgreement['quiqqer_data'] = BillingAgreements::getQuiqqerBillingAgreementData($billingAgreementId);
 
             return $billingAgreement;
