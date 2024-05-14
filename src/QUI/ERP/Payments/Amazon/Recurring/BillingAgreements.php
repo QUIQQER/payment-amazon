@@ -270,7 +270,7 @@ class BillingAgreements
                     'quiqqer/payment-amazon',
                     'exception.Recurring.agreement_id_not_found',
                     [
-                        'invoiceId' => $Invoice->getId()
+                        'invoiceId' => $Invoice->getUUID()
                     ]
                 ),
                 404
@@ -313,14 +313,14 @@ class BillingAgreements
         }
 
         // Check if a Billing Agreement transaction matches the Invoice
-        $transactionData = self::getBillingAgreementTransactionData($billingAgreementId, $Invoice->getId());
+        $transactionData = self::getBillingAgreementTransactionData($billingAgreementId, $Invoice->getUUID());
 
         // If no transaction data found -> create DB entry
         if ($transactionData === false) {
             QUI::getDataBase()->insert(
                 self::getBillingAgreementTransactionsTable(),
                 [
-                    'invoice_id' => $Invoice->getId(),
+                    'invoice_id' => $Invoice->getUUID(),
                     'amazon_agreement_id' => $billingAgreementId,
                     'global_process_id' => $Invoice->getGlobalProcessId()
                 ]
@@ -381,7 +381,7 @@ class BillingAgreements
                     'recurring.BillingAgreement.seller_authorization_note',
                     [
                         'url' => Utils::getProjectUrl(),
-                        'invoiceId' => $Invoice->getId()
+                        'invoiceId' => $Invoice->getUUID()
                     ]
                 )
             ]);
@@ -678,10 +678,10 @@ class BillingAgreements
      * Get billing agreement transaction data by invoice
      *
      * @param string $billingAgreementId
-     * @param int $invoiceId
+     * @param int|string $invoiceId - invoice hash
      * @return array|false - Transaction data or false if not yet created
      */
-    public static function getBillingAgreementTransactionData(string $billingAgreementId, int $invoiceId): bool|array
+    public static function getBillingAgreementTransactionData(string $billingAgreementId, int|string $invoiceId): bool|array
     {
         try {
             $result = QUI::getDataBase()->fetch([
