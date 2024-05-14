@@ -1,5 +1,5 @@
 {
-  "name": "quiqqer\/payment-amazon",
+  "name": "quiqqer/payment-amazon",
   "type": "quiqqer-module",
   "description": "Amazon Pay - Payment method for QUIQQER ERP stack",
   "license": [
@@ -10,21 +10,22 @@
     {
       "name": "Patrick M\u00fcller",
       "email": "p.mueller@pcsg.de",
-      "homepage": "http:\/\/www.pcsg.de",
+      "homepage": "http://www.pcsg.de",
       "role": "Developer"
     }
   ],
   "support": {
     "email": "support@pcsg.de",
-    "url": "http:\/\/www.pcsg.de"
+    "url": "http://www.pcsg.de"
   },
   "require": {
-    "quiqqer\/payments": "^2|^1.1|dev-master|dev-dev",
-    "amzn\/amazon-pay-sdk-php": "^3"
+    "quiqqer/core": "^2",
+    "quiqqer/payments": "^3",
+    "amzn/amazon-pay-sdk-php": "^3"
   },
   "autoload": {
     "psr-4": {
-      "QUI\\ERP\\Payments\\Amazon\\": "src\/QUI\/ERP\/Payments\/Amazon"
+      "QUI\\ERP\\Payments\\Amazon\\": "src/QUI/ERP/Payments/Amazon"
     }
   }
 }
