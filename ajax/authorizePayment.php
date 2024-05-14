@@ -23,10 +23,10 @@ QUI::$Ajax->registerFunction(
             $Order = Handler::getInstance()->getOrderByHash($orderHash);
 
             $Payment = new Payment();
-            $Payment->authorizePayment($orderReferenceId, $Order);
+            $Payment->authorizePayment($Order);
         } catch (AmazonPayException $Exception) {
             throw $Exception;
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
             return false;
         }

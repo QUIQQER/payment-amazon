@@ -39,7 +39,7 @@ class PaymentDisplay extends QUI\Control
      * @return string
      * @throws QUI\Exception
      */
-    public function getBody()
+    public function getBody(): string
     {
         $Engine = QUI::getTemplateManager()->getEngine();
 
@@ -55,7 +55,7 @@ class PaymentDisplay extends QUI\Control
             'currency_code' => $Order->getCurrency()->getCode()
         ]);
 
-        $this->setJavaScriptControlOption('orderhash', $Order->getHash());
+        $this->setJavaScriptControlOption('orderhash', $Order->getUUID());
 
         // Check if an Amazon Pay authorization already exists (i.e. Order is successful / can be processed)
         $this->setJavaScriptControlOption('successful', $Order->isSuccessful());

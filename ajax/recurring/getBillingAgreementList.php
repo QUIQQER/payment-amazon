@@ -17,7 +17,6 @@ QUI::$Ajax->registerFunction(
     'package_quiqqer_payment-amazon_ajax_recurring_getBillingAgreementList',
     function ($searchParams) {
         $searchParams = Orthos::clearArray(json_decode($searchParams, true));
-
         $Grid = new Grid($searchParams);
 
         return $Grid->parseResult(

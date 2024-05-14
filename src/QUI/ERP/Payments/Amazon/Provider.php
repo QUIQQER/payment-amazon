@@ -2,6 +2,7 @@
 
 namespace QUI\ERP\Payments\Amazon;
 
+use Exception;
 use QUI;
 use QUI\ERP\Accounting\Payments\Api\AbstractPaymentProvider;
 use QUI\ERP\Payments\Amazon\Recurring\Payment as PaymentRecurring;
@@ -18,7 +19,7 @@ class Provider extends AbstractPaymentProvider
     /**
      * @return array
      */
-    public function getPaymentTypes()
+    public function getPaymentTypes(): array
     {
         return [
             Payment::class,
@@ -30,13 +31,13 @@ class Provider extends AbstractPaymentProvider
      * Get API setting
      *
      * @param string $setting - Setting name
-     * @return string|number|false
+     * @return bool|string
      */
-    public static function getApiSetting($setting)
+    public static function getApiSetting(string $setting): bool|string
     {
         try {
             $Conf = QUI::getPackage('quiqqer/payment-amazon')->getConfig();
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
             return false;
         }
@@ -48,13 +49,13 @@ class Provider extends AbstractPaymentProvider
      * Get Payment setting
      *
      * @param string $setting - Setting name
-     * @return string|number|false
+     * @return bool|string
      */
-    public static function getPaymentSetting($setting)
+    public static function getPaymentSetting(string $setting): bool|string
     {
         try {
             $Conf = QUI::getPackage('quiqqer/payment-amazon')->getConfig();
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
             return false;
         }
@@ -66,13 +67,13 @@ class Provider extends AbstractPaymentProvider
      * Get Widgets setting
      *
      * @param string $setting - Setting name
-     * @return string|number|false
+     * @return bool|string
      */
-    public static function getWidgetsSetting($setting)
+    public static function getWidgetsSetting(string $setting): bool|string
     {
         try {
             $Conf = QUI::getPackage('quiqqer/payment-amazon')->getConfig();
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
             return false;
         }
@@ -85,9 +86,9 @@ class Provider extends AbstractPaymentProvider
      *
      * @return bool
      */
-    public static function isRefundHandlingActivated()
+    public static function isRefundHandlingActivated(): bool
     {
-        if (boolval(self::getApiSetting('use_ipn_handler'))) {
+        if (self::getApiSetting('use_ipn_handler')) {
             return true;
         }
 
@@ -103,7 +104,7 @@ class Provider extends AbstractPaymentProvider
             if ((int)current(current($result))) {
                 return true;
             }
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
         }
 
@@ -116,7 +117,7 @@ class Provider extends AbstractPaymentProvider
      * @return bool
      * @throws QUI\Exception
      */
-    public static function isApiSetUp()
+    public static function isApiSetUp(): bool
     {
         $Conf = QUI::getPackage('quiqqer/payment-amazon')->getConfig();
         $apiSettings = $Conf->getSection('api');
