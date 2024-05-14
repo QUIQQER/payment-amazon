@@ -6,6 +6,8 @@
 
 namespace QUI\ERP\Payments\Amazon\Recurring;
 
+use Exception;
+use PDO;
 use QUI;
 use QUI\ERP\Accounting\Invoice\Handler as InvoiceHandler;
 use QUI\ERP\Accounting\Invoice\Invoice;
@@ -17,6 +19,11 @@ use QUI\ERP\Payments\Amazon\AmazonPayException as AmazonException;
 use QUI\ERP\Payments\Amazon\Payment as BasePayment;
 use QUI\ERP\Payments\Amazon\Utils;
 use QUI\Utils\Security\Orthos;
+
+use function current;
+use function date_create;
+use function json_encode;
+use function mb_substr;
 
 /**
  * Class BillingAgreements
@@ -47,12 +54,12 @@ class BillingAgreements
      *
      * @var array
      */
-    protected static $transactionsRefreshed = [];
+    protected static array $transactionsRefreshed = [];
 
     /**
-     * @var QUI\ERP\Payments\Amazon\Payment
+     * @var ?BasePayment
      */
-    protected static $Payment = null;
+    protected static ?BasePayment $Payment = null;
 
     /**
      * Set details to an Amazon BillingAgreement based on order data
@@ -61,9 +68,9 @@ class BillingAgreements
      * @param string $billingAgreementId
      * @return void
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function setBillingAgreementDetails(string $billingAgreementId, AbstractOrder $Order)
+    public static function setBillingAgreementDetails(string $billingAgreementId, AbstractOrder $Order): void
     {
         $AmazonPay = BasePayment::getAmazonPayClient();
 
@@ -100,9 +107,9 @@ class BillingAgreements
      * @param AbstractOrder $Order
      * @return void
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function confirmBillingAgreement(AbstractOrder $Order)
+    public static function confirmBillingAgreement(AbstractOrder $Order): void
     {
         if ($Order->getPaymentDataEntry(Payment::ATTR_AMAZON_BILLING_AGREEMENT_CONFIRMED)) {
             return;
@@ -182,8 +189,9 @@ class BillingAgreements
      *
      * @throws AmazonPayException
      * @throws QUI\Exception
+     * @throws Exception
      */
-    public static function validateBillingAgreement(AbstractOrder $Order)
+    public static function validateBillingAgreement(AbstractOrder $Order): void
     {
         if ($Order->getPaymentDataEntry(Payment::ATTR_AMAZON_BILLING_AGREEMENT_VALIDATED)) {
             return;
@@ -232,8 +240,8 @@ class BillingAgreements
             self::getBillingAgreementsTable(),
             [
                 'amazon_agreement_id' => $Order->getAttribute(Payment::ATTR_AMAZON_BILLING_AGREEMENT_ID),
-                'customer' => \json_encode($Customer->getAttributes()),
-                'global_process_id' => $Order->getHash(),
+                'customer' => json_encode($Customer->getAttributes()),
+                'global_process_id' => $Order->getUUID(),
                 'active' => 1
             ]
         );
@@ -247,8 +255,9 @@ class BillingAgreements
      *
      * @throws AmazonException
      * @throws QUI\Exception
+     * @throws Exception
      */
-    public static function billBillingAgreementBalance(Invoice $Invoice)
+    public static function billBillingAgreementBalance(Invoice $Invoice): void
     {
         $billingAgreementId = $Invoice->getPaymentDataEntry(Payment::ATTR_AMAZON_BILLING_AGREEMENT_ID);
 
@@ -262,7 +271,7 @@ class BillingAgreements
                     'quiqqer/payment-amazon',
                     'exception.Recurring.agreement_id_not_found',
                     [
-                        'invoiceId' => $Invoice->getId()
+                        'invoiceId' => $Invoice->getUUID()
                     ]
                 ),
                 404
@@ -270,6 +279,7 @@ class BillingAgreements
         }
 
         $data = self::getQuiqqerBillingAgreementData($billingAgreementId);
+        $capturedAmount = [];
 
         if ($data === false) {
             $Invoice->addHistory(
@@ -304,14 +314,14 @@ class BillingAgreements
         }
 
         // Check if a Billing Agreement transaction matches the Invoice
-        $transactionData = self::getBillingAgreementTransactionData($billingAgreementId, $Invoice->getCleanId());
+        $transactionData = self::getBillingAgreementTransactionData($billingAgreementId, $Invoice->getUUID());
 
         // If no transaction data found -> create DB entry
         if ($transactionData === false) {
             QUI::getDataBase()->insert(
                 self::getBillingAgreementTransactionsTable(),
                 [
-                    'invoice_id' => $Invoice->getCleanId(),
+                    'invoice_id' => $Invoice->getUUID(),
                     'amazon_agreement_id' => $billingAgreementId,
                     'global_process_id' => $Invoice->getGlobalProcessId()
                 ]
@@ -372,7 +382,7 @@ class BillingAgreements
                     'recurring.BillingAgreement.seller_authorization_note',
                     [
                         'url' => Utils::getProjectUrl(),
-                        'invoiceId' => $Invoice->getId()
+                        'invoiceId' => $Invoice->getUUID()
                     ]
                 )
             ]);
@@ -385,12 +395,8 @@ class BillingAgreements
 
             QUI::getDataBase()->update(
                 self::getBillingAgreementTransactionsTable(),
-                [
-                    'amazon_authorization_id' => $data['AmazonAuthorizationId']
-                ],
-                [
-                    'invoice_id' => $Invoice->getCleanId()
-                ]
+                ['amazon_authorization_id' => $data['AmazonAuthorizationId']],
+                ['invoice_id' => $Invoice->getUUID()]
             );
 
             $capturedAmount = $data['CapturedAmount'];
@@ -402,7 +408,10 @@ class BillingAgreements
         /**
          * Check if captures amount matches the invoice amount and currency
          */
-        if ($capturedAmount['Amount'] !== $invoiceAmount || $capturedAmount['CurrencyCode'] !== $invoiceCurrency) {
+        if (
+            isset($capturedAmount['Amount']) && $capturedAmount['Amount'] !== $invoiceAmount
+            || isset($capturedAmount['CurrencyCode']) && $capturedAmount['CurrencyCode'] !== $invoiceCurrency
+        ) {
             $Invoice->addHistory(
                 Utils::getHistoryText('invoice.error.agreement_capture_failed', [
                     'billingAgreementId' => $billingAgreementId
@@ -436,7 +445,7 @@ class BillingAgreements
                     'capture_attempts' => $captureAttempts
                 ],
                 [
-                    'invoice_id' => $Invoice->getCleanId(),
+                    'invoice_id' => $Invoice->getUUID(),
                     'amazon_agreement_id' => $billingAgreementId
                 ]
             );
@@ -449,7 +458,7 @@ class BillingAgreements
             $InvoiceTransaction = TransactionFactory::createPaymentTransaction(
                 $invoiceAmount,
                 $Invoice->getCurrency(),
-                $Invoice->getHash(),
+                $Invoice->getUUID(),
                 $Payment->getName(),
                 [
                     self::ATTR_BILLING_AGREEMENT_AUTHORIZATION_ID => $data['AmazonAuthorizationId']
@@ -464,19 +473,19 @@ class BillingAgreements
 
             $Invoice->addTransaction($InvoiceTransaction);
 
-            $TransactionDate = \date_create($data['CreationTimestamp']);
+            $TransactionDate = date_create($data['CreationTimestamp']);
 
             QUI::getDataBase()->update(
                 self::getBillingAgreementTransactionsTable(),
                 [
                     'quiqqer_transaction_id' => $InvoiceTransaction->getTxId(),
                     'quiqqer_transaction_completed' => 1,
-                    'amazon_transaction_data' => \json_encode($data),
+                    'amazon_transaction_data' => json_encode($data),
                     'amazon_transaction_date' => $TransactionDate->format('Y-m-d H:i:s'),
                     'capture_attempts' => $captureAttempts,
                 ],
                 [
-                    'invoice_id' => $Invoice->getCleanId(),
+                    'invoice_id' => $Invoice->getUUID(),
                     'amazon_agreement_id' => $billingAgreementId
                 ]
             );
@@ -488,7 +497,7 @@ class BillingAgreements
                     'billingAgreementId' => $billingAgreementId
                 ])
             );
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
         }
     }
@@ -513,7 +522,7 @@ class BillingAgreements
      *
      * @throws QUI\Database\Exception
      */
-    public static function suspendSubscription($subscriptionId)
+    public static function suspendSubscription(int|string $subscriptionId): void
     {
         if (self::isSuspended($subscriptionId)) {
             return;
@@ -521,12 +530,8 @@ class BillingAgreements
 
         QUI::getDataBase()->update(
             self::getBillingAgreementsTable(),
-            [
-                'suspended' => 1
-            ],
-            [
-                'amazon_agreement_id' => $subscriptionId
-            ]
+            ['suspended' => 1],
+            ['amazon_agreement_id' => $subscriptionId]
         );
     }
 
@@ -540,7 +545,7 @@ class BillingAgreements
      *
      * @throws QUI\Database\Exception
      */
-    public static function resumeSubscription($subscriptionId)
+    public static function resumeSubscription(int|string $subscriptionId): void
     {
         if (!self::isSuspended($subscriptionId)) {
             return;
@@ -565,7 +570,7 @@ class BillingAgreements
      *
      * @throws QUI\Database\Exception
      */
-    public static function isSuspended($subscriptionId)
+    public static function isSuspended(int|string $subscriptionId): bool
     {
         $result = QUI::getDataBase()->fetch([
             'select' => ['suspended'],
@@ -589,8 +594,9 @@ class BillingAgreements
      * @param array $searchParams
      * @param bool $countOnly (optional) - Return count of all results
      * @return array|int
+     * @throws QUI\Exception
      */
-    public static function getBillingAgreementList($searchParams, $countOnly = false)
+    public static function getBillingAgreementList(array $searchParams, bool $countOnly = false): array|int
     {
         $Grid = new QUI\Utils\Grid($searchParams);
         $gridParams = $Grid->parseDBParams($searchParams);
@@ -611,7 +617,7 @@ class BillingAgreements
 
             $binds['search'] = [
                 'value' => '%' . $searchParams['search'] . '%',
-                'type' => \PDO::PARAM_STR
+                'type' => PDO::PARAM_STR
             ];
         }
 
@@ -639,7 +645,7 @@ class BillingAgreements
             $sql .= " LIMIT " . $gridParams['limit'];
         } else {
             if (!$countOnly) {
-                $sql .= " LIMIT " . (int)20;
+                $sql .= " LIMIT " . 20;
             }
         }
 
@@ -652,8 +658,8 @@ class BillingAgreements
 
         try {
             $Stmt->execute();
-            $result = $Stmt->fetchAll(\PDO::FETCH_ASSOC);
-        } catch (\Exception $Exception) {
+            $result = $Stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
             return [];
         }
@@ -669,11 +675,13 @@ class BillingAgreements
      * Get billing agreement transaction data by invoice
      *
      * @param string $billingAgreementId
-     * @param int $invoiceId
+     * @param int|string $invoiceId - invoice hash
      * @return array|false - Transaction data or false if not yet created
      */
-    public static function getBillingAgreementTransactionData(string $billingAgreementId, int $invoiceId)
-    {
+    public static function getBillingAgreementTransactionData(
+        string $billingAgreementId,
+        int|string $invoiceId
+    ): bool|array {
         try {
             $result = QUI::getDataBase()->fetch([
                 'from' => self::getBillingAgreementTransactionsTable(),
@@ -682,7 +690,7 @@ class BillingAgreements
                     'invoice_id' => $invoiceId
                 ]
             ]);
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
             return false;
         }
@@ -691,17 +699,17 @@ class BillingAgreements
             return false;
         }
 
-        return \current($result);
+        return current($result);
     }
 
     /**
      * Set status of a BillingAgreement as inactive (QUIQQER and Amazon)
      *
      * @param string $billingAgreementId
-     * @param string $reason (optional) - Reason for deactivation (max. 1024 characters)
+     * @param string|null $reason (optional) - Reason for deactivation (max. 1024 characters)
      * @return void
      */
-    public static function cancelBillingAgreement($billingAgreementId, string $reason = null)
+    public static function cancelBillingAgreement(string $billingAgreementId, string $reason = null): void
     {
         try {
             $AmazonPay = BasePayment::getAmazonPayClient();
@@ -711,21 +719,17 @@ class BillingAgreements
             ];
 
             if (!empty($reason)) {
-                $closeArguments['closure_reason'] = \mb_substr($reason, 0, 1024);
+                $closeArguments['closure_reason'] = mb_substr($reason, 0, 1024);
             }
 
             $AmazonPay->closeBillingAgreement($closeArguments);
 
             QUI::getDataBase()->update(
                 self::getBillingAgreementsTable(),
-                [
-                    'active' => 0
-                ],
-                [
-                    'amazon_agreement_id' => $billingAgreementId
-                ]
+                ['active' => 0],
+                ['amazon_agreement_id' => $billingAgreementId]
             );
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
         }
     }
@@ -736,23 +740,24 @@ class BillingAgreements
      * @param string $billingAgreementId
      * @return bool
      */
-    public static function isBillingAgreementActiveAtAmazon(string $billingAgreementId)
+    public static function isBillingAgreementActiveAtAmazon(string $billingAgreementId): bool
     {
         try {
             $data = BillingAgreements::getAmazonBillingAgreementData($billingAgreementId);
             return $data['BillingAgreementStatus']['State'] === 'Open';
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
             return true;
         }
     }
 
     /**
-     * Process all unpaid Invoices of Billing Agreements
+     * Process all unpaid Invoices for Billing Agreements
      *
      * @return void
+     * @throws QUI\DataBase\Exception
      */
-    public static function processUnpaidInvoices()
+    public static function processUnpaidInvoices(): void
     {
         $Invoices = InvoiceHandler::getInstance();
 
@@ -780,7 +785,7 @@ class BillingAgreements
             'select' => ['id', 'global_process_id'],
             'where' => [
                 'paid_status' => 0,
-                'type' => InvoiceHandler::TYPE_INVOICE,
+                'type' => QUI\ERP\Constants::TYPE_INVOICE,
                 'payment_method' => [
                     'type' => 'IN',
                     'value' => $paymentTypeIds
@@ -817,7 +822,7 @@ class BillingAgreements
                     ]
                 ]
             ]);
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
             return;
         }
@@ -836,7 +841,7 @@ class BillingAgreements
 
                         // Second: Process all completed transactions for Invoice
                         self::billBillingAgreementBalance($Invoice);
-                    } catch (\Exception $Exception) {
+                    } catch (Exception $Exception) {
                         QUI\System\Log::writeException($Exception);
                     }
                 }
@@ -850,7 +855,7 @@ class BillingAgreements
      * @param string $billingAgreementId - Amazon Billing Agreement ID
      * @return array|false
      */
-    public static function getQuiqqerBillingAgreementData(string $billingAgreementId)
+    public static function getQuiqqerBillingAgreementData(string $billingAgreementId): bool|array
     {
         try {
             $result = QUI::getDataBase()->fetch([
@@ -859,7 +864,7 @@ class BillingAgreements
                     'amazon_agreement_id' => $billingAgreementId
                 ]
             ]);
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
             return false;
         }
@@ -883,9 +888,9 @@ class BillingAgreements
      * @param string $billingAgreementId - Amazon Billing Agreement ID
      * @return array|false
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function getAmazonBillingAgreementData(string $billingAgreementId)
+    public static function getAmazonBillingAgreementData(string $billingAgreementId): bool|array
     {
         $AmazonPay = BasePayment::getAmazonPayClient();
 
@@ -903,14 +908,14 @@ class BillingAgreements
      *
      * @return int
      */
-    protected static function getBillingAgreementMaxCaptureAttempts()
+    protected static function getBillingAgreementMaxCaptureAttempts(): int
     {
         try {
             return (int)QUI::getPackage('quiqqer/payment-amazon')->getConfig()->get(
                 'billing_agreements',
                 'max_capture_tries'
             );
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
             return 3; // fallback
         }
@@ -919,7 +924,7 @@ class BillingAgreements
     /**
      * @return string
      */
-    public static function getBillingAgreementsTable()
+    public static function getBillingAgreementsTable(): string
     {
         return QUI::getDBTableName(self::TBL_BILLING_AGREEMENTS);
     }
@@ -927,7 +932,7 @@ class BillingAgreements
     /**
      * @return string
      */
-    public static function getBillingAgreementTransactionsTable()
+    public static function getBillingAgreementTransactionsTable(): string
     {
         return QUI::getDBTableName(self::TBL_BILLING_AGREEMENT_TRANSACTIONS);
     }
@@ -938,7 +943,7 @@ class BillingAgreements
      * @param string $constraintId
      * @return string
      */
-    protected static function getBillingAgreementConfirmationConstraintExceptionMessage(string $constraintId)
+    protected static function getBillingAgreementConfirmationConstraintExceptionMessage(string $constraintId): string
     {
         switch ($constraintId) {
             case 'BuyerConsentNotSet':

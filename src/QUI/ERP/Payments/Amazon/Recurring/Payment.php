@@ -2,11 +2,14 @@
 
 namespace QUI\ERP\Payments\Amazon\Recurring;
 
+use Exception;
 use QUI;
 use QUI\ERP\Accounting\Invoice\Invoice;
 use QUI\ERP\Accounting\Payments\Types\RecurringPaymentInterface;
 use QUI\ERP\Order\AbstractOrder;
 use QUI\ERP\Payments\Amazon\Payment as BasePayment;
+
+use function array_column;
 
 class Payment extends BasePayment implements RecurringPaymentInterface
 {
@@ -20,7 +23,7 @@ class Payment extends BasePayment implements RecurringPaymentInterface
     /**
      * @return string
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return $this->getLocale()->get('quiqqer/payment-amazon', 'payment.recurring.title');
     }
@@ -28,7 +31,7 @@ class Payment extends BasePayment implements RecurringPaymentInterface
     /**
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->getLocale()->get('quiqqer/payment-amazon', 'payment.recurring.description');
     }
@@ -37,13 +40,15 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      * If the Payment method is a payment gateway, it can return a gateway display
      *
      * @param AbstractOrder $Order
-     * @param QUI\ERP\Order\Controls\OrderProcess\Processing $Step
+     * @param ?QUI\ERP\Order\Controls\AbstractOrderingStep $Step
      * @return string
      *
-     * @throws QUI\Exception
+     * @throws QUI\Exception|Exception
      */
-    public function getGatewayDisplay(AbstractOrder $Order, $Step = null)
-    {
+    public function getGatewayDisplay(
+        AbstractOrder $Order,
+        ?QUI\ERP\Order\Controls\AbstractOrderingStep $Step = null
+    ): string {
         $Control = new PaymentDisplay();
         $Control->setAttribute('Order', $Order);
         $Control->setAttribute('Payment', $this);
@@ -66,21 +71,22 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      *
      * @return bool
      */
-    public function supportsRecurringPaymentsOnly()
+    public function supportsRecurringPaymentsOnly(): bool
     {
         return true;
     }
 
     /**
-     * Create a Scubscription from a (temporary) Order
+     * Create a Subscription from a (temporary) Order
      *
      * @param AbstractOrder $Order
-     * @return void
+     * @return string|null
      */
-    public function createSubscription(AbstractOrder $Order)
+    public function createSubscription(AbstractOrder $Order): ?string
     {
         // There is no need to create a BillingAgreement here since this
         // is done in the frontend via the Amazon BillingAgreement consent widget
+        return null;
     }
 
     /**
@@ -89,11 +95,11 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      * @param Invoice $Invoice
      * @return void
      */
-    public function captureSubscription(Invoice $Invoice)
+    public function captureSubscription(Invoice $Invoice): void
     {
         try {
             BillingAgreements::billBillingAgreementBalance($Invoice);
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
         }
     }
@@ -105,7 +111,7 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      * @param string $reason (optional) - The reason why the subscription is cancelled
      * @return void
      */
-    public function cancelSubscription($subscriptionId, $reason = '')
+    public function cancelSubscription(int|string $subscriptionId, string $reason = ''): void
     {
         BillingAgreements::cancelBillingAgreement($subscriptionId, $reason);
     }
@@ -116,10 +122,11 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      * This *temporarily* suspends the automated collection of payments until explicitly resumed.
      *
      * @param int|string $subscriptionId
-     * @param string $note (optional) - Suspension note
+     * @param string|null $note (optional) - Suspension note
      * @return void
+     * @throws QUI\Database\Exception
      */
-    public function suspendSubscription($subscriptionId, string $note = null)
+    public function suspendSubscription(int|string $subscriptionId, string $note = null): void
     {
         BillingAgreements::suspendSubscription($subscriptionId);
     }
@@ -130,10 +137,11 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      * This resumes automated collection of payments of a previously supsendes Subscription.
      *
      * @param int|string $subscriptionId
-     * @param string $note (optional) - Resume note
+     * @param string|null $note (optional) - Resume note
      * @return void
+     * @throws QUI\Database\Exception
      */
-    public function resumeSubscription($subscriptionId, string $note = null)
+    public function resumeSubscription(int|string $subscriptionId, string $note = null): void
     {
         BillingAgreements::resumeSubscription($subscriptionId);
     }
@@ -143,8 +151,9 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      *
      * @param int|string $subscriptionId
      * @return bool
+     * @throws QUI\Database\Exception
      */
-    public function isSuspended($subscriptionId)
+    public function isSuspended(int|string $subscriptionId): bool
     {
         return BillingAgreements::isSuspended($subscriptionId);
     }
@@ -158,19 +167,15 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      * @param $subscriptionId
      * @return void
      */
-    public function setSubscriptionAsInactive($subscriptionId)
+    public function setSubscriptionAsInactive($subscriptionId): void
     {
         try {
             QUI::getDataBase()->update(
                 BillingAgreements::getBillingAgreementsTable(),
-                [
-                    'active' => 0
-                ],
-                [
-                    'amazon_agreement_id' => $subscriptionId
-                ]
+                ['active' => 0],
+                ['amazon_agreement_id' => $subscriptionId]
             );
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
         }
     }
@@ -181,7 +186,7 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      *
      * @return bool
      */
-    public function isSubscriptionEditable()
+    public function isSubscriptionEditable(): bool
     {
         return true;
     }
@@ -193,7 +198,7 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      * @param AbstractOrder $Order
      * @return int|string|false - ID or false of no ID associated
      */
-    public function getSubscriptionIdByOrder(AbstractOrder $Order)
+    public function getSubscriptionIdByOrder(AbstractOrder $Order): bool|int|string
     {
         $billingAgreementId = $Order->getPaymentDataEntry(self::ATTR_AMAZON_BILLING_AGREEMENT_ID);
         return $billingAgreementId ?: false;
@@ -202,10 +207,10 @@ class Payment extends BasePayment implements RecurringPaymentInterface
     /**
      * Checks if the subscription is active at the payment provider side
      *
-     * @param string|int $subscriptionId
+     * @param int|string $subscriptionId
      * @return bool
      */
-    public function isSubscriptionActiveAtPaymentProvider($subscriptionId)
+    public function isSubscriptionActiveAtPaymentProvider(int|string $subscriptionId): bool
     {
         return BillingAgreements::isBillingAgreementActiveAtAmazon($subscriptionId);
     }
@@ -213,10 +218,10 @@ class Payment extends BasePayment implements RecurringPaymentInterface
     /**
      * Checks if the subscription is active at QUIQQER
      *
-     * @param string|int $subscriptionId - Payment provider subscription ID
+     * @param int|string $subscriptionId - Payment provider subscription ID
      * @return bool
      */
-    public function isSubscriptionActiveAtQuiqqer($subscriptionId)
+    public function isSubscriptionActiveAtQuiqqer(int|string $subscriptionId): bool
     {
         try {
             $result = QUI::getDataBase()->fetch([
@@ -232,7 +237,7 @@ class Payment extends BasePayment implements RecurringPaymentInterface
             }
 
             return !empty($result[0]['active']);
-        } catch (\Exception $Exception) {
+        } catch (Exception) {
             return true;
         }
     }
@@ -243,7 +248,7 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      * @param bool $includeInactive (optional) - Include inactive subscriptions [default: false]
      * @return string[]
      */
-    public function getSubscriptionIds($includeInactive = false)
+    public function getSubscriptionIds(bool $includeInactive = false): array
     {
         try {
             $where = [
@@ -260,8 +265,8 @@ class Payment extends BasePayment implements RecurringPaymentInterface
                 'where' => $where
             ]);
 
-            return \array_column($result, 'amazon_agreement_id');
-        } catch (\Exception $Exception) {
+            return array_column($result, 'amazon_agreement_id');
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
             return [];
         }
@@ -270,10 +275,10 @@ class Payment extends BasePayment implements RecurringPaymentInterface
     /**
      * Get global processing ID of a subscription
      *
-     * @param string|int $subscriptionId
+     * @param int|string $subscriptionId
      * @return string|false
      */
-    public function getSubscriptionGlobalProcessingId($subscriptionId)
+    public function getSubscriptionGlobalProcessingId(int|string $subscriptionId): bool|string
     {
         try {
             $result = QUI::getDataBase()->fetch([
@@ -289,7 +294,7 @@ class Payment extends BasePayment implements RecurringPaymentInterface
             }
 
             return $result[0]['global_process_id'];
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
             return false;
         }
@@ -302,11 +307,11 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      * @param string $hash - Vorgangsnummer - hash number - procedure number
      * @return bool
      */
-    public function isSuccessful($hash)
+    public function isSuccessful(string $hash): bool
     {
         try {
             $Order = QUI\ERP\Order\Handler::getInstance()->getOrderByHash($hash);
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::addError(
                 'Amazon Pay :: Cannot check if payment process for Order #' . $hash . ' is successful'
                 . ' -> ' . $Exception->getMessage()

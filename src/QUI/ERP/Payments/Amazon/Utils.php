@@ -3,10 +3,15 @@
 namespace QUI\ERP\Payments\Amazon;
 
 use AmazonPay\ResponseInterface;
+use Exception;
 use QUI;
 use QUI\ERP\Accounting\Invoice\Invoice;
 use QUI\ERP\Accounting\Payments\Payments;
 use QUI\ERP\Order\AbstractOrder;
+
+use function mb_substr;
+use function preg_replace;
+use function str_replace;
 
 /**
  * Class Utils
@@ -20,14 +25,14 @@ class Utils
      *
      * @return string
      */
-    public static function getProjectUrl()
+    public static function getProjectUrl(): string
     {
         try {
             $url = QUI::getRewrite()->getProject()->get(1)->getUrlRewrittenWithHost();
-            $url = \str_replace(['http://', 'https://'], '', $url); // remove protocol
+            $url = str_replace(['http://', 'https://'], '', $url); // remove protocol
 
             return rtrim($url, '/');
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeDebugException($Exception);
             return '';
         }
@@ -38,8 +43,9 @@ class Utils
      *
      * @param AbstractOrder $Order
      * @return void
+     * @throws QUI\Exception
      */
-    public static function saveOrder(AbstractOrder $Order)
+    public static function saveOrder(AbstractOrder $Order): void
     {
         $Order->update(QUI::getUsers()->getSystemUser());
     }
@@ -51,7 +57,7 @@ class Utils
      * @param array $data (optional) - Additional data for translation
      * @return string
      */
-    public static function getHistoryText(string $context, $data = [])
+    public static function getHistoryText(string $context, array $data = []): string
     {
         return QUI::getLocale()->get('quiqqer/payment-amazon', 'history.' . $context, $data);
     }
@@ -62,11 +68,11 @@ class Utils
      * @param AbstractOrder $Order
      * @return string
      */
-    public static function getSuccessUrl(AbstractOrder $Order)
+    public static function getSuccessUrl(AbstractOrder $Order): string
     {
         return Payments::getInstance()->getHost() .
             URL_OPT_DIR .
-            'quiqqer/payment-amazon/bin/confirmation.php?hash=' . $Order->getHash();
+            'quiqqer/payment-amazon/bin/confirmation.php?hash=' . $Order->getUUID();
     }
 
     /**
@@ -75,11 +81,11 @@ class Utils
      * @param AbstractOrder $Order
      * @return string
      */
-    public static function getFailureUrl(AbstractOrder $Order)
+    public static function getFailureUrl(AbstractOrder $Order): string
     {
         return Payments::getInstance()->getHost() .
             URL_OPT_DIR .
-            'quiqqer/payment-amazon/bin/confirmation.php?hash=' . $Order->getHash() . '&error=1';
+            'quiqqer/payment-amazon/bin/confirmation.php?hash=' . $Order->getUUID() . '&error=1';
     }
 
     /**
@@ -90,7 +96,7 @@ class Utils
      *
      * @throws QUI\Exception
      */
-    public static function getFormattedPriceByOrder(AbstractOrder $Order)
+    public static function getFormattedPriceByOrder(AbstractOrder $Order): string
     {
         return (string)$Order->getPriceCalculation()->getSum()->precision(2)->get();
     }
@@ -101,7 +107,7 @@ class Utils
      * @param Invoice $Invoice
      * @return string
      */
-    public static function getFormattedPriceByInvoice(Invoice $Invoice)
+    public static function getFormattedPriceByInvoice(Invoice $Invoice): string
     {
         $Invoice->calculatePayments();
         return (string)(float)$Invoice->getAttribute('toPay');
@@ -113,15 +119,15 @@ class Utils
      * The Amazon docs usually recommend the following characters: A-Z a-z 0-9 - _
      *
      * @param string $str
-     * @param int $maxLength (optional)
+     * @param int|null $maxLength (optional)
      * @return string
      */
-    public static function formatApiString(string $str, int $maxLength = null)
+    public static function formatApiString(string $str, int $maxLength = null): string
     {
-        $str = \preg_replace('#[^A-Za-z0-9\-_]#i', '', $str);
+        $str = preg_replace('#[^A-Za-z0-9\-_]#i', '', $str);
 
         if (!empty($maxLength)) {
-            $str = \mb_substr($str, 0, $maxLength);
+            $str = mb_substr($str, 0, $maxLength);
         }
 
         return $str;
@@ -134,7 +140,7 @@ class Utils
      * @return array
      * @throws AmazonPayException
      */
-    public static function getResponseData(ResponseInterface $Response)
+    public static function getResponseData(ResponseInterface $Response): array
     {
         $response = $Response->toArray();
 
@@ -160,7 +166,7 @@ class Utils
      *
      * @throws AmazonPayException
      */
-    public static function throwAmazonPayException($errorCode, $exceptionAttributes = [])
+    public static function throwAmazonPayException(string $errorCode, array $exceptionAttributes = []): string
     {
         $L = QUI::getLocale();
         $lg = 'quiqqer/payment-amazon';
