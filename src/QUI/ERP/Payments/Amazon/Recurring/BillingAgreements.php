@@ -57,9 +57,9 @@ class BillingAgreements
     protected static array $transactionsRefreshed = [];
 
     /**
-     * @var QUI\ERP\Payments\Amazon\Payment
+     * @var ?BasePayment
      */
-    protected static $Payment = null;
+    protected static ?BasePayment $Payment = null;
 
     /**
      * Set details to an Amazon BillingAgreement based on order data
@@ -255,6 +255,7 @@ class BillingAgreements
      *
      * @throws AmazonException
      * @throws QUI\Exception
+     * @throws Exception
      */
     public static function billBillingAgreementBalance(Invoice $Invoice): void
     {
@@ -394,12 +395,8 @@ class BillingAgreements
 
             QUI::getDataBase()->update(
                 self::getBillingAgreementTransactionsTable(),
-                [
-                    'amazon_authorization_id' => $data['AmazonAuthorizationId']
-                ],
-                [
-                    'invoice_id' => $Invoice->getCleanId()
-                ]
+                ['amazon_authorization_id' => $data['AmazonAuthorizationId']],
+                ['invoice_id' => $Invoice->getUUID()]
             );
 
             $capturedAmount = $data['CapturedAmount'];
@@ -448,7 +445,7 @@ class BillingAgreements
                     'capture_attempts' => $captureAttempts
                 ],
                 [
-                    'invoice_id' => $Invoice->getCleanId(),
+                    'invoice_id' => $Invoice->getUUID(),
                     'amazon_agreement_id' => $billingAgreementId
                 ]
             );
@@ -488,7 +485,7 @@ class BillingAgreements
                     'capture_attempts' => $captureAttempts,
                 ],
                 [
-                    'invoice_id' => $Invoice->getCleanId(),
+                    'invoice_id' => $Invoice->getUUID(),
                     'amazon_agreement_id' => $billingAgreementId
                 ]
             );
@@ -681,8 +678,10 @@ class BillingAgreements
      * @param int|string $invoiceId - invoice hash
      * @return array|false - Transaction data or false if not yet created
      */
-    public static function getBillingAgreementTransactionData(string $billingAgreementId, int|string $invoiceId): bool|array
-    {
+    public static function getBillingAgreementTransactionData(
+        string $billingAgreementId,
+        int|string $invoiceId
+    ): bool|array {
         try {
             $result = QUI::getDataBase()->fetch([
                 'from' => self::getBillingAgreementTransactionsTable(),
