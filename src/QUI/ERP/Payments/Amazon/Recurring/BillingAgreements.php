@@ -278,6 +278,7 @@ class BillingAgreements
         }
 
         $data = self::getQuiqqerBillingAgreementData($billingAgreementId);
+        $capturedAmount = [];
 
         if ($data === false) {
             $Invoice->addHistory(
@@ -410,7 +411,10 @@ class BillingAgreements
         /**
          * Check if captures amount matches the invoice amount and currency
          */
-        if ($capturedAmount['Amount'] !== $invoiceAmount || $capturedAmount['CurrencyCode'] !== $invoiceCurrency) {
+        if (
+            isset($capturedAmount['Amount']) && $capturedAmount['Amount'] !== $invoiceAmount
+            || isset($capturedAmount['CurrencyCode']) && $capturedAmount['CurrencyCode'] !== $invoiceCurrency
+        ) {
             $Invoice->addHistory(
                 Utils::getHistoryText('invoice.error.agreement_capture_failed', [
                     'billingAgreementId' => $billingAgreementId

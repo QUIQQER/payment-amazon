@@ -5,7 +5,8 @@ namespace QUI\ERP\Payments\Amazon\Recurring;
 use Exception;
 use QUI;
 use QUI\ERP\Payments\Amazon\Provider;
-use QUI\ERP\Plans\Utils as ERPPlansUtils;
+
+use function class_exists;
 
 /**
  * Class PaymentDisplay
@@ -57,18 +58,20 @@ class PaymentDisplay extends QUI\Control
         $this->setJavaScriptControlOption('orderhash', $Order->getUUID());
         $this->setJavaScriptControlOption('displayprice', $PriceCalculation->getSum()->formatted());
 
-        $planDetails = ERPPlansUtils::getPlanDetailsFromOrder($Order);
+        if (class_exists('QUI\ERP\Plans\Utils')) {
+            $planDetails = QUI\ERP\Plans\Utils::getPlanDetailsFromOrder($Order);
 
-        if (!empty($planDetails['invoice_interval'])) {
-            try {
-                $InvoiceInterval = ERPPlansUtils::parseIntervalFromDuration($planDetails['invoice_interval']);
+            if (!empty($planDetails['invoice_interval'])) {
+                try {
+                    $InvoiceInterval = QUI\ERP\Plans\Utils::parseIntervalFromDuration($planDetails['invoice_interval']);
 
-                $this->setJavaScriptControlOption(
-                    'displayinterval',
-                    ERPPlansUtils::intervalToIntervalText($InvoiceInterval)
-                );
-            } catch (Exception $Exception) {
-                QUI\System\Log::writeException($Exception);
+                    $this->setJavaScriptControlOption(
+                        'displayinterval',
+                        QUI\ERP\Plans\Utils::intervalToIntervalText($InvoiceInterval)
+                    );
+                } catch (Exception $Exception) {
+                    QUI\System\Log::writeException($Exception);
+                }
             }
         }
 

@@ -40,14 +40,14 @@ class Payment extends BasePayment implements RecurringPaymentInterface
      * If the Payment method is a payment gateway, it can return a gateway display
      *
      * @param AbstractOrder $Order
-     * @param ?QUI\ERP\Order\Controls\OrderProcess\Processing $Step
+     * @param ?QUI\ERP\Order\Controls\AbstractOrderingStep $Step
      * @return string
      *
      * @throws QUI\Exception|Exception
      */
     public function getGatewayDisplay(
         AbstractOrder $Order,
-        QUI\ERP\Order\Controls\OrderProcess\Processing $Step = null
+        ?QUI\ERP\Order\Controls\AbstractOrderingStep $Step = null
     ): string {
         $Control = new PaymentDisplay();
         $Control->setAttribute('Order', $Order);

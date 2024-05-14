@@ -11,14 +11,17 @@ use QUI\ERP\Accounting\Payments\Transactions\Factory as TransactionFactory;
 use QUI\ERP\Accounting\Payments\Transactions\Handler as TransactionHandler;
 use QUI\ERP\Accounting\Payments\Transactions\Transaction;
 use QUI\ERP\Order\AbstractOrder;
+use QUI\ERP\Order\Controls\AbstractOrderingStep;
 use QUI\ERP\Order\Handler as OrderHandler;
 use QUI\ERP\Order\OrderProcess\OrderProcessMessage;
+use QUI\ERP\Order\OrderProcess\OrderProcessMessageHandlerInterface;
+
+use function method_exists;
 
 /**
  * Class Payment
  */
-class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
-    QUI\ERP\Order\OrderProcess\OrderProcessMessageHandlerInterface
+class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements OrderProcessMessageHandlerInterface
 {
     /**
      * Amazon API Order attributes
@@ -273,26 +276,35 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * If the Payment method is a payment gateway, it can return a gateway display
      *
      * @param AbstractOrder $Order
-     * @param QUI\ERP\Order\Controls\OrderProcess\Processing $Step
+     * @param AbstractOrderingStep|null $Step
      * @return string
      *
-     * @throws QUI\Exception|Exception
+     * @throws Exception
      */
-    public function getGatewayDisplay(AbstractOrder $Order, $Step = null): string
-    {
+    public function getGatewayDisplay(
+        AbstractOrder $Order,
+        ?AbstractOrderingStep $Step = null
+    ): string {
         $Control = new PaymentDisplay();
         $Control->setAttribute('Order', $Order);
         $Control->setAttribute('Payment', $this);
 
-        $Step->setTitle(
-            QUI::getLocale()->get(
-                'quiqqer/payment-amazon',
-                'payment.step.title'
-            )
-        );
+        if (method_exists($Step, 'setTitle')) {
+            $Step->setTitle(
+                QUI::getLocale()->get(
+                    'quiqqer/payment-amazon',
+                    'payment.step.title'
+                )
+            );
+        }
 
         $Engine = QUI::getTemplateManager()->getEngine();
-        $Step->setContent($Engine->fetch(dirname(__FILE__) . '/PaymentDisplay.Header.html'));
+
+        if (method_exists($Step, 'setContent')) {
+            $Step->setContent(
+                $Engine->fetch(dirname(__FILE__) . '/PaymentDisplay.Header.html')
+            );
+        }
 
         return $Control->create();
     }
