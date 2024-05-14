@@ -4,7 +4,7 @@
  * Get details of a Amazon Billing Agreement
  *
  * @param string $billingAgreementId - Amazon Billing Agreement ID
- * @return array|false- Billing Agreement data
+ * @return array|false Billing Agreement data
  * @throws AmazonPayException
  */
 
@@ -19,7 +19,7 @@ QUI::$Ajax->registerFunction(
             $billingAgreement['quiqqer_data'] = BillingAgreements::getQuiqqerBillingAgreementData($billingAgreementId);
 
             return $billingAgreement;
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeDebugException($Exception);
             return false;
         }

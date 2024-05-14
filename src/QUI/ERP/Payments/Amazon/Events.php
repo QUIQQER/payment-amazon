@@ -2,6 +2,7 @@
 
 namespace QUI\ERP\Payments\Amazon;
 
+use Exception;
 use QUI;
 use QUI\ERP\Payments\Amazon\Payment as AmazonPayment;
 use QUI\ERP\Payments\Amazon\Recurring\Payment as AmazonPaymentRecurring;
@@ -26,7 +27,7 @@ class Events
      *
      * @throws QUI\ERP\Accounting\Payments\Exception
      */
-    public static function onQuiqqerOrderSuccessful(QUI\ERP\Order\AbstractOrder $Order)
+    public static function onQuiqqerOrderSuccessful(QUI\ERP\Order\AbstractOrder $Order): void
     {
         $OrderPayment = $Order->getPayment();
 
@@ -71,9 +72,9 @@ class Events
         try {
             $Payment = new Payment();
             $Payment->capturePayment($Order);
-        } catch (AmazonPayException $Exception) {
+        } catch (AmazonPayException) {
             // nothing, capturePayment() marks Order as problematic
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
         }
     }

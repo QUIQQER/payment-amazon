@@ -2,6 +2,7 @@
 
 namespace QUI\ERP\Payments\Amazon;
 
+use Exception;
 use QUI;
 use QUI\ERP\Accounting\Payments\Transactions\Handler as TransactionHandler;
 use QUI\ERP\Payments\Amazon\Payment as AmazonPayment;
@@ -23,13 +24,13 @@ class RefundProcessor
      *
      * @return void
      */
-    public static function processOpenRefundTransactions()
+    public static function processOpenRefundTransactions(): void
     {
         try {
             $result = QUI::getDataBase()->fetch([
                 'from' => self::getRefundTransactionsTable()
             ]);
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
             return;
         }
@@ -37,7 +38,7 @@ class RefundProcessor
         foreach ($result as $row) {
             try {
                 self::checkRefund($row['tx_id'], $row['amazon_refund_id']);
-            } catch (\Exception $Exception) {
+            } catch (Exception $Exception) {
                 QUI\System\Log::writeException($Exception);
             }
         }
@@ -51,9 +52,9 @@ class RefundProcessor
      * @return void
      *
      * @throws QUI\Exception
-     * @throws \Exception
+     * @throws Exception
      */
-    protected static function checkRefund(string $txId, string $amazonRefundId)
+    protected static function checkRefund(string $txId, string $amazonRefundId): void
     {
         $AmazonPay = Payment::getAmazonPayClient();
         $Response = $AmazonPay->getRefundDetails([
@@ -80,7 +81,7 @@ class RefundProcessor
                 try {
                     $AmazonPayment = new AmazonPayment();
                     $AmazonPayment->finalizeRefund($RefundTransaction, $data);
-                } catch (\Exception $Exception) {
+                } catch (Exception $Exception) {
                     QUI\System\Log::writeException($Exception);
                 }
 
@@ -111,7 +112,7 @@ class RefundProcessor
     /**
      * @return string
      */
-    public static function getRefundTransactionsTable()
+    public static function getRefundTransactionsTable(): string
     {
         return QUI::getDBTableName(self::TBL_REFUND_TRANSACTIONS);
     }
