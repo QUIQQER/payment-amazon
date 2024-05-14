@@ -3,6 +3,7 @@
 namespace QUI\ERP\Payments\Amazon;
 
 use AmazonPay\Client as AmazonPayClient;
+use Exception;
 use QUI;
 use QUI\ERP\Accounting\Payments\Gateway\Gateway;
 use QUI\ERP\Accounting\Payments\Payments;
@@ -56,21 +57,21 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
     /**
      * Amazon Pay PHP SDK Client
      *
-     * @var AmazonPayClient
+     * @var ?AmazonPayClient
      */
-    protected static $AmazonPayClient = null;
+    protected static ?AmazonPayClient $AmazonPayClient = null;
 
     /**
      * Current Order that is being processed
      *
-     * @var AbstractOrder
+     * @var ?AbstractOrder
      */
-    protected $Order = null;
+    protected ?AbstractOrder $Order = null;
 
     /**
      * @return string
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return $this->getLocale()->get('quiqqer/payment-amazon', 'payment.title');
     }
@@ -78,7 +79,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
     /**
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->getLocale()->get('quiqqer/payment-amazon', 'payment.description');
     }
@@ -89,7 +90,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      *
      * @return string
      */
-    public function getIcon()
+    public function getIcon(): string
     {
         return Payments::getInstance()->getHost() .
             URL_OPT_DIR .
@@ -103,11 +104,11 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * @param string $hash - Vorgangsnummer - hash number - procedure number
      * @return bool
      */
-    public function isSuccessful($hash)
+    public function isSuccessful(string $hash): bool
     {
         try {
             $Order = OrderHandler::getInstance()->getOrderByHash($hash);
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::addError(
                 'Amazon Pay :: Cannot check if payment process for Order #' . $hash . ' is successful'
                 . ' -> ' . $Exception->getMessage()
@@ -124,7 +125,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      *
      * @return bool
      */
-    public function isGateway()
+    public function isGateway(): bool
     {
         return true;
     }
@@ -132,7 +133,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
     /**
      * @return bool
      */
-    public function refundSupport()
+    public function refundSupport(): bool
     {
         return Provider::isRefundHandlingActivated();
     }
@@ -145,8 +146,9 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      *
      * @throws QUI\ERP\Accounting\Payments\Transactions\Exception
      * @throws QUI\Exception
+     * @throws Exception
      */
-    public function executeGatewayPayment(QUI\ERP\Accounting\Payments\Gateway\Gateway $Gateway)
+    public function executeGatewayPayment(QUI\ERP\Accounting\Payments\Gateway\Gateway $Gateway): void
     {
         $AmazonPay = self::getAmazonPayClient();
         $Order = $Gateway->getOrder();
@@ -228,17 +230,17 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * Execute a refund
      *
      * @param QUI\ERP\Accounting\Payments\Transactions\Transaction $Transaction
-     * @param int|float $amount
+     * @param float|int $amount
      * @param string $message
-     * @param false|string $hash - if a new hash will be used
+     * @param bool|string $hash - if a new hash will be used
      * @throws QUI\ERP\Accounting\Payments\Transactions\RefundException
      */
     public function refund(
         Transaction $Transaction,
-        $amount,
-        $message = '',
-        $hash = false
-    ) {
+        float|int $amount,
+        string $message = '',
+        string|bool $hash = false
+    ): void {
         if (!Provider::isRefundHandlingActivated()) {
             throw new QUI\ERP\Accounting\Payments\Transactions\RefundException([
                 'quiqqer/payment-amazon',
@@ -252,12 +254,12 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
             }
 
             $this->refundPayment($Transaction, $hash, $amount, $message);
-        } catch (AmazonPayException $Exception) {
+        } catch (AmazonPayException) {
             throw new QUI\ERP\Accounting\Payments\Transactions\RefundException([
                 'quiqqer/payment-amazon',
                 'exception.Payment.refund_error'
             ]);
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
 
             throw new QUI\ERP\Accounting\Payments\Transactions\RefundException([
@@ -274,9 +276,9 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * @param QUI\ERP\Order\Controls\OrderProcess\Processing $Step
      * @return string
      *
-     * @throws QUI\Exception
+     * @throws QUI\Exception|Exception
      */
-    public function getGatewayDisplay(AbstractOrder $Order, $Step = null)
+    public function getGatewayDisplay(AbstractOrder $Order, $Step = null): string
     {
         $Control = new PaymentDisplay();
         $Control->setAttribute('Order', $Order);
@@ -304,8 +306,9 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * @throws AmazonPayException
      * @throws QUI\ERP\Exception
      * @throws QUI\Exception
+     * @throws Exception
      */
-    public function confirmOrder($orderReferenceId, AbstractOrder $Order)
+    public function confirmOrder(string $orderReferenceId, AbstractOrder $Order): void
     {
         $Order->addHistory('Amazon Pay :: Confirm order');
 
@@ -353,7 +356,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
                     'quiqqer/payment-amazon',
                     'Payment.order_custom_information',
                     [
-                        'orderHash' => $Order->getHash()
+                        'orderHash' => $Order->getUUID()
                     ]
                 )
             ]);
@@ -397,8 +400,9 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * @throws AmazonPayException
      * @throws QUI\ERP\Exception
      * @throws QUI\Exception
+     * @throws Exception
      */
-    public function authorizePayment(AbstractOrder $Order)
+    public function authorizePayment(AbstractOrder $Order): void
     {
         $Order->addHistory('Amazon Pay :: Authorize payment');
 
@@ -488,7 +492,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
                         $AmazonPay->cancelOrderReference([
                             'amazon_order_reference_id' => $orderReferenceId,
                             'cancelation_reason' => 'Order #' .
-                                $Order->getHash() .
+                                $Order->getUUID() .
                                 ' could not be authorized :: TransactionTimedOut'
                         ]);
 
@@ -518,7 +522,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
                         if ($orderReferenceStatus === 'Open') {
                             $AmazonPay->cancelOrderReference([
                                 'amazon_order_reference_id' => $orderReferenceId,
-                                'cancelation_reason' => 'Order #' . $Order->getHash() . ' could not be authorized'
+                                'cancelation_reason' => 'Order #' . $Order->getUUID() . ' could not be authorized'
                             ]);
 
                             $Order->setPaymentData(self::ATTR_AMAZON_ORDER_REFERENCE_ID, false);
@@ -553,8 +557,9 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * @throws AmazonPayException
      * @throws QUI\ERP\Exception
      * @throws QUI\Exception
+     * @throws Exception
      */
-    public function capturePayment(AbstractOrder $Order)
+    public function capturePayment(AbstractOrder $Order): void
     {
         $Order->addHistory('Amazon Pay :: Capture payment');
 
@@ -575,7 +580,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
                 'quiqqer/payment-amazon',
                 'exception.Payment.capture.not_authorized',
                 [
-                    'orderHash' => $Order->getHash()
+                    'orderHash' => $Order->getUUID()
                 ]
             ]);
         }
@@ -583,7 +588,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
         if (!$Order->getPaymentDataEntry(self::ATTR_AMAZON_AUTHORIZATION_ID)) {
             try {
                 $this->authorizePayment($Order);
-            } catch (AmazonPayException $Exception) {
+            } catch (AmazonPayException) {
                 $Order->addHistory(
                     'Amazon Pay :: Capture failed because the Order has no OPEN Authorization'
                 );
@@ -592,10 +597,10 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
                     'quiqqer/payment-amazon',
                     'exception.Payment.capture.not_authorized',
                     [
-                        'orderHash' => $Order->getHash()
+                        'orderHash' => $Order->getUUID()
                     ]
                 ]);
-            } catch (\Exception $Exception) {
+            } catch (Exception $Exception) {
                 $Order->addHistory(
                     'Amazon Pay :: Capture failed because of an error: ' . $Exception->getMessage()
                 );
@@ -674,15 +679,20 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      *
      * @param QUI\ERP\Accounting\Payments\Transactions\Transaction $Transaction
      * @param string $refundHash - Hash of the refund Transaction
-     * @param float $amount - The amount to be refunden
+     * @param float $amount - The amount to be refunded
      * @param string $reason (optional) - The reason for the refund [default: none; max. 255 characters]
      * @return void
      *
      * @throws AmazonPayException
      * @throws QUI\Exception
+     * @throws Exception
      */
-    public function refundPayment(Transaction $Transaction, $refundHash, $amount, $reason = '')
-    {
+    public function refundPayment(
+        Transaction $Transaction,
+        string $refundHash,
+        float $amount,
+        string $reason = ''
+    ): void {
         $Process = new QUI\ERP\Process($Transaction->getGlobalProcessId());
         $Process->addHistory('Amazon Pay :: Start refund for transaction #' . $Transaction->getTxId());
 
@@ -764,7 +774,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
                     . ' Transaction #' . $RefundTransaction->getTxId()
                 );
 
-                // Add to open refund transaction table so it can be checked
+                // Add to open refund transaction table, so it can be checked
                 QUI::getDataBase()->insert(
                     RefundProcessor::getRefundTransactionsTable(),
                     [
@@ -796,9 +806,9 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * @param QUI\ERP\Accounting\Payments\Transactions\Transaction $RefundTransaction
      * @param array $refundData
      * @return void
-     * @throws \QUI\Exception
+     * @throws QUI\Exception
      */
-    public function finalizeRefund(Transaction $RefundTransaction, $refundData)
+    public function finalizeRefund(Transaction $RefundTransaction, array $refundData): void
     {
         // finalize refund
         $Process = new QUI\ERP\Process($RefundTransaction->getGlobalProcessId());
@@ -841,17 +851,18 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * Set the Amazon Pay OrderReference to status CLOSED
      *
      * @param AbstractOrder $Order
-     * @param string $reason (optional) - Close reason [default: "Order #hash completed"]
+     * @param string|null $reason (optional) - Close reason [default: "Order #hash completed"]
      * @return void
+     * @throws Exception
      */
-    protected function closeOrderReference(AbstractOrder $Order, $reason = null)
+    protected function closeOrderReference(AbstractOrder $Order, string $reason = null): void
     {
         $AmazonPay = self::getAmazonPayClient();
         $orderReferenceId = $Order->getPaymentDataEntry(self::ATTR_AMAZON_ORDER_REFERENCE_ID);
 
         $AmazonPay->closeOrderReference([
             'amazon_order_reference_id' => $orderReferenceId,
-            'closure_reason' => $reason ?: 'Order #' . $Order->getHash() . ' completed'
+            'closure_reason' => $reason ?: 'Order #' . $Order->getUUID() . ' completed'
         ]);
     }
 
@@ -864,7 +875,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      *
      * @throws AmazonPayException
      */
-    protected function throwAmazonPayException($errorCode, $exceptionAttributes = [])
+    protected function throwAmazonPayException(string $errorCode, array $exceptionAttributes = []): string
     {
         $L = $this->getLocale();
         $lg = 'quiqqer/payment-amazon';
@@ -897,7 +908,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * @param AbstractOrder $Order
      * @return string
      */
-    protected function getNewAuthorizationReferenceId(AbstractOrder $Order)
+    protected function getNewAuthorizationReferenceId(AbstractOrder $Order): string
     {
         return mb_substr('a_' . $Order->getId() . '_' . uniqid(), 0, 32);
     }
@@ -908,8 +919,9 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * @param string $authorizationReferenceId
      * @param AbstractOrder $Order
      * @return void
+     * @throws QUI\Exception
      */
-    protected function addAuthorizationReferenceIdToOrder($authorizationReferenceId, AbstractOrder $Order)
+    protected function addAuthorizationReferenceIdToOrder(string $authorizationReferenceId, AbstractOrder $Order): void
     {
         $authorizationReferenceIds = $Order->getPaymentDataEntry(self::ATTR_AUTHORIZATION_REFERENCE_IDS);
 
@@ -930,9 +942,13 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * @param string $refundReferenceId
      * @param AbstractOrder $Order
      * @return void
+     * @throws QUI\Exception
      */
-    protected function addAmazonRefundDetails($amazonRefundId, $refundReferenceId, AbstractOrder $Order)
-    {
+    protected function addAmazonRefundDetails(
+        string $amazonRefundId,
+        string $refundReferenceId,
+        AbstractOrder $Order
+    ): void {
         $amazonRefundDetails = $Order->getPaymentDataEntry(self::ATTR_ORDER_REFUND_DETAILS);
 
         if (empty($amazonRefundDetails)) {
@@ -956,7 +972,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * @param QUI\ERP\Accounting\Payments\Transactions\Transaction $Transaction
      * @return string
      */
-    protected function generateRefundReferenceId(Transaction $Transaction)
+    protected function generateRefundReferenceId(Transaction $Transaction): string
     {
         return str_replace('-', '', $Transaction->getTxId());
     }
@@ -967,7 +983,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * @param string $txId - Transaction id without dashes
      * @return string - Correct transaction id
      */
-    public function rebuildCroppedTransactionId($txId)
+    public function rebuildCroppedTransactionId(string $txId): string
     {
         $parts = str_split($txId);
         $dashPositions = [8, 13, 18, 23];
@@ -986,7 +1002,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * @param AbstractOrder $Order
      * @return string
      */
-    protected function getNewCaptureReferenceId(AbstractOrder $Order)
+    protected function getNewCaptureReferenceId(AbstractOrder $Order): string
     {
         return mb_substr('c_' . $Order->getId() . '_' . uniqid(), 0, 32);
     }
@@ -998,7 +1014,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * @param AbstractOrder $Order
      * @return void
      */
-    protected function addCaptureReferenceIdToOrder($captureReferenceId, AbstractOrder $Order)
+    protected function addCaptureReferenceIdToOrder(string $captureReferenceId, AbstractOrder $Order): void
     {
         $captureReferenceIds = $Order->getPaymentDataEntry(self::ATTR_CAPTURE_REFERENCE_IDS);
 
@@ -1022,7 +1038,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * @return string
      * @throws QUI\Exception
      */
-    protected function getSellerNote(AbstractOrder $Order)
+    protected function getSellerNote(AbstractOrder $Order): string
     {
         $Conf = QUI::getPackage('quiqqer/payment-amazon')->getConfig();
         $description = $Conf->get('payment', 'amazon_seller_note');
@@ -1041,18 +1057,16 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
         }
 
         // max length 255
-        $descriptionText = mb_substr($descriptionText, 0, 255);
-
-        return $descriptionText;
+        return mb_substr($descriptionText, 0, 255);
     }
 
     /**
      * Get Amazon Pay Client for current payment process
      *
      * @return AmazonPayClient
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function getAmazonPayClient()
+    public static function getAmazonPayClient(): ?AmazonPayClient
     {
         if (!is_null(self::$AmazonPayClient)) {
             return self::$AmazonPayClient;
@@ -1075,8 +1089,9 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      *
      * @param AbstractOrder $Order
      * @return void
+     * @throws QUI\Exception
      */
-    protected function saveOrder(AbstractOrder $Order)
+    protected function saveOrder(AbstractOrder $Order): void
     {
         $Order->update(QUI::getUsers()->getSystemUser());
     }
@@ -1087,7 +1102,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * @param QUI\ERP\Process $Process
      * @param $message
      */
-    protected function addProcessHistoryEntry(QUI\ERP\Process $Process, $message)
+    protected function addProcessHistoryEntry(QUI\ERP\Process $Process, $message): void
     {
         $Process->addHistory('Amazon Pay :: ' . $message);
     }
@@ -1096,7 +1111,7 @@ class Payment extends QUI\ERP\Accounting\Payments\Api\AbstractPayment implements
      * @param int $id
      * @return OrderProcessMessage
      */
-    public static function getMessage(int $id)
+    public static function getMessage(int $id): OrderProcessMessage
     {
         $L = QUI::getLocale();
         $lg = 'quiqqer/payment-amazon';

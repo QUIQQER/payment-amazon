@@ -2,6 +2,7 @@
 
 namespace QUI\ERP\Payments\Amazon\Recurring;
 
+use Exception;
 use QUI;
 use QUI\ERP\Payments\Amazon\Provider;
 use QUI\ERP\Plans\Utils as ERPPlansUtils;
@@ -17,14 +18,12 @@ class PaymentDisplay extends QUI\Control
      * Constructor
      *
      * @param array $attributes
-     * @throws QUI\ERP\Order\ProcessingException
      */
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
 
         $this->setJavaScriptControl('package/quiqqer/payment-amazon/bin/controls/recurring/PaymentDisplay');
-
         $this->addCSSFile(dirname(__FILE__) . '/PaymentDisplay.css');
 
         $this->setJavaScriptControlOption('sandbox', boolval(Provider::getApiSetting('sandbox')));
@@ -39,7 +38,7 @@ class PaymentDisplay extends QUI\Control
      * @return string
      * @throws QUI\Exception
      */
-    public function getBody()
+    public function getBody(): string
     {
         $Engine = QUI::getTemplateManager()->getEngine();
 
@@ -55,7 +54,7 @@ class PaymentDisplay extends QUI\Control
             'currency_code' => $Order->getCurrency()->getCode()
         ]);
 
-        $this->setJavaScriptControlOption('orderhash', $Order->getHash());
+        $this->setJavaScriptControlOption('orderhash', $Order->getUUID());
         $this->setJavaScriptControlOption('displayprice', $PriceCalculation->getSum()->formatted());
 
         $planDetails = ERPPlansUtils::getPlanDetailsFromOrder($Order);
@@ -68,7 +67,7 @@ class PaymentDisplay extends QUI\Control
                     'displayinterval',
                     ERPPlansUtils::intervalToIntervalText($InvoiceInterval)
                 );
-            } catch (\Exception $Exception) {
+            } catch (Exception $Exception) {
                 QUI\System\Log::writeException($Exception);
             }
         }

@@ -26,7 +26,7 @@ QUI::$Ajax->registerFunction(
             $Payment->authorizePayment($orderReferenceId, $Order);
         } catch (AmazonPayException $Exception) {
             throw $Exception;
-        } catch (\Exception $Exception) {
+        } catch (Exception $Exception) {
             QUI\System\Log::writeException($Exception);
             return false;
         }
